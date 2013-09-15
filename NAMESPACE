@@ -1,0 +1,19 @@
+useDynLib(coxinterval)
+import(survival)
+export("coxic",
+       "coxic.control",
+       "coxic.data",
+       "const2lin",
+       "lin2const",
+       "linapprox",
+       "jump2step",
+       "step2jump",
+       "step2stepfun",
+       "string2expr",
+       "inside",
+       "is.subset",
+       "maximalint",
+       "trans",
+       "na.coxic")
+S3method(print, coxic)
+S3method(na.coxic, default)

@@ -1,0 +1,12 @@
+Package: coxinterval
+Version: 0.1-1
+Date: 2013-09-11
+Title: Cox-type models for interval-censored data
+Author: Audrey Boruvka
+Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
+Depends: survival, R (>= 2.13.0)
+Description: Fits Cox-type models based on interval-censored data from a
+             progressive process
+License: GPL (>= 2)
+URL: http://github.com/aboruvka/coxinterval
+BugReports: http://github.com/aboruvka/coxinterval/issues
