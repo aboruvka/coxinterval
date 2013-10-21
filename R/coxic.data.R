@@ -52,6 +52,7 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states, censor) {
     ind <- to == states[2]
     left[uid %in% id[ind]] <- time1[ind]
     right[uid %in% id[ind]] <- time2[ind]
+    u <- as.vector(by(time1, id, min, na.rm = TRUE))
     v <- as.vector(by(time1, id, max, na.rm = TRUE))
     ind <- left == v
     right[ind] <- Inf
@@ -68,6 +69,6 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states, censor) {
   t02 <- v[absorb & contrib == 2]
   t12 <- v[absorb & contrib == 1]
   list(supp = list(t01 = t01, t02 = sort(unique(t02)), t12 = sort(unique(t12))),
-       left = left, right = right, v = v, contrib = contrib, absorb = absorb,
-       z = z)
+       left = left, right = right, u = u, v = v, contrib = contrib,
+       absorb = absorb, z = z)
 }

@@ -33,23 +33,23 @@ L(double *t, int j, int k, double beg, double end)
 
 /* ... indicator */
 static int
-I(double *t, int type, int k, double u)
+I(double *t, int type, int k, double y)
 {
   int val;
-  val = t[k - 1 + D[type]] <= u && u < t[k + D[type]];
+  val = t[k - 1 + D[type]] <= y && y < t[k + D[type]];
   return val;
 }
 
 static double
 loglik(double *c, double *h, double *z, double *t, double *s, double *left,
-       double *right, double *v, int *contrib, int *absorb)
+       double *right, double *u, double *v, int *contrib, int *absorb)
 {
   int i, j, k, l, cens;
   double ll = 0, prob, prob1, prob2, A01, A02, A12, a01, a02, a12, h02, h12,
     rsk[M], g1c1[p], g1c2[p], g2c1[p*p], g2c2[p*p], g3c1[p], g3c2[p], g1cr[p],
     g2cr[p*p], g3cr[p], g1cn[p], g2cn[p*p], g3cn[p], g1cd[p], g2cd[p*p],
     g3cd[p], g1c[p], g2c[p*p], g3c[p], beg, end, len, pseg, dseg, rseg, s0, s1,
-    g1h1[D[M]], g1h2[D[M]], EdN[D[M]], EY[D[M]], newhn[D[M]], newhd[D[M]], u;
+    g1h1[D[M]], g1h2[D[M]], EdN[D[M]], EY[D[M]], newhn[D[M]], newhd[D[M]], y;
   /* initialize derivatives */
   for (i = 0; i < p; i++) {
     grad1c[i] = 0;
@@ -91,8 +91,8 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       beg = max(left[i], s[j - 1]);
       end = min(right[i], s[j]);
       len = end - beg;
-      A01 = H(h, t, 0, 0, beg) * rsk[0];
-      A02 = H(h, t, 1, 0, beg) * rsk[1];
+      A01 = H(h, t, 0, u[i], beg) * rsk[0];
+      A02 = H(h, t, 1, u[i], beg) * rsk[1];
       A12 = H(h, t, 2, end, v[i]) * rsk[2];
       a01 = h[sidx[j]] * rsk[0];
       a12 = (absorb[i]) ? (h[vidx[i + 2*n] + D[2]] * rsk[2]) : 1;
@@ -125,8 +125,8 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
         EdN[sidx[j]] += prob1;
         for (k = 0; k < M - 1; k++)
           for (l = 1; l <= sidx[j + k*K]; l++) {
-            g1h1[l + D[k]] -= rsk[k] * prob1 * L(t, k, l, 0, end);
-            EY[l + D[k]] += prob1 * L(t, k, l, 0, end);
+            g1h1[l + D[k]] -= rsk[k] * prob1 * L(t, k, l, u[i], end);
+            EY[l + D[k]] += prob1 * L(t, k, l, u[i], end);
           }
         for (k = 1; k <= vidx[i + 2*n]; k++) {
           g1h1[k + D[2]] -= rsk[2] * prob1 * L(t, 2, k, end, v[i]);
@@ -212,19 +212,19 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
         for (k = 0; k < M; k++)
           for (l = 1; l < d[k]; l++) {
             if (L(t, k, l, beg, end) > 0) {
-              u = (k < M - 1) ? t[l - 1 + D[k]] : min(v[i], t[l + D[k]]);
+              y = (k < M - 1) ? t[l - 1 + D[k]] : min(v[i], t[l + D[k]]);
               g1h1[l + D[k]] -= ((k < M - 1) ? 1 : -1)
                 * rsk[k] * pseg / pow(dseg, 2)
-                * (s1 * (1 + (beg - u) * dseg) - s0 * (1 + (end - u) * dseg));
+                * (s1 * (1 + (beg - y) * dseg) - s0 * (1 + (end - y) * dseg));
               EY[l + D[k]] += ((k < M - 1) ? 1 : -1) * pseg / pow(dseg, 2)
-                * (s1 * (1 + (beg - u) * dseg) - s0 * (1 + (end - u) * dseg));
+                * (s1 * (1 + (beg - y) * dseg) - s0 * (1 + (end - y) * dseg));
             }
             else {
-              u = (t[l + D[k]] <= beg && k < M - 1)
+              y = (t[l + D[k]] <= beg && k < M - 1)
                 * (t[l + D[k]] - t[l - 1 + D[k]])
-                + (end <= t[l - 1 + D[k]] && k == M - 1) * L(t, k, l, 0, v[i]);
-              g1h1[l + D[k]] -= rsk[k] * u * pseg * rseg;
-              EY[l + D[k]] += u * pseg * rseg;
+                + (end <= t[l-1 + D[k]] && k == M-1) * L(t, k, l, u[i], v[i]);
+              g1h1[l + D[k]] -= rsk[k] * y * pseg * rseg;
+              EY[l + D[k]] += y * pseg * rseg;
             }
           }
         g1h1[vidx[i + 2*n] + D[2]] +=
@@ -234,8 +234,8 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
     }
     /* contribution via 0 -> 2 */
     if (contrib[i] != 1) {
-      A01 = H(h, t, 0, 0, v[i]) * rsk[0];
-      A02 = H(h, t, 1, 0, v[i]) * rsk[1];
+      A01 = H(h, t, 0, u[i], v[i]) * rsk[0];
+      A02 = H(h, t, 1, u[i], v[i]) * rsk[1];
       a02 = (absorb[i]) ? (h[vidx[i + n] + D[1]] * rsk[1]) : 1;
       prob2 = exp(-(A01 + A02)) * a02;
       for (j = 0; j < p; j++)
@@ -259,8 +259,8 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       EdN[vidx[i + n] + D[1]] += absorb[i] * prob2;
       for (j = 0; j < M - 1; j++)
         for (k = 1; k <= vidx[i + j*n]; k++) {
-          g1h2[k + D[j]] -= rsk[j] * prob2 * L(t, j, k, 0, v[i]);
-          EY[k + D[j]] += prob2 * L(t, j, k, 0, v[i]);
+          g1h2[k + D[j]] -= rsk[j] * prob2 * L(t, j, k, u[i], v[i]);
+          EY[k + D[j]] += prob2 * L(t, j, k, u[i], v[i]);
         }
     }
     /* overall contribution */
@@ -297,9 +297,9 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
 
 void
 coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
-      int *dims, double *z, int *nrow, double *left, double *right, double *v,
-      int *contrib, int *absorb, double *varc, double *ll, double *eps,
-      int *maxiter, double *typc, double *supc, double *stepfrac,
+      int *dims, double *z, int *nrow, double *left, double *right, double *u,
+      double *v, int *contrib, int *absorb, double *varc, double *ll,
+      double *eps, int *maxiter, double *typc, double *supc, double *stepfrac,
       int *numiter, double *fenchel, double *maxnorm, double *cputime,
       int *flag)
 {
@@ -353,7 +353,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       for (k = d[j] - 1; k > 0 && v[i] <= t[k + D[j]]; k--) vidx[i + j*n] = k;
   }
   begtime = clock();
-  ll[iter] = loglik(c, h, z, t, s, left, right, v, contrib, absorb);
+  ll[iter] = loglik(c, h, z, t, s, left, right, u, v, contrib, absorb);
   do { /* estimate parameters */
     /* Netwon-Raphson step for regression coefficient c */
     lwork = -1;
@@ -385,13 +385,13 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       candc[i] = c[i] + stepc[i];
     }
     /* EM step for baseline transition intensities h */
-    loglik(candc, h, z, t, s, left, right, v, contrib, absorb);
+    loglik(candc, h, z, t, s, left, right, u, v, contrib, absorb);
     for (i = 0; i < M; i++)
       for (j = 1; j < d[i]; j++) {
         steph[j + D[i]] = newh[j + D[i]] - h[j + D[i]];
         candh[j + D[i]] = newh[j + D[i]];
       }
-    newll = loglik(candc, candh, z, t, s, left, right, v, contrib, absorb);
+    newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
     /* overshoot also characterized by exp(z*c) = Inf => log-likelihood NaN */
     while (newll < ll[iter] || ISNAN(newll)) { /* step "halving" */
       for (i = 0; i < p; i++) {
@@ -403,7 +403,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
           steph[j + D[i]] *= *stepfrac;
           candh[j + D[i]] = h[j + D[i]] + steph[j + D[i]];
         }
-      newll = loglik(candc, candh, z, t, s, left, right, v, contrib, absorb);
+      newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
     }
     ++iter;
     ll[iter] = newll;
@@ -442,7 +442,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
           for (m = 0; m < d[l]; m++)
             ph[m + D[l]] = h[m + D[l]];
         iter = 0;
-        newll = loglik(fixc, ph, z, t, s, left, right, v, contrib, absorb);
+        newll = loglik(fixc, ph, z, t, s, left, right, u, v, contrib, absorb);
         do { /* evaluate profile loglikelihood */
           oldll = newll;
           for (l = 0; l < M; l++)
@@ -450,7 +450,8 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
               steph[m + D[l]] = newh[m + D[l]] - ph[m + D[l]];
               candh[m + D[l]] = newh[m + D[l]];
             }
-          newll = loglik(fixc, candh, z, t, s, left, right, v, contrib, absorb);
+          newll =
+            loglik(fixc, candh, z, t, s, left, right, u, v, contrib, absorb);
           while (newll < oldll || ISNAN(newll)) { /* step-halving */
             for (l = 0; l < M; l++)
               for (m = 0; m < d[l]; m++) {
@@ -458,7 +459,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
                 candh[m + D[l]] = ph[m + D[l]] + steph[m + D[l]];
               }
             newll =
-              loglik(fixc, candh, z, t, s, left, right, v, contrib, absorb);
+              loglik(fixc, candh, z, t, s, left, right, u, v, contrib, absorb);
           }
           ++iter;
           for (l = 0; l < M; l++)

@@ -14,6 +14,8 @@ export("coxic",
        "is.subset",
        "maximalint",
        "trans",
-       "na.coxic")
+       "na.coxic",
+       "Surv")
 S3method(print, coxic)
 S3method(na.coxic, default)
+S3method(print, Surv)
