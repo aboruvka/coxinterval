@@ -1,14 +1,16 @@
 # R package for Cox models with interval-censored data
 
-To install run from the source parent directory
+Download source to some directory `<path to source>/coxinterval`
+To install run from the command line
 
 ```
 R CMD build coxinterval
-R CMD check coxinterval_<current version number>.tar.gz
+R CMD check coxinterval_0.1-1.tar.gz
 ```
 
 and from the R terminal
 
 ```
-library(coxinterval, lib.loc = "~/papers/code/coxinterval.Rcheck")
+library(coxinterval, lib.loc = "<path to source>/coxinterval.Rcheck")
 ```
+

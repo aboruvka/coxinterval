@@ -30,6 +30,7 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states, censor) {
     right[contrib == 0] <- time2[is.na(from)]
     ind <- absorb & contrib == 0
     if (any(ind)) right[ind] <- right[ind] - .Machine$double.eps
+    u <- as.vector(by(time1, id, min))
     ## V = min(T, D)
     v <- as.vector(by(time2, id, max))
     ## observed times
