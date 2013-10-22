@@ -14,3 +14,7 @@ and from the R terminal
 library(coxinterval, lib.loc = "<path to source>/coxinterval.Rcheck")
 ```
 
+To unload the library in R run
+```
+detach(package:coxinterval, unload = TRUE)
+```
