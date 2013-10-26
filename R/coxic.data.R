@@ -1,5 +1,5 @@
 ### format data for C fitting routine
-coxic.data <- function(id, time1, time2, from, to, status, z, states, censor) {
+coxic.data <- function(id, time1, time2, from, to, status, z, states) {
   p <- max(1, ncol(z))
   z <- data.frame(id, from, to, status, z)
   names(z) <- c("id", "from", "to", "status", paste("z", 1:p, sep = ""))
@@ -15,54 +15,29 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states, censor) {
   rownames(z) <- NULL
   uid <- unique(id)
   n <- length(uid)
+  ## NA action permits missing 'time1' when 'time1' = 'time2' = 0
+  time1[is.na(time1)] <- 0
+  ## largest and smallest observation times
+  u <- as.vector(by(time1, id, min))
+  v <- as.vector(by(time2, id, max))
   ## T observed?
   absorb <- is.element(uid, id[to == states[3] & status == 1])
-  if (censor == "counting") {
-    ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?
-    contrib <- rep(2, n)
-    contrib[is.element(uid, id[to == states[2] & status == 1])] <- 1
-    contrib[is.element(uid, id[is.na(from)])] <- 0
-    ## (possible) censoring intervals (L, R] with L = R if T01 observed exactly
-    left <- right <- rep(NA, n)
-    left[contrib == 1] <- time2[to == states[2] & status == 1]
-    right[contrib == 1] <- time2[to == states[2] & status == 1]
-    left[contrib == 0] <- time1[is.na(from)]
-    right[contrib == 0] <- time2[is.na(from)]
-    ind <- absorb & contrib == 0
-    if (any(ind)) right[ind] <- right[ind] - .Machine$double.eps
-    u <- as.vector(by(time1, id, min))
-    ## V = min(T, D)
-    v <- as.vector(by(time2, id, max))
-    ## observed times
-    t01 <- sort(unique(right[contrib == 1]))
-  }
-  else {
-    time2[status == 0] <- Inf
-    ## consider only finite times
-    ind <- is.finite(time1)
-    id <- id[ind]
-    time1 <- time1[ind]
-    time2 <- time2[ind]
-    status <- status[ind]
-    from <- from[ind]
-    to <- to[ind]
-    uid <- unique(id)
-    n <- length(uid)
-    ## left and right endpoints of (possible) censoring intervals (L, R]
-    left <- right <- rep(NA, n)
-    ind <- to == states[2]
-    left[uid %in% id[ind]] <- time1[ind]
-    right[uid %in% id[ind]] <- time2[ind]
-    u <- as.vector(by(time1, id, min, na.rm = TRUE))
-    v <- as.vector(by(time1, id, max, na.rm = TRUE))
-    ind <- left == v
-    right[ind] <- Inf
-    ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?
-    contrib <- rep(0, n)
-    contrib[!(uid %in% id[from == states[1] & to == states[3]])] <- 1
-    contrib[!(uid %in% id[to == states[2]]) | left == v] <- 2
-    ## maximal intersections containing 0 -> 1 support
-    maxint <- cbind(left, right, 3)[contrib == 1, ]
+  ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?
+  contrib <- rep(2, n)
+  contrib[is.element(uid, id[from %in% states[2]])] <- 1
+  contrib[is.element(uid, id[is.na(from)])] <- 0
+  ## (possible) censoring intervals (L, R] with L = R if T01 observed exactly
+  left <- right <- rep(NA, n)
+  left[contrib == 0] <- time1[is.na(from)]
+  left[contrib == 1] <- time2[to == states[2]]
+  left[!absorb & contrib == 2] <- v[absorb & contrib == 2]
+  right[contrib == 0] <- time2[is.na(from)]
+  right[contrib == 1] <- time1[from %in% c(NA, states[2])]
+  right[!absorb & contrib == 2] <- Inf
+  right[absorb & contrib == 0] <-
+    right[absorb & contrib == 0] - .Machine$double.eps
+  ## maximal intersections containing 0 -> 1 support
+  maxint <- cbind(left, right)[contrib == 1 | (!absorb & contrib == 2), ]
     maxint[is.na(maxint[, 2]), 3] <- 0
     maxint <- maximalint(maxint)$int
     t01 <- maxint[, 2] 

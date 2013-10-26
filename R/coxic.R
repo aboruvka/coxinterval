@@ -22,20 +22,25 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   mf$na.action <- as.name("na.coxic")
   mf <- eval(mf, parent.frame())
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
-  censor <- attr(mf[, irsp], "type")
-  if (!is.element(censor, c("counting", "interval")))
-    stop("Response is not a 'counting'- or 'interval'-type 'Surv' object")
+  if (attr(mf[, irsp], "type") != "counting")
+    stop("Response is not a 'counting'-type 'Surv' object")
   ## in case NA action didn't apply trans attributes
   if (!is.null(attr(mf[, itrn], "states"))) {
     attr(mf, "states") <- attr(mf[, itrn], "states")
     attr(mf, "types") <- attr(mf[, itrn], "types")
   }
-  if (length(attr(mf, "states")) != 3 | length(attr(mf, "types")) != 3)
+  states <- attr(mf, "states")
+  if (length(states) != 3 | length(attr(mf, "types")) != 3)
     stop("Invalid state transitions in the model 'trans' term")
+  ## strictly dual right censoring?
+  right <- mf[, itrn][, 2] %in% c(NA, states[3])
+  left <- mf[, irsp][mf[, icls] %in% mf[right, icls], 2]
+  right <- mf[, irsp][right, 1]
+  censor <- if (max(right - left) == 0) "right" else "interval"
   ## sort data
   mf <- mf[order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2]), ]
   ## fit right-censored data alternatives with survival's coxph
-  if (censor == "counting")
+  if (censor == "right")
     rcprog <- if (is.null(rcprog)) list(cl$formula) else c(cl$formula, rcprog)
   else if (any(is.na(mf[, itrn])))
     stop ("NAs in 'trans' term not permitted with 'interval'-type response")
@@ -70,9 +75,8 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
              else do.call(coxic.control, control)
   ncov <- length(icov)
   ## rework data for fitter
-  d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2],
-                  mf[, itrn][, 1], mf[, itrn][, 2], mf[, irsp][, 3],
-                  mf[, icov], attr(mf, "states"), censor)
+  d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
+                  mf[, itrn][, 2], mf[, irsp][, 3], mf[, icov], states)
   n <- nrow(d$z)
   sieve.size <- with(control, sieve.const * n^sieve.rate)
   nobs <- mapply(function(x, y) max(1, round(length(x)/y)), d$supp, sieve.size)
@@ -156,12 +160,10 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   censor.rate <- c(censor.rate[1], n - censor.rate[1] - censor.rate[2],
                    censor.rate[2]) / n
   names(censor.rate) <-
-    if (censor == "counting") c("exact", "single", "double")
+    if (censor == "right") c("exact", "single", "double")
     else c("status and survival", "only status", "neither")
-  censor <- if (censor == "counting") "right" else "interval"
-  fit <- list(call = cl, censor = censor,
-              n = n, m = nrow(mf), p = ncov, coef = fit$coef,
-              var = var, bhaz = bhaz, init = init,
+  fit <- list(call = cl, censor = censor, n = n, m = nrow(mf), p = ncov,
+              coef = fit$coef, var = var, bhaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               fenchel = fit$fenchel, maxnorm = fit$maxnorm,
               cputime = fit$cputime, rcfit = rcfit,

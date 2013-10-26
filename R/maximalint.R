@@ -1,6 +1,7 @@
 ### find maximal intersections from an interval-type survival object
 maximalint <- function(x) {
-  x[x[, 3] == 0, 2] <- Inf
+  if (ncol(x) > 2) x[x[, 3] == 0, 2] <- Inf
+  else x[x[, 1] == x[, 2], 1] <- x[x[, 1] == x[, 2], 2] - .Machine$double.eps
   l <- unique(x[, 1])
   r <- unique(x[, 2])
   if (max(l, r[r < Inf]) <= 2) delta <- .Machine$double.eps
