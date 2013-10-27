@@ -10,7 +10,7 @@ print.coxic <- function(x, digits = max(options()$digits - 4, 3), ...) {
       dput(x$call$formula)
     }
     if (is.null(x$coef)) {
-      cat("  Estimation failed.\n")
+      cat("  Estimation failed\n")
     }
     else {
       est <- x$coef

@@ -20,7 +20,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (!length(icov)) stop("Model has no covariates")
   mf$formula <- ftrm
   mf$na.action <- as.name("na.coxic")
-  mf <- eval(mf, parent.frame())
+  suppressWarnings(mf <- eval(mf, parent.frame()))
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
   if (attr(mf[, irsp], "type") != "counting")
     stop("Response is not a 'counting'-type 'Surv' object")
@@ -33,17 +33,16 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (length(states) != 3 | length(attr(mf, "types")) != 3)
     stop("Invalid state transitions in the model 'trans' term")
   ## strictly dual right censoring?
-  right <- mf[, itrn][, 2] %in% c(NA, states[3])
-  left <- mf[, irsp][mf[, icls] %in% mf[right, icls], 2]
-  right <- mf[, irsp][right, 1]
-  censor <- if (max(right - left) == 0) "right" else "interval"
+  r <- mf[, itrn][, 1] %in% c(NA, states[2])
+  l <- mf[, itrn][, 2] == states[2] & mf[, icls] %in% mf[r, icls]
+  l <- mf[, irsp][l, 2]
+  r <- mf[, irsp][r, 1]
+  censor <- if (all(l == r)) "right" else "interval"
   ## sort data
   mf <- mf[order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2]), ]
   ## fit right-censored data alternatives with survival's coxph
   if (censor == "right")
     rcprog <- if (is.null(rcprog)) list(cl$formula) else c(cl$formula, rcprog)
-  else if (any(is.na(mf[, itrn])))
-    stop ("NAs in 'trans' term not permitted with 'interval'-type response")
   rcfit <- list(NULL)
   if (!is.null(rcprog))
     for (i in 1:length(rcprog)) {
@@ -64,12 +63,14 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
         rcfit[[i]]$bhaz <- basehaz(rcfit[[i]], centered = FALSE)
         rcfit[[i]]$m = rcfit[[i]]$n
         if (censor == "counting" & i == 1) {
-          rownames(rcfit[[i]]$var) <- colnames(rcfit[[i]]$var) <- names(mf)[icov]
+          rownames(rcfit[[i]]$var) <-
+            colnames(rcfit[[i]]$var) <- names(mf)[icov]
           names(rcfit[[i]]$bhaz) <- c("hazard", "time", "trans")
         }
         rcfit[[i]]$call$data <- cl$data
       }
     }
+  else rcfit <- NULL
   ## set parameters controlling model fit
   control <- if (missing(control)) coxic.control(...)
              else do.call(coxic.control, control)
