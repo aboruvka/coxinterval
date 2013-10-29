@@ -34,7 +34,7 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states) {
   right[contrib == 1] <- time1[from %in% states[2]]
   right[absorb & contrib == 0] <- v[absorb & contrib == 0] - .Machine$double.eps
   ## maximal intersections containing 0 -> 1 support
-  maxint <- cbind(left, right)[contrib != 0, ]
+  maxint <- cbind(left, right)[contrib == 1, ]
   t01 <- maximalint(maxint)$int[, 2]
   t02 <- v[absorb & contrib == 2]
   t12 <- v[absorb & contrib == 1]
