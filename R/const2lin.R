@@ -1,23 +1,24 @@
-### convert piecewise constant values to piecewise linear values
-const2lin <- function(const, time = NULL, by = NULL) {
+### accumulate values from piecewise constant function of time
+const2lin <- function(const, time = NULL, stratum = NULL) {
   f <- function(x) c(0, -x[-length(x)]) + x
   g <- function(x) if (length(dim(x))) apply(x, 2, f) else f(x)
   h <- function(x) if (length(dim(x))) apply(x, 2, cumsum) else cumsum(x)
-  if (!is.null(by)) {
-    if (is.null(time)) time <- by - 1
+  if (!is.null(stratum)) {
+    if (is.null(time)) time <- stratum - 1
     m <- ncol(const) - 2
-    len <- by(const[, time], const[, by], g, simplify = FALSE)
+    len <- by(const[, time], const[, stratum], g, simplify = FALSE)
     len <- do.call(rbind, lapply(len, matrix, ncol = max(1, m)))
-    step <- by(const[, -c(time, by)] * len, const[, by], h, simplify = FALSE)
-    step <- do.call(rbind, lapply(step, matrix, ncol = max(1, m)))
+    lin <- by(const[, -c(time, stratum)] * len, const[, stratum], h,
+              simplify = FALSE)
+    lin <- do.call(rbind, lapply(lin, matrix, ncol = max(1, m)))
   }
   else {
     if (is.null(time)) time <- ncol(const)
     len <- g(const[, time])
-    step <- cumsum(const[, 1] * len)
+    lin <- cumsum(const[, 1] * len)
   }
-  step <- cbind(step, const[, c(time, by)])
-  rownames(step) <- rownames(const)
-  colnames(step) <- colnames(const)
-  step
+  lin <- cbind(lin, const[, c(time, stratum)])
+  rownames(lin) <- rownames(const)
+  colnames(lin) <- colnames(const)
+  lin
 }

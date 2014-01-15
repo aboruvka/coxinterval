@@ -6,7 +6,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-coxic.data(id, time1, time2, from, to, status, z, states, censor)
+coxic.data(id, time1, time2, from, to, status, z, states)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,9 +32,6 @@ coxic.data(id, time1, time2, from, to, status, z, states, censor)
 %%     ~~Describe \code{z} here~~
 }
   \item{states}{
-%%     ~~Describe \code{states} here~~
-}
-  \item{censor}{
 %%     ~~Describe \code{states} here~~
 }
 }

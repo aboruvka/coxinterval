@@ -115,7 +115,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   rownames(init$bhaz) <- NULL
   fit <- .C("coxic",
             coef = as.double(init$coef),
-            bhaz = as.double(lin2const(init$bhaz, by = 3)[, 1]),
+            bhaz = as.double(lin2const(init$bhaz, stratum = 3)[, 1]),
             as.integer(ncov),
             as.integer(npart),
             as.double(tvec),
@@ -142,18 +142,22 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             cputime = as.double(0),
             flag = as.integer(0),
             NAOK = TRUE)
-  if (with(fit, any(flag < 0, is.na(coef), is.nan(coef))))
+  if (fit$flag == 1)
+    stop("Parameter estimation failed; coefficient Hessian not invertible.")
+  if (with(fit, any(is.na(coef), is.nan(coef), is.na(bhaz), is.nan(bhaz))))
     stop("Parameter estimation failed.")
-  if (with(fit, any(flag > 0, is.na(diag(var)), is.nan(diag(var)))))
+  if (fit$flag == 2)
+    stop("Variance estimation failed; profile information not invertible.")
+  if (with(fit, any(is.na(diag(var)), is.nan(diag(var)))))
     stop("Variance estimation failed.")
-  if (fit$iter == control$iter.max)
+  if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(mf)[icov]
   var <- matrix(fit$var, ncov)
   rownames(var) <- colnames(var) <- names(mf)[icov]
   init$bhaz <- data.frame(init$bhaz)
   init$rcinit <- rcinit
-  bhaz <- data.frame(const2lin(cbind(fit$bhaz, init$bhaz[, -1]), by = 3))
+  bhaz <- data.frame(const2lin(cbind(fit$bhaz, init$bhaz[, -1]), stratum = 3))
   names(bhaz) <- names(init$bhaz) <- c("hazard", "time", "trans")
   bhaz$trans <- as.factor(bhaz$trans)
   levels(bhaz$trans) <- attr(mf, "types")

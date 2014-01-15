@@ -1,8 +1,11 @@
 useDynLib(coxinterval)
-import(survival)
+import(Matrix, quadprog, survival, timereg)
 export("coxic",
        "coxic.control",
        "coxic.data",
+       "coxaalenic",
+       "coxaalenic.control",
+       "coxaalenic.ineq",
        "const2lin",
        "lin2const",
        "linapprox",
@@ -13,8 +16,15 @@ export("coxic",
        "inside",
        "is.subset",
        "maximalint",
+       "rdualic",
+       "rdualic.type",
+       "rdualrc",
+       "rdualrc.type",
+       "rprog",
+       "rsched",
+       "rsurv",
        "trans",
        "na.coxic")
 S3method(print, coxic)
+S3method(print, coxaalenic)
 S3method(na.coxic, default)
-

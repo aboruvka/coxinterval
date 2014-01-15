@@ -6,7 +6,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-lin2const(lin, time = NULL, by = NULL)
+lin2const(lin, time = NULL, stratum = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,8 +16,8 @@ lin2const(lin, time = NULL, by = NULL)
   \item{time}{
 %%     ~~Describe \code{time} here~~
 }
-  \item{by}{
-%%     ~~Describe \code{by} here~~
+  \item{stratum}{
+%%     ~~Describe \code{stratum} here~~
 }
 }
 \details{

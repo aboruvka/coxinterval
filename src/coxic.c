@@ -358,22 +358,20 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     /* Netwon-Raphson step for regression coefficient c */
     lwork = -1;
     F77_CALL(dsytrf)(&uplo, &p, grad2c, &p, ipiv, work, &lwork, &status);
-    if (status) {
-      REprintf("Could not query DSYTRF workspace.\n");
+    if (status) { /* can'tould not query DSYTRF workspace */
+      *flag = 1;
       goto deallocate;
     }
     lwork = (int) work[0];
     work = Realloc(work, lwork, double);
     F77_CALL(dsytrf)(&uplo, &p, grad2c, &p, ipiv, work, &lwork, &status);
-    if (status) {
-      REprintf("Could not factorize coefficient Hessian.\n");
-      *flag = -1;
+    if (status) { /* can't factorize coefficient Hessian */
+      *flag = 1;
       goto deallocate;
     }
     F77_CALL(dsytri)(&uplo, &p, grad2c, &p, ipiv, work, &status);
-    if (status) {
-      REprintf("Could not invert coefficient Hessian.\n");
-      *flag = -1;
+    if (status) { /* can't invert coefficient Hessian */
+      *flag = 1;
       goto deallocate;
     }
     for (i = 0; i < p; i++) {
@@ -481,15 +479,13 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       if (j < i) varc[j + i*p] = varc[i + j*p];
     }
   F77_CALL(dpotrf)(&uplo, &p, varc, &p, &status);
-  if (status) {
-    REprintf("Could not factorize profile information.\n");
-    *flag = 1;
+  if (status) { /* can't factorize profile information */
+    *flag = 2;
     goto deallocate;
   }
   F77_CALL(dpotri)(&uplo, &p, varc, &p, &status);
-  if (status) {
-    REprintf("Could not invert profile information.\n");
-    *flag = 1;
+  if (status) { /* can't invert profile information */
+    *flag = 2;
     goto deallocate;
   }
   for (i = 0; i < p; i++) {

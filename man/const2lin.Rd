@@ -1,45 +1,56 @@
 \name{const2lin}
 \alias{const2lin}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Convert piecewise constant values to piecewise linear values}
+
+\title{Accumulate values from piecewise constant function of time}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Returns values from the corresponding piecewise linear cumulant
+  given values from a piecewise constant function of time.
 }
-\usage{
-const2lin(const, time = NULL, by = NULL)
-}
-%- maybe also 'usage' for other objects documented here.
+
+\usage{const2lin(const, time = NULL, stratum = NULL)}
+
 \arguments{
   \item{const}{
-%%     ~~Describe \code{const} here~~
-}
+    A matrix whose columns give the (possibly multivariate)
+    function values, time points and strata.
+  }
   \item{time}{
-%%     ~~Describe \code{time} here~~
+    \code{NULL} (default) or a positive integer indicating column index
+    of the time variable in \code{const}. If \code{stratum} is non-\code{NULL},
+    \code{time} defaults to \code{stratum - 1}. Otherwise \code{time}
+    defaults to \code{ncol(const)}.
+  }
+  \item{stratum}{
+    \code{NULL} (default) or a positive integer indicating column index of the
+    stratifying variable in \code{const}. If \code{stratum} is
+    \code{NULL}, \code{const}
+    is assumed unstratified.
 }
-  \item{by}{
-%%     ~~Describe \code{by} here~~
 }
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
+
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  A matrix of the same dimension as \code{const}.
 }
-\references{
-%% ~put references to the literature/web site here ~
+
+\details{
+This is a utility function for the routines referenced below.
 }
-\author{
-%%  ~~who you are~~
+
+\seealso{
+  \code{\link{coxic}}
 }
-\note{
-%%  ~~further notes~~
+
+\examples{
+set.seed(0)
+d <- rdualrc(rprog(200)$data)$data
+fit <-
+  coxic(Surv(start, stop, status) ~ z3 + cluster(id) + trans(from, to),
+        data = d)
+fit$bhaz
+haz <- lin2const(fit$bhaz, stratum = 3)
+Haz <- const2lin(haz, stratum = 3)
+all(Haz == fit$bhaz)
 }
-\seealso{}
-\examples{}
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }
+
+\keyword{survival}
