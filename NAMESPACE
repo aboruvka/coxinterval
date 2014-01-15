@@ -1,5 +1,5 @@
 useDynLib(coxinterval)
-import(Matrix, quadprog, survival, timereg)
+import(Matrix, parallel, survival, timereg)
 export("coxic",
        "coxic.control",
        "coxic.data",

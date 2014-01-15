@@ -1,16 +1,16 @@
 #include "matrix.h"
+#include "rcplex.h"
 
 #ifndef max
 #  define max(a, b) ((a) > (b) ? (a) : (b))
 #  define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-static int n, p, q, d, dq, r;
+static int n, p, q, d, dq;
 static double *grad1c, *grad2c, *grad3c, *grad1L, *grad2L;
 
 static double
-loglik(double *c, double *L, double *z, double *w, int *J)
-{
+loglik(double *c, double *L, double *z, double *w, int *J) {
   int i, j, k, l, m;
   double zc[n], wL[n*d], A[n*d], S[n*d], U[n*d], prob[n], grad1[n], grad2[n],
     grad3[n], ll = 0, temp;
@@ -101,44 +101,30 @@ loglik(double *c, double *L, double *z, double *w, int *J)
   return ll;
 }
 
-/* call quadprog routine, avoiding changes to constraint */
-static void
-qp(double *lin, double *quad, double *ineqmat, double *soln, int *status) {
-  int i, j, iact[r], nact, iter[2];
-  double amat[dq * r], lagr[r], crval, bvec[r],
-    work[2*dq + min(dq, r) *(min(dq, r) + 5) / 2 + 2*r + 1];
-  for (i = 0; i < dq; i++)
-    for (j = 0; j < r; j++) {
-      bvec[j] = 0;
-      amat[i*r + j] = ineqmat[i + j*dq];
-    }
-  F77_CALL(qpgen2)(quad, lin, dq, dq, soln, lagr, &crval, amat, bvec, dq, r,
-                   0, iact, &nact, iter, work, &status);
-}
-
 void
 coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
            double *w, int *ncolw, int *J, double *A, int *nrowA, double *eps,
            int *maxiter, double *stepfrac, double *stepscale, double *typc,
-           double *supc, double *var, double *ll, int *numiter, double *fenchel,
-           double *maxnorm, double *cputime, int *flag)
-{
+           double *supc, int *trace, int *maxthread, double *var, double *ll,
+           int *numiter, double *fenchel, double *maxnorm, double *cputime,
+           int *flag) {
   clock_t begtime, endtime;
   char uplo = 'U', errmsg[1024];
-  int i, j, k, l, m, status = 0, iter = 0, steppow;
+  int i, j, k, l, m, status = 0, r = *nrowA, iter = 0, steppow, screen = *trace,
+    threads = *maxthread;
   double stepinc, *stepc, *candc, *fixc, *stepL, *candL, *pL, *lp, candll, pll,
     *pllvec, *pllmat, *curv, *delta;
   n = *nrowz;
   p = *ncolz;
   q = *ncolw;
   d = *nrowL;
-  dq = d * q;
+  dq = d*q;
   r = *nrowA;
   grad1c = Calloc(p, double);
-  grad2c = Calloc(p * p, double);
+  grad2c = Calloc(p*p, double);
   grad3c = Calloc(p, double);
   grad1L = Calloc(dq, double);
-  grad2L = Calloc(dq * dq, double);
+  grad2L = Calloc(dq*dq, double);
   stepc = Calloc(p, double);
   candc = Calloc(p, double);
   lp = Calloc(dq, double);
@@ -146,10 +132,10 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
   candL = Calloc(dq, double);
   fixc = Calloc(p, double);
   pL = Calloc(dq, double);
-  curv = Calloc(p * p, double);
-  delta = Calloc(p * p, double);
+  curv = Calloc(p*p, double);
+  delta = Calloc(p*p, double);
   pllvec = Calloc(p, double);
-  pllmat = Calloc(p * p, double);
+  pllmat = Calloc(p*p, double);
   begtime = clock();
   ll[iter] = loglik(c, L, z, w, J);
   do { /* constrained Netwon-Raphson method */
@@ -175,12 +161,12 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
     }
     /* (negative) linear objective coefficient in QP */
     for (i = 0; i < dq; i++) {
-      lp[i] = -grad1L[i];
+      lp[i] = grad1L[i];
       for (j = 0; j < dq; j++)
-        lp[i] += grad2L[i + j*dq] * L[j];
+        lp[i] -= grad2L[i + j*dq] * L[j];
     }
     /* candidate step for cumulative regression function L */
-    qp(lp, grad2L, A, candL, &status);
+    status = qpcplex(dq, r, lp, grad2L, A, candL, screen, threads, errmsg);
     if (status) {
       *flag = 2;
       goto deallocate;
@@ -240,12 +226,13 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
           pll = candll;
           /* (negative) linear objective coefficient in QP */
           for (l = 0; l < dq; l++) {
-            lp[l] = -grad1L[l];
+            lp[l] = grad1L[l];
             for (m = 0; m < dq; m++)
-              lp[l] += grad2L[l + m*dq] * pL[m];
+              lp[l] -= grad2L[l + m*dq] * pL[m];
           }
           /* candidate step for profile likelihood maximizer pL */
-          qp(lp, grad2L, A, candL, &status);
+          status =
+            qpcplex(dq, r, lp, grad2L, A, candL, screen, threads, errmsg);
           if (status) goto outer;
           stepinc = 0;
           for (l = 0; l < dq; l++) {

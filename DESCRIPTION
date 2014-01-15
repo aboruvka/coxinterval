@@ -2,14 +2,14 @@ Package: coxinterval
 Title: Cox-type models for interval-censored data
 Version: 0.1-1
 Date: 2013-09-11
-Depends: Matrix, quadprog, survival, timereg, R (>= 2.13.0)
-LinkingTo: quadprog
+Depends: Matrix, parallel, survival, timereg, R (>= 2.13.0)
 LazyData: Yes
 LazyLoad: Yes
 Author: Audrey Boruvka
 Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
 Description: Fits Cox-type models based on interval-censored data from a
              progressive process
+SystemRequirements: IBM ILOG CPLEX (>= 12.5)
 License: GPL (>= 2)
 URL: http://github.com/aboruvka/coxinterval
 BugReports: http://github.com/aboruvka/coxinterval/issues

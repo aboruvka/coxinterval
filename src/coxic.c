@@ -12,8 +12,7 @@ static double *newh, *grad1c, *grad2c, *grad3c, *grad1h;
 
 /* piecewise function for baseline intensity */
 static double
-H(double *h, double *t, int j, double beg, double end)
-{
+H(double *h, double *t, int j, double beg, double end) {
   int i;
   double val = 0;
   for (i = 1; i < d[j]; i++)
@@ -24,8 +23,7 @@ H(double *h, double *t, int j, double beg, double end)
 
 /* ... length */
 static double
-L(double *t, int j, int k, double beg, double end)
-{
+L(double *t, int j, int k, double beg, double end) {
   double val;
   val = max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
   return val;
@@ -33,8 +31,7 @@ L(double *t, int j, int k, double beg, double end)
 
 /* ... indicator */
 static int
-I(double *t, int type, int k, double y)
-{
+I(double *t, int type, int k, double y) {
   int val;
   val = t[k - 1 + D[type]] <= y && y < t[k + D[type]];
   return val;
@@ -42,8 +39,7 @@ I(double *t, int type, int k, double y)
 
 static double
 loglik(double *c, double *h, double *z, double *t, double *s, double *left,
-       double *right, double *u, double *v, int *contrib, int *absorb)
-{
+       double *right, double *u, double *v, int *contrib, int *absorb) {
   int i, j, k, l, cens;
   double ll = 0, prob, prob1, prob2, A01, A02, A12, a01, a02, a12, h02, h12,
     rsk[M], g1c1[p], g1c2[p], g2c1[p*p], g2c2[p*p], g3c1[p], g3c2[p], g1cr[p],
@@ -301,8 +297,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
       double *eps, int *maxiter, double *typc, double *supc, double *stepfrac,
       int *numiter, double *fenchel, double *maxnorm, double *cputime,
-      int *flag)
-{
+      int *flag) {
   clock_t begtime, endtime;
   char uplo = 'U';
   int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork;

@@ -1,1 +1,11 @@
-PKG_LIBS = ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS}
+SYSTEM      = x86-64_sles10_4.1
+LIBFORMAT   = static_pic
+CPLEXDIR    = /opt/ibm/ILOG/CPLEX_Studio125/cplex
+COPT        = -m64 -fPIC
+CPLEXLIBDIR = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
+CPLEXINCDIR = $(CPLEXDIR)/include
+CLNFLAGS    = -L$(CPLEXLIBDIR) -lcplex -lm -pthread
+
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(CLNFLAGS)
+PKG_CFLAGS = $(COPT) -I$(CPLEXINCDIR) -L$(CPLEXLIBDIR) -lm -pthread
+
