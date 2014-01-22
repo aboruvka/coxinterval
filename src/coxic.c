@@ -29,18 +29,10 @@ L(double *t, int j, int k, double beg, double end) {
   return val;
 }
 
-/* ... indicator */
-static int
-I(double *t, int type, int k, double y) {
-  int val;
-  val = t[k - 1 + D[type]] <= y && y < t[k + D[type]];
-  return val;
-}
-
 static double
 loglik(double *c, double *h, double *z, double *t, double *s, double *left,
        double *right, double *u, double *v, int *contrib, int *absorb) {
-  int i, j, k, l, cens;
+  int i, j, k, l;
   double ll = 0, prob, prob1, prob2, A01, A02, A12, a01, a02, a12, h02, h12,
     rsk[M], g1c1[p], g1c2[p], g2c1[p*p], g2c2[p*p], g3c1[p], g3c2[p], g1cr[p],
     g2cr[p*p], g3cr[p], g1cn[p], g2cn[p*p], g3cn[p], g1cd[p], g2cd[p*p],

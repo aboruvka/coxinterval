@@ -9,7 +9,7 @@ Author: Audrey Boruvka
 Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
 Description: Fits Cox-type models based on interval-censored data from a
              progressive process
-SystemRequirements: IBM ILOG CPLEX (>= 12.5)
+SystemRequirements: IBM ILOG CPLEX (>= 12.5, 32 bit with Windows)
 License: GPL (>= 2)
 URL: http://github.com/aboruvka/coxinterval
 BugReports: http://github.com/aboruvka/coxinterval/issues

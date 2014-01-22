@@ -1,0 +1,16 @@
+ifndef CPLEXDIR
+CPLEXDIR = $(shell ls -d c:/PROGRA~2/IBM/ILOG/CPLEX* | head -n1)
+endif
+ifndef CPLEXDIR
+CPLEXDIR = $(shell ls -d c:/PROGRA~1/IBM/ILOG/CPLEX* | head -n1)
+endif
+ifndef CPLEXLIBDIR
+CPLEXLIBDIR = $(shell ls -d $(CPLEXDIR)/cplex/lib/*/* | head -n1)
+endif
+CPLEXINDIR = $(wildcard $(CPLEXDIR)/cplex/include)
+CPLEXLIB = $(shell basename $(shell ls $(CPLEXLIBDIR)/*.lib | head -n1))
+CPLEXVER = $(basename $(subst cplex, , $(CPLEXLIB)))
+quote = "
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) -I$(quote)$(CPLEXINDIR)$(quote)
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
+	   -L$(quote)$(CPLEXLIBDIR)$(quote) -lcplex$(CPLEXVER) -lm

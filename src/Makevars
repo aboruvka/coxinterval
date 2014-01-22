@@ -1,11 +1,17 @@
-SYSTEM      = x86-64_sles10_4.1
-LIBFORMAT   = static_pic
-CPLEXDIR    = /opt/ibm/ILOG/CPLEX_Studio125/cplex
-COPT        = -m64 -fPIC
-CPLEXLIBDIR = $(CPLEXDIR)/lib/$(SYSTEM)/$(LIBFORMAT)
-CPLEXINCDIR = $(CPLEXDIR)/include
-CLNFLAGS    = -L$(CPLEXLIBDIR) -lcplex -lm -pthread
-
-PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(CLNFLAGS)
-PKG_CFLAGS = $(COPT) -I$(CPLEXINCDIR) -L$(CPLEXLIBDIR) -lm -pthread
-
+ifndef CPLEXDIR
+ifeq ($(UNAME), "Darwin")
+CPLEXDIR = /Users/*/Applications/IBM/ILOG/CPLEX*
+else
+CPLEXDIR = /opt/*/ILOG/CPLEX*
+endif
+endif
+ifndef CPLEXLIBDIR
+CPLEXLIBDIR = $(shell ls -d $(CPLEXDIR)/cplex/lib/*/* | head -n1)
+endif
+ifndef CLNFLAGS
+CLNFLAGS = -lcplex -lm
+endif
+CPLEXINDIR = $(wildcard $(CPLEXDIR)/cplex/include)
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) -I$(CPLEXINDIR)
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
+	-L$(CPLEXLIBDIR) $(CLNFLAGS)

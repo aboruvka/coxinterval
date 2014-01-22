@@ -267,12 +267,12 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
     }
   F77_CALL(dpotrf)(&uplo, &p, var, &p, &status);
   if (status) {
-    flag = 2;
+    *flag = 2;
     goto deallocate;
   }
   F77_CALL(dpotri)(&uplo, &p, var, &p, &status);
   if (status) {
-    flag = 2;
+    *flag = 2;
     goto deallocate;
   }
 outer:
