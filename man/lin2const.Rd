@@ -1,49 +1,49 @@
 \name{lin2const}
 \alias{lin2const}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Convert piecewise linear values to piecewise constant values}
+
+\title{Derivative values from a piecewise linear function of time}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Returns values from the piecewise constant derivative corresponding to
+  given values from a piecewise linear function of time.
 }
-\usage{
-lin2const(lin, time = NULL, stratum = NULL)
-}
-%- maybe also 'usage' for other objects documented here.
+
+\usage{lin2const(lin, time = NULL, stratum = NULL)}
+
 \arguments{
   \item{lin}{
-%%     ~~Describe \code{lin} here~~
-}
+    A matrix whose columns give the (possibly multivariate) piecewise
+    linear function values, time points and strata.
+  }
   \item{time}{
-%%     ~~Describe \code{time} here~~
-}
+    \code{NULL} (default) or a positive integer indicating column index
+    of the time variable in \code{lin}. If \code{stratum} is
+    non-\code{NULL}, \code{time} defaults to \code{stratum-1}. Otherwise
+    \code{time} defaults to \code{ncol(lin)}.
+  }
   \item{stratum}{
-%%     ~~Describe \code{stratum} here~~
+    \code{NULL} (default) or a positive integer indicating column index
+    of the stratifying variable in \code{lin}. If \code{stratum} is
+    \code{NULL}, \code{lin} is assumed unstratified.
+  }
 }
-}
+
+\value{A matrix of the same dimension as \code{lin}.}
+
 \details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+  This is a utility function for \code{\link{coxic}}.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\seealso{\code{const2lin}}
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\examples{
+data(dualrc)
+fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from,
+to) + z, data = dualrc)
+fit$bhaz
+haz <- lin2const(fit$bhaz, stratum = 3)
+Haz <- const2lin(haz, stratum = 3)
+all(Haz == fit$bhaz)
 }
-\examples{}
-\keyword{ ~kwd1 }
+
+\keyword{survival}

@@ -16,13 +16,6 @@ export("coxic",
        "inside",
        "is.subset",
        "maximalint",
-       "rdualic",
-       "rdualic.type",
-       "rdualrc",
-       "rdualrc.type",
-       "rprog",
-       "rsched",
-       "rsurv",
        "trans",
        "na.coxic")
 S3method(print, coxic)

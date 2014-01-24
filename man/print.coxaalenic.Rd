@@ -1,25 +1,23 @@
-\name{jump2step}
-\alias{jump2step}
-
-\title{Convert jumps to cumulative values}
-
+\name{print.coxaalenic}
+\alias{print.coxaalenic}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{Pretty printer}
 \description{
-  Returns values from the piecewise linear cumulant corresponding to
-  given values from a piecewise constant function of time.
+%%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-jump2step(jump, time = NULL, by = NULL)
+print.coxaalenic(x, digits = max(options()$digits - 4, 3), ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{jump}{
-%%     ~~Describe \code{jump} here~~
+  \item{x}{
+%%     ~~Describe \code{x} here~~
 }
-  \item{time}{
-%%     ~~Describe \code{time} here~~
+  \item{digits}{
+%%     ~~Describe \code{digits} here~~
 }
-  \item{by}{
-%%     ~~Describe \code{by} here~~
+  \item{\dots}{
+%%     ~~Describe \code{\dots} here~~
 }
 }
 \details{
@@ -48,4 +46,3 @@ jump2step(jump, time = NULL, by = NULL)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{}
-\keyword{ ~kwd1 }
