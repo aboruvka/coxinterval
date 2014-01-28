@@ -7,19 +7,29 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
-  specials <- c("prop")
+  specials <- c("prop", "strata", "cluster", "tt")
   ftrm <- if (missing(data)) terms(formula, specials)
           else terms(formula, data = data, specials)
+  if (with(attr(ftrm, "specials"), length(c(strata, cluster, tt))))
+    stop("The 'strata', 'cluster' and 'tt' terms not supported")
   ## store column indices of terms in model frame
   irsp <- attr(ftrm, "response")
   iprp <- attr(ftrm, "specials")$prop
   iadd <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, iprp)]
-  if (!length(c(iadd, iprp))) stop("Model has no covariates")
+  if (!length(iprp)) stop("Model requires 'prop' terms")
   mf$formula <- ftrm
   mf$na.action <- as.name("na.omit")
   mf <- eval(mf, parent.frame())
+  mt <- attr(mf, "terms")
+  mm <- model.matrix(mt, mf)
+  ## find proportional and additive terms in model matrix
+  asgn <- frame.assign(mf, mt, mm)
+  jprp <- subset.data.frame(asgn, mfind %in% iprp)$mmind
+  ## additive term always includes intercept
+  if (length(iadd))
+    jadd <- c(1, subset.data.frame(asgn, mfind %in% iadd)$mmind)
+  else jadd <- 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
-  mf[, irsp]
   ## Surv converts interval2 to interval
   if (attr(mf[, irsp], "type") != "interval"
       | !(all(mf[, irsp][, 3] %in% c(0, 3))))
@@ -53,12 +63,12 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     }
   }
   n <- nrow(mf)
-  nadd <- length(iadd)
-  nprp <- length(iprp)
+  nadd <- length(jadd)
+  nprp <- length(jprp)
   time <- maximalint(mf[, irsp])
   ntime <- nrow(time$int) - 1
   time$int <- time$int[1:ntime, ]
-  A <- coxaalenic.ineq(mf[, iadd], ntime)
+  A <- coxaalenic.ineq(mm[, jadd[-1]], ntime)
   ## set parameters controlling model fit
   control <- if (missing(control)) coxaalenic.control(...)
              else do.call(coxaalenic.control, control)
@@ -67,7 +77,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     init <- list()
     init$coef <- rep(0, nprp)
     init$bhaz <-
-      rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd, ntime))
+      rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd - 1, ntime))
     if (rcinit & length(rcfit))
       if (!is.null(rcfit[[1]])) init$coef <- rcfit[[1]]$coef
   }
@@ -77,11 +87,11 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
             coef = as.double(init$coef),
             bhaz = as.double(init$bhaz),
             as.integer(ntime),
-            as.double(as.matrix(mf[, iprp])),
+            as.double(as.matrix(mm[, jprp])),
             as.integer(n),
             as.integer(nprp),
-            as.double(as.matrix(cbind(1, mf[, iadd]))),
-            as.integer(nadd + 1),
+            as.double(as.matrix(mm[, jadd])),
+            as.integer(nadd),
             as.integer(time$ind),
             as.double(A),
             as.integer(nrow(A)),
@@ -112,12 +122,12 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
-  names(fit$coef) <- names(mf)[iprp]
+  names(fit$coef) <- names(mm)[jprp]
   var <- matrix(fit$var, nprp)
-  rownames(var) <- colnames(var) <- names(mf)[iprp]
-  bhaz <- cbind(time$int[, 2], t(matrix(fit$bhaz, nadd + 1)))
+  rownames(var) <- colnames(var) <- names(mm)[jprp]
+  bhaz <- cbind(time$int[, 2], t(matrix(fit$bhaz, nadd)))
   bhaz <- as.data.frame(rbind(0, bhaz))
-  names(bhaz) <- c("time", "intercept", names(mf[iadd]))
+  names(bhaz) <- c("time", names(mm)[jadd])
   censor.rate <- c(sum(mf[, irsp][, 1] == 0),
                    sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
                    sum(mf[, irsp][, 3] == 0)) / n

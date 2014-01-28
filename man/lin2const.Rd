@@ -4,8 +4,8 @@
 \title{Derivative values from a piecewise linear function of time}
 
 \description{
-  Returns values from the piecewise constant derivative corresponding to
-  given values from a piecewise linear function of time.
+  A utility function for \code{\link{coxic}} that returns the derivative
+  of a piecewise linear function of time, evaluated at given values.
 }
 
 \usage{lin2const(lin, time = NULL, stratum = NULL)}
@@ -30,9 +30,7 @@
 
 \value{A matrix of the same dimension as \code{lin}.}
 
-\details{
-  This is a utility function for \code{\link{coxic}}.
-}
+\details{This is a utility function for \code{\link{coxic}}.}
 
 \seealso{\code{const2lin}}
 

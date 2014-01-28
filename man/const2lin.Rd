@@ -4,9 +4,8 @@
 \title{Integral values from a piecewise constant function of time}
 
 \description{
-  Returns values from the piecewise linear cumulant
-  corresponding to given values from a piecewise constant function of
-  time.
+  A utility function for \code{\link{coxic}} that returns the integral
+  of a piecewise constant function of time, evaluated at given values.
 }
 
 \usage{const2lin(const, time = NULL, stratum = NULL)}
@@ -14,7 +13,7 @@
 \arguments{
   \item{const}{
     A matrix whose columns give the (possibly multivariate) piecewise
-    constant function values, time points and strata.
+    constant function values, corresponding time points and strata.
   }
   \item{time}{
     \code{NULL} (default) or a positive integer indicating column index
@@ -30,10 +29,6 @@
 }
 
 \value{A matrix of the same dimension as \code{const}.}
-
-\details{
-  This is a utility function for \code{\link{coxic}}.
-}
 
 \seealso{\code{lin2const}}
 

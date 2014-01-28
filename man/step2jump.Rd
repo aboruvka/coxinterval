@@ -1,48 +1,35 @@
 \name{step2jump}
 \alias{step2jump}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Convert cumulative values to a step function}
+
+\title{Increments from a step function of time}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  A utility function that returns the increments in a step function of time.
 }
-\usage{
-step2jump(step, time = NULL, by = NULL)
-}
-%- maybe also 'usage' for other objects documented here.
+
+\usage{step2jump(step, time = NULL, stratum = NULL)}
+
 \arguments{
   \item{step}{
-%%     ~~Describe \code{step} here~~
-}
+    A matrix whose columns give the (possibly multivariate) step
+    function values, corresponding time points and strata.
+  }
   \item{time}{
-%%     ~~Describe \code{time} here~~
-}
-  \item{by}{
-%%     ~~Describe \code{by} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+    \code{NULL} (default) or a positive integer indicating column index
+    of the time variable in \code{step}. If \code{stratum} is
+    non-\code{NULL}, \code{time} defaults to \code{stratum-1}. Otherwise
+    \code{time} defaults to \code{ncol(step)}.
+  }
+  \item{stratum}{
+    \code{NULL} (default) or a positive integer indicating column index
+    of the stratifying variable in \code{step}. If \code{stratum} is
+    \code{NULL}, \code{step} is assumed unstratified.
+  }
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\value{A matrix of the same dimension as \code{step}.}
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\seealso{\code{jump2step}}
+
+\examples{
 }
-\examples{}
