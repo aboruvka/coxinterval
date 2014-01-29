@@ -4,7 +4,7 @@
 \title{Cox-Aalen model for interval-censored data}
 
 \description{
-  Fits a Cox-Aalen model to interval-censored survival data with fixed
+  Fit a Cox-Aalen model to interval-censored survival data with fixed
   covariates.
 }
 
@@ -72,6 +72,9 @@ NULL, rcinit = FALSE, control, close.cplex = FALSE, ...)
 }
 
 \references{
+  Boruvka, A. and Cook, R. J. (2013)
+  A Cox-Aalen model for interval-censored data.
+
   Martinussen, T. and Scheike, T. H. (2006)
   \emph{Dynamic Regression Models for Survival Data.}
   Springer.

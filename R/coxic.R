@@ -1,6 +1,6 @@
 ### fit a Cox model to an interval-censored Markov illness-death process
 coxic <- function(formula, data = parent.frame(), subset, init = NULL,
-                  rcprog = NULL, rcinit = FALSE, control, ...) {
+                  formula.coxph = NULL, init.coxph = FALSE, control, ...) {
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   datargs <- c("formula", "data", "subset")
@@ -50,36 +50,41 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   mf <- mf[ord, ]
   mm <- mm[ord, ]
   ## fit right-censored data alternatives with survival's coxph
-  if (censor == "right")
-    rcprog <- if (is.null(rcprog)) list(cl$formula) else c(cl$formula, rcprog)
-  rcfit <- list(NULL)
-  if (!is.null(rcprog))
-    for (i in 1:length(rcprog)) {
-      rcfit[[i]] <- cl
-      rcfit[[i]]$formula <- update.formula(rcfit[[i]]$formula, rcprog[[i]])
+  if (censor == "right") {
+    formula.coxph <-
+      if (is.null(formula.coxph)) list(cl$formula)
+      else c(cl$formula, formula.coxph)
+  }
+  fit.coxph <- list(NULL)
+  if (!is.null(formula.coxph))
+    for (i in 1:length(formula.coxph)) {
+      fit.coxph[[i]] <- cl
+      fit.coxph[[i]]$formula <-
+        update.formula(fit.coxph[[i]]$formula, formula.coxph[[i]])
       temp <- paste(gsub("trans\\(", "strata\\(",
-                         deparse(rcfit[[i]]$formula[[3]])), collapse = "")
-      rcfit[[i]]$formula <-
-        update.formula(rcfit[[i]]$formula, as.formula(paste("~", temp)))
-      temp <-
-        list(formula = rcfit[[i]]$formula, data = data, na.action = "na.omit")
+                         deparse(fit.coxph[[i]]$formula[[3]])), collapse = "")
+      fit.coxph[[i]]$formula <-
+        update.formula(fit.coxph[[i]]$formula, as.formula(paste("~", temp)))
+      temp <- list(formula = fit.coxph[[i]]$formula, data = data,
+                   na.action = "na.omit")
       if (!missing(subset)) temp <- c(temp, subset)
-      invisible(capture.output(rcfit[[i]] <- try(do.call("coxph", temp))))
-      if (inherits(rcfit[[i]], "try-error"))
-        rcfit[[i]] <- list(call = temp, coef = NULL, var = NULL, bhaz = NULL,
-                           loglik = NULL, m = NULL, na.action = NULL)
+      invisible(capture.output(fit.coxph[[i]] <- try(do.call("coxph", temp))))
+      if (inherits(fit.coxph[[i]], "try-error"))
+        fit.coxph[[i]] <-
+          list(call = temp, coef = NULL, var = NULL, bhaz = NULL, loglik = NULL,
+               m = NULL, na.action = NULL)
       else {
-        rcfit[[i]]$bhaz <- basehaz(rcfit[[i]], centered = FALSE)
-        rcfit[[i]]$m = rcfit[[i]]$n
-        if (censor == "counting" & i == 1) {
-          rownames(rcfit[[i]]$var) <-
-            colnames(rcfit[[i]]$var) <- names(mf)[icov]
-          names(rcfit[[i]]$bhaz) <- c("hazard", "time", "trans")
+        fit.coxph[[i]]$bhaz <- basehaz(fit.coxph[[i]], centered = FALSE)
+        fit.coxph[[i]]$m = fit.coxph[[i]]$n
+        if (censor == "right" & i == 1) {
+          rownames(fit.coxph[[i]]$var) <-
+            colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
+          names(fit.coxph[[i]]$bhaz) <- c("hazard", "time", "trans")
         }
-        rcfit[[i]]$call$data <- cl$data
+        fit.coxph[[i]]$call$data <- cl$data
       }
     }
-  else rcfit <- NULL
+  else fit.coxph <- NULL
   ## set parameters controlling model fit
   control <- if (missing(control)) coxic.control(...)
              else do.call(coxic.control, control)
@@ -99,32 +104,33 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   names(tvec) <- NULL
   svec <- sort(unique(tvec))
   ## initial values
-  rcinit <- rcinit & !is.null(rcfit[[1]]) & is.null(init)
+  init.coxph <- init.coxph & !is.null(fit.coxph[[1]]) & is.null(init)
   if (is.null(init)) {
     init <- list()
     init$coef <- rep(0, ncov)
-    init$bhaz <- tvec / max(d$v)
+    init$basehaz <- tvec / max(d$v)
     bhaz <- NULL
   }
   else {
     names(init) <- c("coef", "bhaz")
-    bhaz <- init$bhaz
+    bhaz <- init$basehaz
   }
-  if (rcinit) {
-    init$coef <- rcfit[[1]]$coef
-    bhaz <- rcfit[[1]]$bhaz
+  if (init.coxph) {
+    init$coef <- fit.coxph[[1]]$coef
+    bhaz <- fit.coxph[[1]]$bhaz
   }
   if (!is.null(bhaz)) {
     bhaz <- step2jump(bhaz, by = 3)
     bhaz <- jump2step(bhaz[bhaz[, 1] > 0, ], by = 3)
-    init$bhaz <- do.call("c", mapply(linapprox, split(bhaz[, 2:1], bhaz[, 3]),
-                                     part, SIMPLIFY = FALSE))
+    init$basehaz <-
+      do.call("c", mapply(linapprox, split(bhaz[, 2:1], bhaz[, 3]), part,
+                          SIMPLIFY = FALSE))
   }
-  init$bhaz <- cbind(init$bhaz, tvec, rep(c(1, 2, 12), times = npart))
-  rownames(init$bhaz) <- NULL
+  init$basehaz <- cbind(init$basehaz, tvec, rep(c(1, 2, 12), times = npart))
+  rownames(init$basehaz) <- NULL
   fit <- .C("coxic",
             coef = as.double(init$coef),
-            bhaz = as.double(lin2const(init$bhaz, stratum = 3)[, 1]),
+            bhaz = as.double(lin2const(init$basehaz, stratum = 3)[, 1]),
             as.integer(ncov),
             as.integer(npart),
             as.double(tvec),
@@ -164,10 +170,11 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   names(fit$coef) <- colnames(mm)[jcov]
   var <- matrix(fit$var, ncov)
   rownames(var) <- colnames(var) <- colnames(mm)[jcov]
-  init$bhaz <- data.frame(init$bhaz)
-  init$rcinit <- rcinit
-  bhaz <- data.frame(const2lin(cbind(fit$bhaz, init$bhaz[, -1]), stratum = 3))
-  names(bhaz) <- names(init$bhaz) <- c("hazard", "time", "trans")
+  init$basehaz <- data.frame(init$basehaz)
+  init$init.coxph <- init.coxph
+  bhaz <-
+    data.frame(const2lin(cbind(fit$bhaz, init$basehaz[, -1]), stratum = 3))
+  names(bhaz) <- names(init$basehaz) <- c("hazard", "time", "trans")
   bhaz$trans <- as.factor(bhaz$trans)
   levels(bhaz$trans) <- attr(mf, "types")
   censor.rate <- with(d, c(sum(contrib != 0 & absorb), sum(contrib == 0)))
@@ -180,7 +187,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
               coef = fit$coef, var = var, basehaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               fenchel = fit$fenchel, maxnorm = fit$maxnorm,
-              cputime = fit$cputime, rcfit = rcfit,
+              cputime = fit$cputime, fit.coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
   class(fit) <- "coxic"
