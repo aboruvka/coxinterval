@@ -168,7 +168,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
     if (censor == "right") c("exact", "single", "double")
     else c("status and survival", "only status", "neither")
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf), p = ncov,
-              coef = fit$coef, var = var, bhaz = bhaz, init = init,
+              coef = fit$coef, var = var, basehaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               fenchel = fit$fenchel, maxnorm = fit$maxnorm,
               cputime = fit$cputime, rcfit = rcfit,

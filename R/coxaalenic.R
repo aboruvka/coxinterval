@@ -24,11 +24,10 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   mm <- model.matrix(mt, mf)
   ## find proportional and additive terms in model matrix
   asgn <- frame.assign(mf, mt, mm)
-  jprp <- subset.data.frame(asgn, mfind %in% iprp)$mmind
+  jprp <- subset.data.frame(asgn, mf %in% iprp)$mm
   ## additive term always includes intercept
-  if (length(iadd))
-    jadd <- c(1, subset.data.frame(asgn, mfind %in% iadd)$mmind)
-  else jadd <- 1
+  jadd <- if (length(iadd)) c(1, subset.data.frame(asgn, mf %in% iadd)$mm)
+          else 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
   ## Surv converts interval2 to interval
   if (attr(mf[, irsp], "type") != "interval"
@@ -122,21 +121,21 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
-  names(fit$coef) <- names(mm)[jprp]
+  names(fit$coef) <- colnames(mm)[jprp]
   var <- matrix(fit$var, nprp)
-  rownames(var) <- colnames(var) <- names(mm)[jprp]
+  rownames(var) <- colnames(var) <- colnames(mm)[jprp]
   bhaz <- cbind(time$int[, 2], t(matrix(fit$bhaz, nadd)))
   bhaz <- as.data.frame(rbind(0, bhaz))
-  names(bhaz) <- c("time", names(mm)[jadd])
+  names(bhaz) <- c("time", colnames(mm)[jadd])
   censor.rate <- c(sum(mf[, irsp][, 1] == 0),
                    sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
                    sum(mf[, irsp][, 3] == 0)) / n
   names(censor.rate) <- c("left", "interval", "right")
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
-              bhaz = bhaz, init = init, iter = fit$iter,
+              basehaz = bhaz, init = init, iter = fit$iter,
               loglik = n * fit$loglik[1:(fit$iter + 1)],
               fenchel = fit$fenchel, maxnorm = fit$maxnorm,
-              cputime = fit$cputime, control = control, rcfit = rcfit,
+              cputime = fit$cputime, rcfit = rcfit,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
   class(fit) <- "coxaalenic"

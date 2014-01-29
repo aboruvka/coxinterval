@@ -1,62 +1,94 @@
 \name{coxaalenic}
 \alias{coxaalenic}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Fit a Cox model to an interval-censored Markov illness-death process}
+
+\title{Cox-Aalen model for interval-censored data}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Fits a Cox-Aalen model to interval-censored survival data with fixed
+  covariates.
 }
+
 \usage{
-coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcprog = NULL, rcinit = FALSE, control, ...)
+coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv = NULL, rcinit = FALSE, control, ...)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{formula}{
-%%     ~~Describe \code{formula} here~~
-}
+  }
   \item{data}{
-%%     ~~Describe \code{data} here~~
-}
+  }
   \item{subset}{
-%%     ~~Describe \code{subset} here~~
-}
+  }
   \item{init}{
-%%     ~~Describe \code{init} here~~
-}
-  \item{rcprog}{
-%%     ~~Describe \code{rcprog} here~~
-}
+  }
+  \item{rcsurv}{
+  }
   \item{rcinit}{
-%%     ~~Describe \code{rcinit} here~~
-}
+  }
   \item{control}{
-%%     ~~Describe \code{control} here~~
-}
+  }
   \item{\dots}{
-%%     ~~Describe \code{\dots} here~~
-}
+  }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
 }
+
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  \item{call}{
+  }
+  \item{n}{
+  }
+  \item{p}{
+  }
+  \item{coef}{
+  }
+  \item{var}{
+  }
+  \item{basehaz}{
+  }
+  \item{init}{
+  }
+  \item{iter}{
+  }
+  \item{loglik}{
+  }
+  \item{fenchel}{
+  }
+  \item{maxnorm}{
+  }
+  \item{cputime}{
+  }
+  \item{rcfit}{
+  }
+  \item{na.action}{
+  }
+  \item{censor.rate}{
+  }
+  \item{control}{
+  }
 }
+
 \references{
-%% ~put references to the literature/web site here ~
+  Martinussen, T. and Scheike, T. H. (2006)
+  \emph{Dynamic Regression Models for Survival Data.}
+  Springer.
+
+  Scheike, T. H. and Zhang, M.-J. (2002)
+  An additive-multiplicative Cox-Aalen regression model.
+  \emph{Scandinavian Journal of Statistics}, \bold{29}, 75--88.
 }
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+
 \seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
-\examples{}
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }
+
+\examples{
+# Fit a Cox model to the breast cosmesis data set
+data(cosmesis)
+fit <- coxaalenic(Surv(left, right, type='interval2') ~ prop(treat), data=cosmesis)
+fit
+plot(fit$basehaz, type="s")
+
+}
+
+\keyword{survival}

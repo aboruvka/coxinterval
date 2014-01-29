@@ -38,10 +38,10 @@
 data(dualrc)
 fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from,
 to) + z, data = dualrc)
-fit$bhaz
-haz <- lin2const(fit$bhaz, stratum = 3)
+fit$basehaz
+haz <- lin2const(fit$basehaz, stratum = 3)
 Haz <- const2lin(haz, stratum = 3)
-all(Haz == fit$bhaz)
+all(Haz == fit$basehaz)
 }
 
 \keyword{survival}
