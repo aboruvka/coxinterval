@@ -1,14 +1,16 @@
 \name{coxic}
 \alias{coxic}
-%- Also NEED an '\alias' for EACH other topic documented here.
+
 \title{Fit a Cox model to an interval-censored Markov illness-death process}
+
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
+
 \usage{
 coxic(formula, data = parent.frame(), subset, init = NULL, rcprog = NULL, rcinit = FALSE, control, ...)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{formula}{
 %%     ~~Describe \code{formula} here~~
@@ -45,18 +47,22 @@ coxic(formula, data = parent.frame(), subset, init = NULL, rcprog = NULL, rcinit
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
+
 \references{
 %% ~put references to the literature/web site here ~
 }
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
+
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  \code{\link{cluster}}, \code{\link{Surv}}, \code{\link{trans}}
 }
-\examples{}
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }
+
+\examples{
+fit <- coxic(Surv(start,stop,status) ~ cluster(id) + trans(from,to) +
+I(z*(to==1)) + I(z*(from \%in\% 0 & to==2)) + I(z*(from \%in\% c(NA,1) & to==2)), data=dualrc, sieve.rate=2/5)
+fit
+par(mfrow=c(1,3))
+by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[,1:2], type="s",
+main=paste(x[1,3]), xlim=c(0,4), ylim=c(0,2)))
+}
+
+\keyword{survival}

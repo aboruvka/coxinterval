@@ -6,7 +6,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-na.coxic.default(object, ...)
+\method{na}{coxic.default}(object, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

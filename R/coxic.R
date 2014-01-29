@@ -6,9 +6,11 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
-  specials <- c("trans", "cluster")
+  specials <- c("trans", "cluster", "strata", "tt")
   ftrm <- if (missing(data)) terms(formula, specials)
           else terms(formula, data = data, specials)
+  if (with(attr(ftrm, "specials"), length(c(strata, tt))))
+    stop("The 'strata' and 'tt' terms not supported")
   ## store column indices of terms in model frame
   irsp <- attr(ftrm, "response")
   ityp <- attr(ftrm, "specials")$type
@@ -21,6 +23,11 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   mf$formula <- ftrm
   mf$na.action <- as.name("na.coxic")
   suppressWarnings(mf <- eval(mf, parent.frame()))
+  mt <- attr(mf, "terms")
+  mm <- model.matrix(mt, mf)
+  ## find covariates model matrix
+  asgn <- frame.assign(mf, mt, mm)
+  jcov <- subset.data.frame(asgn, frame %in% icov)$matrix
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
   if (attr(mf[, irsp], "type") != "counting")
     stop("Response is not a 'counting'-type 'Surv' object")
@@ -39,7 +46,9 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   r <- mf[, irsp][r, 1]
   censor <- if (all(l == r)) "right" else "interval"
   ## sort data
-  mf <- mf[order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2]), ]
+  ord <- order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2])
+  mf <- mf[ord, ]
+  mm <- mm[ord, ]
   ## fit right-censored data alternatives with survival's coxph
   if (censor == "right")
     rcprog <- if (is.null(rcprog)) list(cl$formula) else c(cl$formula, rcprog)
@@ -74,10 +83,10 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   ## set parameters controlling model fit
   control <- if (missing(control)) coxic.control(...)
              else do.call(coxic.control, control)
-  ncov <- length(icov)
+  ncov <- length(jcov)
   ## rework data for fitter
   d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
-                  mf[, itrn][, 2], mf[, irsp][, 3], mf[, icov], states)
+                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states)
   n <- nrow(d$z)
   sieve.size <- with(control, sieve.const * n^sieve.rate)
   nobs <- mapply(function(x, y) max(1, round(length(x)/y)), d$supp, sieve.size)
@@ -152,9 +161,9 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
     stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
-  names(fit$coef) <- names(mf)[icov]
+  names(fit$coef) <- colnames(mm)[jcov]
   var <- matrix(fit$var, ncov)
-  rownames(var) <- colnames(var) <- names(mf)[icov]
+  rownames(var) <- colnames(var) <- colnames(mm)[jcov]
   init$bhaz <- data.frame(init$bhaz)
   init$rcinit <- rcinit
   bhaz <- data.frame(const2lin(cbind(fit$bhaz, init$bhaz[, -1]), stratum = 3))

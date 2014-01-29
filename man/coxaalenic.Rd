@@ -9,7 +9,8 @@
 }
 
 \usage{
-coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv = NULL, rcinit = FALSE, control, ...)
+coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv =
+NULL, rcinit = FALSE, control, close.cplex = FALSE, ...)
 }
 
 \arguments{
@@ -26,6 +27,8 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv = NULL, r
   \item{rcinit}{
   }
   \item{control}{
+  }
+  \item{close.cplex}{
   }
   \item{\dots}{
   }
@@ -78,9 +81,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv = NULL, r
   \emph{Scandinavian Journal of Statistics}, \bold{29}, 75--88.
 }
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
+\seealso{\code{\link{prop}}, \code{\link{Surv}}}
 
 \examples{
 # Fit a Cox model to the breast cosmesis data set

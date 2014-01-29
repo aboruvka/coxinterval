@@ -6,7 +6,8 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-print.coxaalenic(x, digits = max(options()$digits - 4, 3))
+\method{print}{coxaalenic}(x, digits = max(options()$digits - 4, 3),
+...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

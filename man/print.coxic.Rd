@@ -5,10 +5,8 @@
 \description{
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
-\usage{
-print.coxic(x, digits = max(options()$digits - 4, 3))
-}
-%- maybe also 'usage' for other objects documented here.
+\usage{\method{print}{coxic}(x, digits = max(options()$digits - 4, 3), ...)}
+
 \arguments{
   \item{x}{
 %%     ~~Describe \code{x} here~~

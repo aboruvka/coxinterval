@@ -24,10 +24,11 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   mm <- model.matrix(mt, mf)
   ## find proportional and additive terms in model matrix
   asgn <- frame.assign(mf, mt, mm)
-  jprp <- subset.data.frame(asgn, mf %in% iprp)$mm
+  jprp <- subset.data.frame(asgn, frame %in% iprp)$matrix
   ## additive term always includes intercept
-  jadd <- if (length(iadd)) c(1, subset.data.frame(asgn, mf %in% iadd)$mm)
-          else 1
+  jadd <-
+    if (length(iadd)) c(1, subset.data.frame(asgn, frame %in% iadd)$matrix)
+    else 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
   ## Surv converts interval2 to interval
   if (attr(mf[, irsp], "type") != "interval"

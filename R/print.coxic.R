@@ -1,4 +1,4 @@
-print.coxic <- function(x, digits = max(options()$digits - 4, 3)) {
+print.coxic <- function(x, digits = max(options()$digits - 4, 3), ...) {
   cat("Call:\n")
   dput(x$call)
   saved.digits <- options(digits = digits)

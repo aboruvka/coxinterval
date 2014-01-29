@@ -1,12 +1,12 @@
-### expand model matrix `assign` attribute to give columns in model frame
-frame.assign <- function(mf, mt = NULL, mm = NULL) {
-  if (is.null(mt)) mt <- attr(mf, "terms")
-  if (is.null(mm)) mm <- model.matrix(mt, mf)
-  tlab <- attr(mt, "term.labels")
-  ## ignore leading intercept term indexed by zero
-  asgn <- attr(mm, "assign")[-1]
+### expand 'assign' attribute to indicate column index in both the model frame
+### and the model matrix
+frame.assign <- function(frame, terms = NULL, matrix = NULL) {
+  if (is.null(terms)) terms <- attr(frame, "terms")
+  if (is.null(matrix)) matrix <- model.matrix(terms, frame)
+  labels <- attr(terms, "term.labels")
   ## account for intercept term in model frame
-  asgn <- data.frame(cbind(match(tlab[asgn], names(mf)), asgn + 1))
-  names(asgn) <- c("mf", "mm")
-  asgn
+  assign <- c(0, match(labels[attr(matrix, "assign")], names(frame)))
+  assign <- data.frame(cbind(assign, 1:ncol(matrix)))
+  names(assign) <- c("frame", "matrix")
+  assign
 }
