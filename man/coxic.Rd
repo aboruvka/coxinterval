@@ -10,16 +10,17 @@
 }
 
 \usage{
-coxic(formula, data = parent.frame(), subset, init = NULL, formula.coxph = NULL, init.coxph = FALSE, control, ...)
+coxic(formula, data = parent.frame(), subset, init = NULL,
+      formula.coxph = NULL, init.coxph = FALSE, control, ...)
 }
 
 \arguments{
   \item{formula}{
-    a formula object of the general form \code{response ~ predictors},
-    where \code{response} is a \code{"counting"}-type survival object
-    returned by the \code{Surv} function and \code{predictors} contain
-    clustering and state transition terms identified by the
-    \code{cluster} and \code{trans} functions, respectively.
+    an expression of the general form \code{response ~ predictors},
+    where \code{response} is a survival object returned by the
+    \code{Surv} function and \code{predictors} contain clustering and
+    state transition terms identified by the \code{cluster} and
+    \code{trans} functions, respectively.
   }
   \item{data}{
     an optional data frame in which to interpret the variables in
@@ -63,45 +64,92 @@ coxic(formula, data = parent.frame(), subset, init = NULL, formula.coxph = NULL,
 }
 
 \details{
-  Missing values in \code{data} are handled by \code{\link{na.coxic}}.
+  A necessary fragment of \code{formula} follows the general form
+  \code{Surv(start, end, event) ~ cluster(id) + trans(from, to)} where
+  \code{(start, end]} is the time interval over which individual
+  \code{id} is at risk for a transition between the states \code{from}
+  and \code{to}. The variable \code{event} indicates whether or not a
+  transition is observed at \code{end}.
+
+  Under dual censoring, the originating state a may be unknown; this
+  case is handled with \code{from = NA}, \code{to} equal to the index of
+  the terminal state and any transition-type--specific covariates taking
+  on the values assuming \code{from} is equal to the intermediate state
+  index. Missing values in the variable \code{from} are retained by the
+  NA action \code{\link{na.coxic}}. The default NA action is used to
+  handle any missiong values passed to \code{coxph}.
+
+  A consequence of dual censoring is that any discrete maximum
+  likelihood estimator has ambiguous support at any failure times
+  associated with these NA values. To resolve this, the cumulative
+  baseline transition intensities restricted to piecewise linear
+  functions over a sieve with size controlled by arguments passed to
+  \code{\link{coxic.control}}.
 }
 
 \value{
+  An object of the class \code{"coxic"}, which is a list with the
+  following components.
   \item{call}{
+    the matched call to \code{coxic}.
   }
   \item{censor}{
+    a string indicating the dual censoring type. The value "right"
+    corresponds to strictly dual right-censored data. All other cases
+    return "interval".
   }
   \item{n}{
+    size of the sample used in the model fit.
   }
   \item{m}{
+    number of at-risk intervals used in the model fit.
   }
   \item{p}{
+    number of regression coefficients.
   }
   \item{coef}{
+    a named \code{p} vector of regression coefficients.
   }
   \item{var}{
+    a named \code{p} by \code{p} covariance matrix of the regression
+    coefficients.
   }
   \item{basehaz}{
+    a data frame giving the cumulative baseline transition intensities
+    evaluated over the sieve.
   }
   \item{init}{
+    list of initial values used in the model fit.
   }
   \item{loglik}{
+    a vector giving the initial and final log-likelihood values.
   }
   \item{iter}{
+    number of iterations used in the model fit.
   }
   \item{fenchel}{
+    the inner product between the final parameter value and the score
+    function.
   }
   \item{maxnorm}{
+    the supremum norm between the penultimate and final parameter
+    values.
   }
   \item{cputime}{
+    the processing time used for parameter and variance estimation.
   }
   \item{fit.coxph}{
+    a list whose components give the results from any models fit with
+    \code{coxph}.
   }
   \item{na.action}{
+    result of the NA action \code{\link{na.coxic}}.
   }
   \item{censor.rate}{
+    a named vector of censoring rates.
   }
   \item{control}{
+    a list of arguments passed to \code{\link{coxic.control}}.
   }
 }
 
@@ -110,26 +158,27 @@ coxic(formula, data = parent.frame(), subset, init = NULL, formula.coxph = NULL,
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
-\seealso{
-  \code{\link{cluster}}, \code{\link{Surv}}, \code{\link{trans}}
-}
+\seealso{\code{\link{cluster}}, \code{\link{Surv}}, \code{\link{trans}}}
 
 \examples{
 # Fit Cox model to dual-right--censored data
-fit <- coxic(Surv(start,stop,status) ~ cluster(id) + trans(from,to) +
-I(z*(to==1)) + I(z*(from \%in\% 0 & to==2)) + I(z*(from \%in\% c(NA,1) & to==2)), data=dualrc, sieve.rate=2/5)
+fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+             + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
+             + I(z* (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
+             sieve.rate = 2/5)
 fit
-par(mfrow=c(1,3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[,1:2], type="s",
-main=paste(x[1,3]), xlim=c(0,4), ylim=c(0,2)))
+par(mfrow = c(1, 3))
+by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 1:2],
+   type = "l", main = paste(x[1, 3]), xlim = c(0, 4), ylim = c(0, 2)))
 
 # Fit Cox model to data with interval-censored progression times
-fit <- coxic(Surv(start,stop,status) ~ cluster(id) + trans(from,to) +
-I(z*(to==1)) + I(z*(from \%in\% 0 & to==2)) + I(z*(from \%in\% c(NA,1) & to==2)), data=dualic)
+fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+             + I(z *(to == 1)) + I(z * (from \%in\% 0 & to == 2))
+             + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
 fit
-par(mfrow=c(1,3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[,1:2], type="s",
-main=paste(x[1,3]), xlim=c(0,4), ylim=c(0,2)))
+par(mfrow=c(1, 3))
+by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 1:2],
+   type = "l", main = paste(x[1, 3]), xlim = c(0, 4), ylim = c(0, 2)))
 }
 
 \keyword{survival}
