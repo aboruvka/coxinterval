@@ -76,15 +76,15 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   the terminal state and any transition-type--specific covariates taking
   on the values assuming \code{from} is equal to the intermediate state
   index. Missing values in the variable \code{from} are retained by the
-  NA action \code{\link{na.coxic}}. The default NA action is used to
-  handle any missiong values passed to \code{coxph}.
+  \code{NA} action \code{\link{na.coxic}}. The default \code{NA} action
+  is used to handle any missiong values passed to \code{coxph}.
 
   A consequence of dual censoring is that any discrete maximum
   likelihood estimator has ambiguous support at any failure times
-  associated with these NA values. To resolve this, the cumulative
-  baseline transition intensities restricted to piecewise linear
-  functions over a sieve with size controlled by arguments passed to
-  \code{\link{coxic.control}}.
+  associated with these \code{NA} values. To resolve this, the
+  cumulative baseline transition intensities restricted to piecewise
+  linear functions over a sieve with size controlled by arguments passed
+  to \code{\link{coxic.control}}.
 }
 
 \value{
@@ -143,7 +143,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     \code{coxph}.
   }
   \item{na.action}{
-    result of the NA action \code{\link{na.coxic}}.
+    result of the \code{NA} action \code{\link{na.coxic}}.
   }
   \item{censor.rate}{
     a named vector of censoring rates.

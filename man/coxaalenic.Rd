@@ -1,7 +1,7 @@
 \name{coxaalenic}
 \alias{coxaalenic}
 
-\title{Cox-Aalen model for interval-censored data}
+\title{Cox-Aalen model for interval-censored survival data}
 
 \description{
   Fit a Cox-Aalen model to interval-censored survival data with fixed
@@ -9,8 +9,9 @@
 }
 
 \usage{
-coxaalenic(formula, data = parent.frame(), subset, init = NULL, rcsurv =
-NULL, rcinit = FALSE, control, close.cplex = FALSE, ...)
+coxaalenic(formula, data = parent.frame(), subset, init = NULL,
+           formula.coxph = NULL, init.coxph = FALSE,
+           close.cplex = FALSE, control, ...)
 }
 
 \arguments{
@@ -22,13 +23,13 @@ NULL, rcinit = FALSE, control, close.cplex = FALSE, ...)
   }
   \item{init}{
   }
-  \item{rcsurv}{
+  \item{formula.coxph}{
   }
-  \item{rcinit}{
-  }
-  \item{control}{
+  \item{init.coxph}{
   }
   \item{close.cplex}{
+  }
+  \item{control}{
   }
   \item{\dots}{
   }
@@ -87,12 +88,19 @@ NULL, rcinit = FALSE, control, close.cplex = FALSE, ...)
 \seealso{\code{\link{prop}}, \code{\link{Surv}}}
 
 \examples{
-# Fit a Cox model to the breast cosmesis data set
-data(cosmesis)
-fit <- coxaalenic(Surv(left, right, type='interval2') ~ prop(treat), data=cosmesis)
+# Fit a Cox model to the breast cosmesis dataset
+fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
+                  data = cosmesis)
 fit
-plot(fit$basehaz, type="s")
+plot(fit$basehaz, type = "s")
 
+# Fit a Cox-Aalen model to the tooth emergence dataset
+fit <- coxaalenic(Surv(left, right, type = "interval2") ~ sex + prop(dmf),
+                  data = tooth24)
+fit
+par(mfrow=c(1, 2))
+plot(fit$basehaz[, -3], type = "s", main = "Cumulative baseline hazard")
+plot(fit$basehaz[, -2], type = "s", main = "Cumulative coefficient")
 }
 
 \keyword{survival}
