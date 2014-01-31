@@ -16,11 +16,12 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 
 \arguments{
   \item{formula}{
-    an expression of the general form \code{response ~ predictors},
-    where \code{response} is a survival object returned by the
-    \code{Surv} function and \code{predictors} contain clustering and
-    state transition terms identified by the \code{cluster} and
-    \code{trans} functions, respectively.
+    an expression of the form \code{response ~ terms}, where
+    \code{response} is a survival object returned by the
+    \code{\link[survival]{Surv}} function and \code{terms} contain
+    clustering and state transition terms identified by the
+    \code{\link[survival]{cluster}} and \code{\link{trans}} functions,
+    respectively.
   }
   \item{data}{
     an optional data frame in which to interpret the variables in
@@ -40,19 +41,20 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     bound of one.
   }
   \item{formula.coxph}{
-    a list of formula objects specifying models to fit with \code{coxph}
-    using singly right-censored observations in \code{data}. Use the
-    shorthand \code{.} to indicate the same \code{predictors} given in
-    \code{formula}, with the function \code{strata} in place by
-    \code{trans}. Under dual-right--censoring, the first component of
-    \code{formula.coxph} defaults to same model in \code{formula}, which
-    is fit to observations singly-right--censored at the earlier
-    censoring time.
+    a list of formula objects specifying models to fit with
+    \code{\link[survival]{coxph}} using singly right-censored
+    observations in \code{data}. The shorthand \code{.} indicates
+    the same terms given in \code{formula}, with the function
+    \code{\link[survival]{strata}} in place by
+    \code{\link{trans}}. Under dual-right--censoring, the first
+    component of \code{formula.coxph} defaults to same model in
+    \code{formula}, which is fit to observations singly-right--censored
+    at the earlier censoring time.
   }
   \item{init.coxph}{
     a logical value indicating that \code{init} should be overrided by
-    estimates based on the \code{coxph} fit to the first model in
-    \code{formula.coxph}.
+    estimates based on the \code{\link[survival]{coxph}} fit to the
+    first model in \code{formula.coxph}.
   }
   \item{control}{
     a list returned by the function \code{coxic.control} that defaults
@@ -64,20 +66,22 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \details{
-  A necessary fragment of \code{formula} follows the general form
-  \code{Surv(start, end, event) ~ cluster(id) + trans(from, to)} where
-  \code{(start, end]} is the time interval over which individual
-  \code{id} is at risk for a transition between the states \code{from}
-  and \code{to}. The variable \code{event} indicates whether or not a
-  transition is observed at \code{end}.
+  A valid \code{formula} argument can be expressed as
+  \code{Surv(<start>, <end>, <event>) ~ cluster(<id>) + trans(<from>,
+  <to>) + <covariate terms>} where \code{(<start>, <end>]} is the time
+  interval over which individual \code{<id>} is at risk for a transition
+  between the states \code{<from>} and \code{<to>}. The variable
+  \code{<event>} indicates whether or not a transition is observed at
+  \code{<end>}.
 
   Under dual censoring, the originating state a may be unknown; this
-  case is handled with \code{from = NA}, \code{to} equal to the index of
-  the terminal state and any transition-type--specific covariates taking
-  on the values assuming \code{from} is equal to the intermediate state
-  index. Missing values in the variable \code{from} are retained by the
-  \code{NA} action \code{\link{na.coxic}}. The default \code{NA} action
-  is used to handle any missiong values passed to \code{coxph}.
+  case is handled with \code{from = NA}, \code{<to>} equal to the index
+  of the terminal state and any transition-type--specific covariates
+  taking on the values assuming \code{<from>} is equal to the
+  intermediate state index. Missing values in the variable \code{<from>}
+  are retained by the \code{NA} action \code{\link{na.coxic}}. The
+  default \code{NA} action is used to handle any missing values passed
+  to \code{\link[survival]{coxph}}.
 
   A consequence of dual censoring is that any discrete maximum
   likelihood estimator has ambiguous support at any failure times
@@ -125,7 +129,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     a vector giving the initial and final log-likelihood values.
   }
   \item{iter}{
-    number of iterations used in the model fit.
+    number of iterations needed to achieve the model fit.
   }
   \item{fenchel}{
     the inner product between the final parameter value and the score
@@ -139,11 +143,13 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     the processing time used for parameter and variance estimation.
   }
   \item{fit.coxph}{
-    a list whose components give the results from any models fit with
-    \code{coxph}.
+    a list whose components give the results from the models specified
+    by \code{formula.coxph}, fit with \code{\link[survival]{coxph}}.
   }
   \item{na.action}{
-    result of the \code{NA} action \code{\link{na.coxic}}.
+    the \code{"na.action"} attribute of the model frame. Here this
+    corresponds to the result from the custom \code{NA} action
+    \code{\link{na.coxic}}.
   }
   \item{censor.rate}{
     a named vector of censoring rates.
@@ -158,7 +164,10 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
-\seealso{\code{\link{cluster}}, \code{\link{Surv}}, \code{\link{trans}}}
+\seealso{
+  \code{\link[survival]{cluster}}, \code{\link[survival]{Surv}},
+  \code{\link{trans}}
+}
 
 \examples{
 # Fit Cox model to dual-right--censored data

@@ -10,65 +10,136 @@
 
 \usage{
 coxaalenic(formula, data = parent.frame(), subset, init = NULL,
-           formula.coxph = NULL, init.coxph = FALSE,
-           close.cplex = FALSE, control, ...)
+           formula.timereg = NULL, init.timereg = FALSE,
+           close.cplex = TRUE, control, ...)
 }
 
 \arguments{
   \item{formula}{
+    an expression of the form \code{response ~ terms}, where
+    \code{response} is a survival object returned by the \code{Surv}
+    function and \code{terms} contains at least one multiplicative
+    term identified by the \code{\link[timereg]{prop}} function
+    from the \pkg{timereg} package.
   }
   \item{data}{
+    an optional data frame in which to interpret the variables in
+    \code{formula} and \code{formula.timereg}.
   }
   \item{subset}{
+    expression specifying which rows of \code{data} should be used
+    in the fit. All observations are included by default.
   }
   \item{init}{
+    a list of the vector \code{coef}, specifying the initial
+    multiplicative regression coefficient values, and data frame
+    \code{basehaz}, giving the initial cumulative baseline hazard
+    function and any cumulative additive coefficients (referred to as
+    the cumulative "regression functions") evaluated at time points
+    based on the maximal intersections of the censoring intervals. By
+    default \code{coef} is zero, the intercept component of
+    \code{basehaz} coincides with time and any remaining regression
+    functions are zero.
   }
-  \item{formula.coxph}{
+  \item{formula.timereg}{
+    a list of formula objects specifying models to fit with
+    the \pkg{timereg} package's \code{\link[timereg]{cox.aalen}}
+    function using right-censored observations in \code{data}. The
+    shorthand \code{.} indicates the same \code{predictors} given in
+    \code{formula}.
   }
-  \item{init.coxph}{
+  \item{init.timereg}{
+    a logical value indicating that \code{init} should be overrided by
+    estimates based on the \code{\link[timereg]{cox.aalen}} fit to the
+    first model in \code{formula.timereg}.
   }
   \item{close.cplex}{
+    a logical value indicating that CPLEX data structures should be
+    freed when \code{coxaalenic} exits.
   }
   \item{control}{
+    a list returned by the function \code{coxaalenic.control} that
+    defaults to \code{coxaalenic.control()}.    
   }
   \item{\dots}{
+    additional arguments to be passed to
+    \code{\link{coxaalenic.control}}.
   }
 }
+
 \details{
+  A valid response in the \code{formula} argument can be expressed
+  as \code{Surv(<left>, <right>, type = "interval2")}, where
+  \code{(<left>, <right>]} is the censoring interval for the survival
+  time. Following the \code{type = "interval2"} format for the
+  \code{\link[survival]{Surv}} function, any right-censoring times are
+  given in the variable \code{<left>} and \code{<right>} is set to the
+  \code{NA} value.
+
+  Terms in the \code{formula} have either time-varying additive effects
+  on the survival hazard, as in Aalen's additive regression model, or
+  fixed multiplicative effects, as in the Cox model. Multiplicative
+  terms are identified by wrapping them individually in the
+  \code{\link[timereg]{prop}} function.
 }
 
 \value{
+  An object of the class \code{"coxaalenic"}, which is a list with the
+  following components.
   \item{call}{
+    the matched call to \code{coxic}.
   }
   \item{n}{
+    size of the sample used in the model fit.
   }
   \item{p}{
+    number of (multiplicative) regression coefficients.
   }
   \item{coef}{
+    a named \code{p} vector of regression coefficients.
   }
   \item{var}{
+    a named \code{p} by \code{p} covariance matrix of the regression
+    coefficients.
   }
   \item{basehaz}{
+    a data frame giving the cumulative regression functions evaluated at
+    time points given by the maximal intersections of the censoring
+    intervals.
   }
   \item{init}{
-  }
-  \item{iter}{
+    list of initial values used in the model fit.
   }
   \item{loglik}{
+    a vector giving the initial and final log-likelihood values.
+  }
+  \item{iter}{
+    number of iterations needed to achieve the model fit.
   }
   \item{fenchel}{
+    the inner product between the final parameter value and the score
+    function.
   }
   \item{maxnorm}{
+    the supremum norm between the penultimate and final parameter
+    values.
   }
   \item{cputime}{
+    the processing time used for parameter and variance estimation.
   }
-  \item{rcfit}{
+  \item{fit.timereg}{
+    a list whose components give the results from any models specified
+    by \code{formula.timereg}, fit with \code{\link[timereg]{cox.aalen}}.
   }
   \item{na.action}{
+    the \code{"na.action"} attribute of the model frame.
   }
   \item{censor.rate}{
+    a vector giving the rates of left-, interval- and right-censoring
+    among the observations used in the model fit.
   }
   \item{control}{
+    a list of arguments passed to \code{\link{coxic.control}}.
   }
 }
 
@@ -85,7 +156,10 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   \emph{Scandinavian Journal of Statistics}, \bold{29}, 75--88.
 }
 
-\seealso{\code{\link{prop}}, \code{\link{Surv}}}
+\seealso{
+  \code{\link[timereg]{cox.aalen}}, \code{\link[timereg]{prop}},
+  \code{\link[survival]{Surv}}
+}
 
 \examples{
 # Fit a Cox model to the breast cosmesis dataset

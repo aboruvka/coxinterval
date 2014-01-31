@@ -1,7 +1,7 @@
 ### fit a Cox-Aalen model to interval-censored failure times
 coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
-                       formula.coxph = NULL, init.coxph = FALSE,
-                       close.cplex = FALSE, control, ...) {
+                       formula.timereg = NULL, init.timereg = FALSE,
+                       close.cplex = TRUE, control, ...) {
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   datargs <- c("formula", "data", "subset")
@@ -35,35 +35,35 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
       | !(all(mf[, irsp][, 3] %in% c(0, 3))))
     stop("Response is not an 'interval2'-type 'Surv' object")
   ## fit right-censored data alternatives with timereg's cox.aalen
-  fit.coxph <- list()
-  if (!is.null(formula.coxph)) {
+  fit.timereg <- list()
+  if (!is.null(formula.timereg)) {
     if (!missing(subset)) warning("Model alternatives not based on subset")
     keep <- 1:nrow(data)
     if (!is.null(omit <- attr(mf, "na.action"))) keep <- keep[-omit]
-    for (i in 1:length(formula.coxph)) {
-      fit.coxph[[i]] <- cl
-      fit.coxph[[i]]$formula <-
-        update.formula(fit.coxph[[i]]$formula, formula.coxph[[i]])
+    for (i in 1:length(formula.timereg)) {
+      fit.timereg[[i]] <- cl
+      fit.timereg[[i]]$formula <-
+        update.formula(fit.timereg[[i]]$formula, formula.timereg[[i]])
       ## cox.aalen arguments, constructed to avoid NA-related errors
       temp <-
-        list(formula = fit.coxph[[i]]$formula, data = data[keep, ], robust = 0,
+        list(formula = fit.timereg[[i]]$formula, data = data[keep, ], robust = 0,
              silent = 1, max.timepoint.sim = nrow(data))
-      invisible(capture.output(fit.coxph[[i]] <-
+      invisible(capture.output(fit.timereg[[i]] <-
                                try(do.call("cox.aalen", temp))))
-      if (inherits(fit.coxph[[i]], "try-error")) {
-        fit.coxph[[i]] <-
+      if (inherits(fit.timereg[[i]], "try-error")) {
+        fit.timereg[[i]] <-
           list(call = temp, coef = NULL, var = NULL, bhaz = NULL)
       }
       else {
-        temp <- rownames(fit.coxph[[i]]$gamma)
-        fit.coxph[[i]] <- list(call = fit.coxph[[i]]$call,
-                           coef = as.vector(fit.coxph[[i]]$gamma),
-                           var = fit.coxph[[i]]$var.gamma,
-                           bhaz = as.data.frame(fit.coxph[[i]]$cum))
-        names(fit.coxph[[i]]$bhaz)[2] <- "intercept"
-        names(fit.coxph[[i]]$coef) <- temp
+        temp <- rownames(fit.timereg[[i]]$gamma)
+        fit.timereg[[i]] <- list(call = fit.timereg[[i]]$call,
+                           coef = as.vector(fit.timereg[[i]]$gamma),
+                           var = fit.timereg[[i]]$var.gamma,
+                           bhaz = as.data.frame(fit.timereg[[i]]$cum))
+        names(fit.timereg[[i]]$bhaz)[2] <- "intercept"
+        names(fit.timereg[[i]]$coef) <- temp
       }
-      fit.coxph[[i]]$call$data <- cl$data
+      fit.timereg[[i]]$call$data <- cl$data
     }
   }
   n <- nrow(mf)
@@ -82,10 +82,10 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     init$coef <- rep(0, nprp)
     init$bhaz <-
       rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd - 1, ntime))
-    if (init.coxph & length(fit.coxph))
-      if (!is.null(fit.coxph[[1]])) init$coef <- fit.coxph[[1]]$coef
+    if (init.timereg & length(fit.timereg))
+      if (!is.null(fit.timereg[[1]])) init$coef <- fit.timereg[[1]]$coef
   }
-  init$init.coxph <- init.coxph
+  init$init.timereg <- init.timereg
   if (close.cplex) on.exit(.C("freecplex"))
   fit <- .C("coxaalenic",
             coef = as.double(init$coef),
@@ -137,10 +137,10 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
                    sum(mf[, irsp][, 3] == 0)) / n
   names(censor.rate) <- c("left", "interval", "right")
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
-              basehaz = bhaz, init = init, iter = fit$iter,
-              loglik = n * fit$loglik[1:(fit$iter + 1)],
+              basehaz = bhaz, init = init,
+              loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               fenchel = fit$fenchel, maxnorm = fit$maxnorm,
-              cputime = fit$cputime, fit.coxph = fit.coxph,
+              cputime = fit$cputime, fit.timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
   class(fit) <- "coxaalenic"

@@ -14,7 +14,7 @@
 \arguments{
   \item{w}{
     a matrix of covariate values. If the model contains only the
-    intercept term, \code{w} should have zero columns.
+    intercept term, \code{ncol(w)} should be zero.
   }
   \item{k}{
     an integer giving the number of time points to be used in the model
@@ -27,12 +27,10 @@
 }
 
 \examples{
-data(cosmesis)
 fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
                   data = cosmesis)
 A <- coxaalenic.ineq(matrix(numeric(0), fit$n), nrow(fit$basehaz))
-# Entries should be greater than or equal to zero
-A \%*\% fit$basehaz[, 2]
+min(A \%*\% fit$basehaz[, 2]) # result should be nonnegative
 }
 
 \keyword{survival}
