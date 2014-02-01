@@ -16,9 +16,9 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states) {
   uid <- unique(id)
   n <- length(uid)
   ## NA action permits missing 'time1' when 'time1' = 'time2'
-  time1[is.na(time1)] <- time2[is.na(time1)]
+  time1[is.na(time1) & !is.na(from)] <- time2[is.na(time1) & !is.na(from)]
   ## largest and smallest observation times
-  u <- as.vector(by(time1, id, min))
+  u <- as.vector(by(time1, id, min, na.rm = TRUE))
   v <- as.vector(by(time2, id, max))
   ## T observed?
   absorb <- is.element(uid, id[to == states[3] & status == 1])

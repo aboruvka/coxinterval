@@ -1,7 +1,6 @@
 ### set parameter values controlling the model fit
 coxic.control <- function(eps = 1e-7, iter.max = 50000, coef.typ = 1,
-                          coef.max = 10, sieve.const = 1, sieve.rate = 1/3,
-                          step.frac = 1/2) {
+                          coef.max = 10, sieve.const = 1, sieve.rate = 1/3) {
   if (eps <= .Machine$double.eps)
     stop("Invalid epsilon. Choose a small value > ", .Machine$double.eps, ".")
   if (iter.max < 0)
@@ -15,9 +14,6 @@ coxic.control <- function(eps = 1e-7, iter.max = 50000, coef.typ = 1,
   if (length(sieve.const != 3)) sieve.const <- rep(sieve.const[1], 3)
   if (sieve.rate <= 1/8 | sieve.rate >= 1/2)
     stop("Invalid sieve rate. Choose a value in (1/8, 1/2).")
-  if (step.frac < eps | step.frac > 1)
-    stop("Invalid step fraction. Choose a value in (0, 1).")
   list(eps = eps, iter.max = iter.max, coef.typ = coef.typ, coef.max = coef.max,
-       sieve.const = sieve.const, sieve.rate = sieve.rate,
-       step.frac = step.frac)
+       sieve.const = sieve.const, sieve.rate = sieve.rate)
 }

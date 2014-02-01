@@ -1,51 +1,41 @@
 \name{jump2step}
 \alias{jump2step}
 
-\title{Convert jumps to cumulative values}
+\title{Accumulate increments in a step function of time}
 
 \description{
-  Returns values from the piecewise linear cumulant corresponding to
-  given values from a piecewise constant function of time.
+  A utility function for \code{\link{coxic}} that returns the step
+  function values given its increments over time.
 }
-\usage{
-jump2step(jump, time = NULL, by = NULL)
-}
-%- maybe also 'usage' for other objects documented here.
+
+\usage{jump2step(jump, time = NULL, stratum = NULL)}
+
 \arguments{
   \item{jump}{
-%%     ~~Describe \code{jump} here~~
-}
+    A matrix whose columns give increments in the (possibly
+    multivariate) step function, corresponding time points and strata.
+  }
   \item{time}{
-%%     ~~Describe \code{time} here~~
-}
-  \item{by}{
-%%     ~~Describe \code{by} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+    \code{NULL} (default) or a positive integer indicating column index
+    of the time variable in \code{jump}. If \code{stratum} is
+    non-\code{NULL}, \code{time} defaults to \code{stratum-1}. Otherwise
+    \code{time} defaults to \code{ncol(jump)}.
+  }
+  \item{stratum}{
+    \code{NULL} (default) or a positive integer indicating column index
+    of the stratifying variable in \code{jump}. If \code{stratum} is
+    \code{NULL}, \code{jump} is assumed un-stratified.
+  }
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\value{A matrix of the same dimension as \code{jump}.}
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\seealso{\code{\link{step2jump}}}
+
+\examples{
+fit <- coxic(Surv(start, stop, status) ~ cluster(id)
+             + trans(from, to) + z, data = dualrc)
+haz <- step2jump(fit$fit.coxph[[1]]$basehaz, stratum = 3)
+Haz <- jump2step(haz, stratum = 3)
+all(Haz == fit$fit.coxph[[1]]$basehaz)
 }
-\examples{}
-\keyword{ ~kwd1 }

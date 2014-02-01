@@ -4,7 +4,7 @@
 \title{Linear constraint matrix for the Cox-Aalen model}
 
 \description{
-  A utility function for \code{\link{coxaalenic}} to construct the
+  A utility function for \code{\link{coxaalenic}} used to construct the
   linear constraint that must be satisfied by the cumulative regression
   function.
 }
@@ -13,7 +13,7 @@
 
 \arguments{
   \item{w}{
-    a matrix of covariate values. If the model contains only the
+    a matrix of covariate values.  If the model contains only the
     intercept term, \code{ncol(w)} should be zero.
   }
   \item{k}{
@@ -23,7 +23,13 @@
 }
 
 \value{
-  A block diagonal matrix
+  The block diagonal matrix in the matrix expression for the linear
+  constraint (Boruvka and Cook, 2014a).
+}
+
+\references{
+  Boruvka, A. and Cook, R. J. (2014a)
+  A Cox-Aalen model for interval-censored data.
 }
 
 \examples{

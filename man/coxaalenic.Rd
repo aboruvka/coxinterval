@@ -28,7 +28,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{subset}{
     expression specifying which rows of \code{data} should be used
-    in the fit. All observations are included by default.
+    in the fit.  All observations are included by default.
   }
   \item{init}{
     a list of the vector \code{coef}, specifying the initial
@@ -36,7 +36,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     \code{basehaz}, giving the initial cumulative baseline hazard
     function and any cumulative additive coefficients (referred to as
     the cumulative "regression functions") evaluated at time points
-    based on the maximal intersections of the censoring intervals. By
+    based on the maximal intersections of the censoring intervals.  By
     default \code{coef} is zero, the intercept component of
     \code{basehaz} coincides with time and any remaining regression
     functions are zero.
@@ -44,8 +44,8 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   \item{formula.timereg}{
     a list of formula objects specifying models to fit with
     the \pkg{timereg} package's \code{\link[timereg]{cox.aalen}}
-    function using right-censored observations in \code{data}. The
-    shorthand \code{.} indicates the same \code{predictors} given in
+    function using right-censored observations in \code{data}.  Here the
+    shorthand \code{"."} refers to the same \code{terms} given in
     \code{formula}.
   }
   \item{init.timereg}{
@@ -58,8 +58,9 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     freed when \code{coxaalenic} exits.
   }
   \item{control}{
-    a list returned by the function \code{coxaalenic.control} that
-    defaults to \code{coxaalenic.control()}.    
+    a named list of parameters controlling the model fit, as returned by
+    the function \code{\link{coxaalenic.control}}.  This defaults to
+    \code{coxaalenic.control()}.
   }
   \item{\dots}{
     additional arguments to be passed to
@@ -69,16 +70,16 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \details{
   A valid response in the \code{formula} argument can be expressed
-  as \code{Surv(<left>, <right>, type = "interval2")}, where
+  as \preformatted{Surv(<left>, <right>, type = "interval2")} where
   \code{(<left>, <right>]} is the censoring interval for the survival
-  time. Following the \code{type = "interval2"} format for the
+  time.  Following the \code{type = "interval2"} format for the
   \code{\link[survival]{Surv}} function, any right-censoring times are
   given in the variable \code{<left>} and \code{<right>} is set to the
   \code{NA} value.
 
   Terms in the \code{formula} have either time-varying additive effects
   on the survival hazard, as in Aalen's additive regression model, or
-  fixed multiplicative effects, as in the Cox model. Multiplicative
+  fixed multiplicative effects, as in the Cox model.  Multiplicative
   terms are identified by wrapping them individually in the
   \code{\link[timereg]{prop}} function.
 }
@@ -128,8 +129,9 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     the processing time used for parameter and variance estimation.
   }
   \item{fit.timereg}{
-    a list whose components give the results from any models specified
-    by \code{formula.timereg}, fit with \code{\link[timereg]{cox.aalen}}.
+    an unnamed list whose components give the
+    \code{\link[timereg]{cox.aalen}} fit to any models specified by the
+    \code{formula.timereg} argument.
   }
   \item{na.action}{
     the \code{"na.action"} attribute of the model frame.
@@ -139,12 +141,12 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     among the observations used in the model fit.
   }
   \item{control}{
-    a list of arguments passed to \code{\link{coxic.control}}.
+    a named list of arguments passed to \code{\link{coxic.control}}.
   }
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2013)
+  Boruvka, A. and Cook, R. J. (2014a)
   A Cox-Aalen model for interval-censored data.
 
   Martinussen, T. and Scheike, T. H. (2006)
@@ -163,8 +165,8 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \examples{
 # Fit a Cox model to the breast cosmesis dataset
-fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
-                  data = cosmesis)
+fit <- coxaalenic(Surv(left, right, type = "interval2")
+                  ~ prop(treat), data = cosmesis)
 fit
 plot(fit$basehaz, type = "s")
 

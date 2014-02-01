@@ -2,7 +2,6 @@ useDynLib(coxinterval)
 import(Matrix, parallel, survival, timereg)
 export("coxic",
        "coxic.control",
-       "coxic.data",
        "coxaalenic",
        "coxaalenic.control",
        "coxaalenic.ineq",

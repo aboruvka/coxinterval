@@ -1,61 +1,76 @@
 \name{coxic.control}
 \alias{coxic.control}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Set parameter values controlling the model fit}
+
+\title{Control a Cox model fit}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Set parameters controlling the model fit returned by
+  \code{\link{coxic}}.
 }
+
 \usage{
-coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1, coef.max = 10, sieve.const = 1, sieve.rate = 1/3, step.frac = 1/2)
+coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
+              coef.max = 10, sieve.const = 1, sieve.rate = 1/3)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{eps}{
-%%     ~~Describe \code{eps} here~~
-}
+    maximum threshold for the relative change in the model fit required
+    to meet the iterative estimation routine's stopping rule.
+  }
   \item{iter.max}{
-%%     ~~Describe \code{iter.max} here~~
-}
+    maximum number of iterations to attempt.  This ensures that
+    \code{\link{coxic}} will eventually exit, even when there are
+    convergence issues.
+  }
   \item{coef.typ}{
-%%     ~~Describe \code{coef.typ} here~~
-}
+    a scalar or vector of typical (absolute) values for the
+    regression coefficient.
+  }
   \item{coef.max}{
-%%     ~~Describe \code{coef.max} here~~
-}
+    a scalar or vector of probable upper bounds for the regression
+    coefficient.  This and the \code{coef.typ} arguments tune
+    variance estimation via the curvature in the profile
+    log-likelihood.
+  }
   \item{sieve.const}{
-%%     ~~Describe \code{sieve.const} here~~
-}
+    a constant factor that, in part, determines the sieve size.  The
+    factor can be made specific to the transition type with
+    \code{sieve.const} a vector of length three.  Indexing the states
+    from zero, this vector's components correspond to the state 0 to
+    state 1, 0 to 2, and 1 to 2 transition types, respectively.
+  }
   \item{sieve.rate}{
-%%     ~~Describe \code{sieve.rate} here~~
+    a scalar in (1/8, 1/2) determining the rate at which the sieve
+    increases with the sample size.
+  }
 }
-  \item{step.frac}{
-%%     ~~Describe \code{step.frac} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
+
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+  A list of the above arguments with their final values.
 }
+
+\details{
+  For a given sample size \emph{n}, the resulting sieve has size
+  at most \code{sieve.const * }\emph{n}\code{^sieve.rate}.  Any reduction
+  in size from this value is applied to ensure that each subinterval in
+  the sieve's time partition captures at least one support point from
+  the semiparametric maximum likelihood estimator based on the "singly"
+  right-censored data (Boruvka and Cook, 2014b).
+}
+
 \references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+  Boruvka, A. and Cook, R. J. (2014b)
+  Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\seealso{\code{\link{coxic}}}
 
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\examples{
+coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+      + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
+      + I(z* (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
+      control = coxic.control(eps = 1e-5, sieve.rate = 2/5))
 }
-\examples{}
-\keyword{ ~kwd1 }
+
+\keyword{survival}

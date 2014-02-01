@@ -4,7 +4,8 @@
 \title{Increments from a step function of time}
 
 \description{
-  A utility function that returns the increments in a step function of time.
+  A utility function for \code{\link{coxic}} that returns the increments
+  in a step function of time.
 }
 
 \usage{step2jump(step, time = NULL, stratum = NULL)}
@@ -29,7 +30,12 @@
 
 \value{A matrix of the same dimension as \code{step}.}
 
-\seealso{\code{jump2step}}
+\seealso{\code{\link{jump2step}}}
 
 \examples{
+fit <- coxic(Surv(start, stop, status) ~ cluster(id)
+             + trans(from, to) + z, data = dualrc)
+haz <- step2jump(fit$fit.coxph[[1]]$basehaz, stratum = 3)
+Haz <- jump2step(haz, stratum = 3)
+all(Haz == fit$fit.coxph[[1]]$basehaz)
 }

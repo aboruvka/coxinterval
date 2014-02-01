@@ -287,9 +287,8 @@ void
 coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       int *dims, double *z, int *nrow, double *left, double *right, double *u,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
-      double *eps, int *maxiter, double *typc, double *supc, double *stepfrac,
-      int *numiter, double *fenchel, double *maxnorm, double *cputime,
-      int *flag) {
+      double *eps, int *maxiter, double *typc, double *supc, int *numiter,
+      double *fenchel, double *maxnorm, double *cputime, int *flag) {
   clock_t begtime, endtime;
   char uplo = 'U';
   int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork;
@@ -380,12 +379,12 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     /* overshoot also characterized by exp(z*c) = Inf => log-likelihood NaN */
     while (newll < ll[iter] || ISNAN(newll)) { /* step "halving" */
       for (i = 0; i < p; i++) {
-        stepc[i] *= *stepfrac;
+        stepc[i] *= 0.5;
         candc[i] = c[i] + stepc[i];
       }
       for (i = 0; i < M; i++)
         for (j = 1; j < d[i]; j++) {
-          steph[j + D[i]] *= *stepfrac;
+          steph[j + D[i]] *= 0.5;
           candh[j + D[i]] = h[j + D[i]] + steph[j + D[i]];
         }
       newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
@@ -440,7 +439,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
           while (newll < oldll || ISNAN(newll)) { /* step-halving */
             for (l = 0; l < M; l++)
               for (m = 0; m < d[l]; m++) {
-                steph[m + D[l]] *= *stepfrac;
+                steph[m + D[l]] *= 0.5;
                 candh[m + D[l]] = ph[m + D[l]] + steph[m + D[l]];
               }
             newll =

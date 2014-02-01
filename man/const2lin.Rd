@@ -17,13 +17,13 @@
   }
   \item{time}{
     \code{NULL} (default) or a positive integer indicating column index
-    of the time variable in \code{const}. If \code{stratum} is
-    non-\code{NULL}, \code{time} defaults to \code{stratum-1}. Otherwise
+    of the time variable in \code{const}.  If \code{stratum} is
+    non-\code{NULL}, \code{time} defaults to \code{stratum-1}.  Otherwise
     \code{time} defaults to \code{ncol(const)}.
   }
   \item{stratum}{
     \code{NULL} (default) or a positive integer indicating column index
-    of the stratifying variable in \code{const}. If \code{stratum} is
+    of the stratifying variable in \code{const}.  If \code{stratum} is
     \code{NULL}, \code{const} is assumed unstratified.
   }
 }
@@ -33,10 +33,8 @@
 \seealso{\code{lin2const}}
 
 \examples{
-data(dualrc)
-fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from,
-to) + z, data = dualrc)
-fit$basehaz
+fit <- coxic(Surv(start, stop, status) ~ cluster(id)
+             + trans(from, to) + z, data = dualrc)
 haz <- lin2const(fit$basehaz, stratum = 3)
 Haz <- const2lin(haz, stratum = 3)
 all(Haz == fit$basehaz)

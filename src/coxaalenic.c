@@ -104,10 +104,9 @@ loglik(double *c, double *L, double *z, double *w, int *J) {
 void
 coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
            double *w, int *ncolw, int *J, double *A, int *nrowA, double *eps,
-           int *maxiter, double *stepfrac, double *stepscale, double *typc,
-           double *supc, int *trace, int *maxthread, double *var, double *ll,
-           int *numiter, double *fenchel, double *maxnorm, double *cputime,
-           int *flag) {
+           int *maxiter, double *armijo, double *typc, double *supc, int *trace,
+           int *maxthread, double *var, double *ll, int *numiter,
+           double *fenchel, double *maxnorm, double *cputime, int *flag) {
   clock_t begtime, endtime;
   char uplo = 'U', errmsg[1024];
   int i, j, k, l, m, status = 0, r = *nrowA, iter = 0, steppow, screen = *trace,
@@ -175,16 +174,16 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
       stepL[i] = candL[i] - L[i];
       stepinc -= grad1L[i] * stepL[i];
     }
-    stepinc *= *stepscale;
+    stepinc *= *armijo;
     steppow = -1;
     do { /* line search */
       ++steppow;
       for (i = 0; i < p; i++)
-        candc[i] = c[i] + stepc[i] * pow(*stepfrac, steppow);
+        candc[i] = c[i] + stepc[i] * pow(0.5, steppow);
       for (i = 0; i < dq; i++)
-        candL[i] = L[i] + stepL[i] * pow(*stepfrac, steppow);
+        candL[i] = L[i] + stepL[i] * pow(0.5, steppow);
       candll = loglik(candc, candL, z, w, J);
-    } while (stepinc * pow(*stepfrac, steppow) > candll - ll[iter]);
+    } while (stepinc * pow(0.5, steppow) > candll - ll[iter]);
     /* update estimates */
     *maxnorm = 0;
     *fenchel = 0;
@@ -239,14 +238,14 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
             stepL[l] = candL[l] - pL[l];
             stepinc -= grad1L[l] * stepL[l];
           }
-          stepinc *= *stepscale;
+          stepinc *= *armijo;
           steppow = -1;
           do { /* line search */
             ++steppow;
             for (l = 0; l < dq; l++)
-              candL[l] = pL[l] + stepL[l] * pow(*stepfrac, steppow);
+              candL[l] = pL[l] + stepL[l] * pow(0.5, steppow);
             candll = loglik(fixc, candL, z, w, J);
-          } while (stepinc * pow(*stepfrac, steppow) > candll - pll);
+          } while (stepinc * pow(0.5, steppow) > candll - pll);
           for (l = 0; l < dq; l++)
             pL[l] = candL[l];
           ++iter;

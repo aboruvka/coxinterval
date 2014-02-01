@@ -5,7 +5,9 @@
 \title{Simulated dual-censored data from an illness-death process}
 
 \description{
-%%  ~~ A concise (1-5 lines) description of the dataset. ~~
+  Data from a Markov illness-death process with interval-censored
+  progression times, simulated according to the initial scenario
+  described in Boruvka and Cook (2014).
 }
 
 \usage{data(dualic)}
@@ -13,18 +15,42 @@
 \format{
   A data frame with 723 observations on the following 7 variables.
   \describe{
-    \item{\code{id}}{a numeric vector}
-    \item{\code{from}}{a numeric vector}
-    \item{\code{to}}{a numeric vector}
-    \item{\code{start}}{a numeric vector}
-    \item{\code{stop}}{a numeric vector}
-    \item{\code{status}}{a numeric vector}
-    \item{\code{z}}{a numeric vector}
+    \item{\code{id}}{
+      subject identifier.
+    }
+    \item{\code{from}}{
+      originating state index with \code{0} denoting the initial state,
+      \code{1} the intermediate state, \code{2} the terminal state and
+      \code{NA} an unknown state.
+    }
+    \item{\code{to}}{
+      subsequent state index.
+    }
+    \item{\code{start}}{
+      left-endpoint of the time interval at which the subject is at risk
+      for a transition between state \code{from} and state \code{to}.
+    }
+    \item{\code{stop}}{
+      right-endpoint of the at-risk interval.
+    }
+    \item{\code{status}}{
+      indicator that a transition between state \code{from} and state
+      \code{to} was observed at \code{stop}.
+    }
+    \item{\code{z}}{
+      a binary covariate.
+    }
   }
 }
 
+\details{
+  Dual-censored observations have \code{from = NA}. In this case the
+  length of at-risk interval is also unknown
+}
+
 \references{
-%%  ~~ possibly secondary sources and usages ~~
+  Boruvka, A. and Cook, R. J. (2014)
+  Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
 \examples{data(dualic)}

@@ -39,16 +39,16 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   states <- attr(mf, "states")
   if (length(states) != 3 | length(attr(mf, "types")) != 3)
     stop("Invalid state transitions in the model 'trans' term")
-  ## strictly dual right censoring?
-  r <- mf[, itrn][, 1] %in% c(NA, states[2])
-  l <- mf[, itrn][, 2] == states[2] & mf[, icls] %in% mf[r, icls]
-  l <- mf[, irsp][l, 2]
-  r <- mf[, irsp][r, 1]
-  censor <- if (all(l == r)) "right" else "interval"
   ## sort data
   ord <- order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2])
   mf <- mf[ord, ]
   mm <- mm[ord, ]
+  ## reworked data
+  d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
+                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states)
+  ## strictly dual right censoring?
+  if (with(d, all(left[contrib == 1] == right[contrib == 1]))) censor <- "right"
+  else censor <- "interval"
   ## fit right-censored data alternatives with survival's coxph
   if (censor == "right") {
     formula.coxph <-
@@ -74,12 +74,12 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
           list(call = temp, coef = NULL, var = NULL, bhaz = NULL, loglik = NULL,
                m = NULL, na.action = NULL)
       else {
-        fit.coxph[[i]]$bhaz <- basehaz(fit.coxph[[i]], centered = FALSE)
+        fit.coxph[[i]]$basehaz <- basehaz(fit.coxph[[i]], centered = FALSE)
         fit.coxph[[i]]$m = fit.coxph[[i]]$n
         if (censor == "right" & i == 1) {
           rownames(fit.coxph[[i]]$var) <-
             colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
-          names(fit.coxph[[i]]$bhaz) <- c("hazard", "time", "trans")
+          names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "trans")
         }
         fit.coxph[[i]]$call$data <- cl$data
       }
@@ -89,9 +89,6 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   control <- if (missing(control)) coxic.control(...)
              else do.call(coxic.control, control)
   ncov <- length(jcov)
-  ## rework data for fitter
-  d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
-                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states)
   n <- nrow(d$z)
   sieve.size <- with(control, sieve.const * n^sieve.rate)
   nobs <- mapply(function(x, y) max(1, round(length(x)/y)), d$supp, sieve.size)
@@ -120,8 +117,8 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
     bhaz <- fit.coxph[[1]]$bhaz
   }
   if (!is.null(bhaz)) {
-    bhaz <- step2jump(bhaz, by = 3)
-    bhaz <- jump2step(bhaz[bhaz[, 1] > 0, ], by = 3)
+    bhaz <- step2jump(bhaz, stratum = 3)
+    bhaz <- jump2step(bhaz[bhaz[, 1] > 0, ], stratum = 3)
     init$basehaz <-
       do.call("c", mapply(linapprox, split(bhaz[, 2:1], bhaz[, 3]), part,
                           SIMPLIFY = FALSE))
@@ -150,7 +147,6 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.integer(control$iter.max),
             as.double(control$coef.typ),
             as.double(control$coef.max),
-            as.double(control$step.frac),
             iter = as.integer(0),
             fenchel = as.double(0),
             maxnorm = as.double(0),

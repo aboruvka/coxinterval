@@ -1,96 +1,75 @@
 \name{coxaalenic.control}
 \alias{coxaalenic.control}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Control Cox-Aalen model fit}
+
+\title{Control a Cox-Aalen model fit}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Set parameters controlling the model fit returned by
+  \code{\link{coxaalenic}}.
 }
+
 \usage{
-coxaalenic.control(eps = 1e-07, iter.max = 5000, step.frac = 1/2, step.scale = 1/3, coef.typ = 1, coef.max = 10, trace = FALSE, thread.max = 1)
+coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
+                   coef.typ = 1, coef.max = 10, trace = FALSE,
+                   thread.max = 1)
 }
-%- maybe also 'usage' for other objects documented here.
+
 \arguments{
   \item{eps}{
-%%     ~~Describe \code{eps} here~~
-}
+    maximum threshold for the relative change in the model fit required
+    to meet the iterative estimation routine's stopping rule.
+  }
   \item{iter.max}{
-%%     ~~Describe \code{iter.max} here~~
-}
-  \item{step.frac}{
-%%     ~~Describe \code{step.frac} here~~
-}
-  \item{step.scale}{
-%%     ~~Describe \code{step.scale} here~~
-}
+    maximum number of iterations to attempt.  This ensures that
+    \code{\link{coxaalenic}} will eventually exit, even when there are
+    convergence issues.
+  }
+  \item{armijo}{
+    a scale factor in (0, 1/2) for Armijo's (1966) rule---a step-halving
+    line search used to ensure that the updated fit on each iteration
+    achieves an adequate increase in the log-likelihood.  The model fit
+    is not particularly sensitive to this value.
+  }
   \item{coef.typ}{
-%%     ~~Describe \code{coef.typ} here~~
-}
+    a scalar or vector of typical (absolute) values for the
+    multiplicative regression coefficient.
+  }
   \item{coef.max}{
-%%     ~~Describe \code{coef.max} here~~
-}
+    a scalar or vector of probable upper bounds for the multiplicative
+    regression coefficient.  This and the \code{coef.typ} arguments
+    tune variance estimation via the curvature in the profile
+    log-likelihood.
+  }
   \item{trace}{
-%%     ~~Describe \code{trace} here~~
-}
+    a logical value indicating that CPLEX should print its results to
+    the screen.
+  }
   \item{thread.max}{
-%%     ~~Describe \code{thread.max} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
-}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
-\examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (eps = 1e-07, iter.max = 5000, step.frac = 1/2, step.scale = 1/3, 
-    coef.typ = 1, coef.max = 10, trace = FALSE, thread.max = 1) 
-{
-    if (eps <= .Machine$double.eps) 
-        stop("Invalid epsilon. Choose a small value > ", .Machine$double.eps, 
-            ".")
-    if (iter.max < 0) 
-        stop("Invalid maximum iterations. Choose a large positive integer.")
-    if (coef.typ < eps) 
-        stop("Invalid coefficient magnitude. Choose a positive value.")
-    if (coef.max <= coef.typ) 
-        stop("Invalid maximum coefficient size. Choose a value > ", 
-            coef.typ, ".")
-    if (step.frac < eps | step.frac > 1) 
-        stop("Invalid step fraction. Choose a value in (0, 1).")
-    if (step.scale < eps | step.scale >= 1/2) 
-        stop("Invalid step scale. Choose a value in (0, 1/2].")
-    if (thread.max < 0 | thread.max > detectCores(logical = TRUE)) 
-        stop(paste("Invalid maximum threads.", "Choose integer from zero to number of logical processors."))
-    list(eps = eps, iter.max = iter.max, step.frac = step.frac, 
-        step.scale = step.scale, coef.typ = coef.typ, coef.max = coef.max, 
-        trace = trace, thread.max = thread.max)
+    maximum number of CPU threads to allocate to CPLEX.  Default value
+    disables multithreading.
   }
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+
+\value{
+  A list of the above arguments with their final values.
+}
+
+\references{
+  Boruvka, A. and Cook, R. J. (2014a)
+  A Cox-Aalen model for interval-censored data.
+
+  Armijo, L. (1966)
+  Minimization of functions having Lipschitz continuous first partial
+  derivatives.
+  \emph{Pacific Journal of Mathematics}, \bold{16}, 1--3.
+}
+
+\seealso{\code{\link{coxaalenic}}}
+
+\examples{
+coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
+           data = cosmesis, control = coxaalenic.control(iter.max = 2,
+           trace = TRUE))
+}
+
+\keyword{survival}

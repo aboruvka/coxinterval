@@ -29,24 +29,24 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{subset}{
     expression specifying which rows of \code{data} should be used
-    in the fit. All observations are included by default.
+    in the fit.  All observations are included by default.
   }
   \item{init}{
     a list of the vector \code{coef}, specifying the initial coefficient
     values, and data frame \code{basehaz}, giving the initial cumulative
     baseline transition intensities at the time partition ultimately
     defined by the \code{coxic.control} parameters \code{sieve.const}
-    and \code{sieve.rate}. By default \code{coef} is zero and
+    and \code{sieve.rate}.  By default \code{coef} is zero and
     \code{basehaz} corresponds to linear functions of time with an upper
     bound of one.
   }
   \item{formula.coxph}{
     a list of formula objects specifying models to fit with
     \code{\link[survival]{coxph}} using singly right-censored
-    observations in \code{data}. The shorthand \code{.} indicates
+    observations in \code{data}.  The shorthand \code{.} indicates
     the same terms given in \code{formula}, with the function
     \code{\link[survival]{strata}} in place by
-    \code{\link{trans}}. Under dual-right--censoring, the first
+    \code{\link{trans}}.  Under dual-right--censoring, the first
     component of \code{formula.coxph} defaults to same model in
     \code{formula}, which is fit to observations singly-right--censored
     at the earlier censoring time.
@@ -57,8 +57,9 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     first model in \code{formula.coxph}.
   }
   \item{control}{
-    a list returned by the function \code{coxic.control} that defaults
-    to \code{coxic.control()}.
+    a named list of parameters controlling the model fit, returned by
+    the function \code{\link{coxic.control}}.  This defaults to
+    \code{coxic.control()}.
   }
   \item{\dots}{
     additional arguments to be passed to \code{\link{coxic.control}}.
@@ -67,28 +68,33 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 
 \details{
   A valid \code{formula} argument can be expressed as
-  \code{Surv(<start>, <end>, <event>) ~ cluster(<id>) + trans(<from>,
-  <to>) + <covariate terms>} where \code{(<start>, <end>]} is the time
-  interval over which individual \code{<id>} is at risk for a transition
-  between the states \code{<from>} and \code{<to>}. The variable
-  \code{<event>} indicates whether or not a transition is observed at
-  \code{<end>}.
+  \preformatted{Surv(<start>, <end>, <event>) ~ cluster(<id>) +
+  trans(<from>, <to>) + <covariate terms>} where \code{(<start>, <end>]}
+  is largest \emph{known} time interval over which individual
+  \code{<id>} is at risk for a transition between the states
+  \code{<from>} and \code{<to>}.  The variable \code{<event>} indicates
+  whether or not a transition is observed to occur at \code{<end>}.  The
+  observation scheme may prevent us from "knowing" an at-risk interval
+  with positive length.  In this case we use the convention
+  \code{<start> = <end>}.
 
-  Under dual censoring, the originating state a may be unknown; this
-  case is handled with \code{from = NA}, \code{<to>} equal to the index
-  of the terminal state and any transition-type--specific covariates
-  taking on the values assuming \code{<from>} is equal to the
-  intermediate state index. Missing values in the variable \code{<from>}
-  are retained by the \code{NA} action \code{\link{na.coxic}}. The
-  default \code{NA} action is used to handle any missing values passed
-  to \code{\link[survival]{coxph}}.
+  Under dual censoring (Boruvka and Cook, 2014b), both the originating
+  state for an at-risk interval may be unknown; this case is handled
+  with \code{from = NA}, \code{<to>} equal to the index of the terminal
+  state and any transition-type--specific covariates taking on the
+  values assumed when \code{<from>} is equal to the intermediate state
+  index.  The missing values are retained by the \code{NA} action
+  \code{\link{na.coxic}}.  The default \code{NA} action is used to handle
+  any missing values passed to \code{\link[survival]{coxph}}.
 
   A consequence of dual censoring is that any discrete maximum
   likelihood estimator has ambiguous support at any failure times
-  associated with these \code{NA} values. To resolve this, the
+  associated with these \code{NA} values.  To resolve this, the
   cumulative baseline transition intensities restricted to piecewise
   linear functions over a sieve with size controlled by arguments passed
-  to \code{\link{coxic.control}}.
+  to \code{\link{coxic.control}}.  This approach requires that both types
+  of transitions to the terminal state are, at least for some subjects,
+  observed exactly.
 }
 
 \value{
@@ -98,8 +104,8 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     the matched call to \code{coxic}.
   }
   \item{censor}{
-    a string indicating the dual censoring type. The value "right"
-    corresponds to strictly dual right-censored data. All other cases
+    a string indicating the dual censoring type.  The value "right"
+    corresponds to strictly dual right-censored data.  All other cases
     return "interval".
   }
   \item{n}{
@@ -143,11 +149,12 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     the processing time used for parameter and variance estimation.
   }
   \item{fit.coxph}{
-    a list whose components give the results from the models specified
-    by \code{formula.coxph}, fit with \code{\link[survival]{coxph}}.
+    an unnamed list whose components give the
+    \code{\link[survival]{coxph}} fit to any models specified by the
+    \code{formula.coxph} argument.
   }
   \item{na.action}{
-    the \code{"na.action"} attribute of the model frame. Here this
+    the \code{"na.action"} attribute of the model frame.  Here this
     corresponds to the result from the custom \code{NA} action
     \code{\link{na.coxic}}.
   }
@@ -160,12 +167,13 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014)
+  Boruvka, A. and Cook, R. J. (2014b)
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
 \seealso{
-  \code{\link[survival]{cluster}}, \code{\link[survival]{Surv}},
+  \code{\link[survival]{cluster}}, \code{\link{dualic}},
+  \code{\link{dualrc}}, \code{\link[survival]{Surv}},
   \code{\link{trans}}
 }
 
