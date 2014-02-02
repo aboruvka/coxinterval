@@ -1,5 +1,6 @@
 \name{coxaalenic}
 \alias{coxaalenic}
+\alias{print.coxaalenic}
 
 \title{Cox-Aalen model for interval-censored survival data}
 

@@ -24,18 +24,18 @@
     }
     \item{\code{right}}{
       right-endpoint of the censoring interval for time to
-      emergence. Following the \code{type = "interval2"} censoring
-      format for the \code{\link{Surv}} function, the \code{NA} value
+      emergence. Following the \code{\link{Surv}} object format under
+      \code{type = "interval2"} censoring, the \code{NA} value
       corresponds to a right-censored observation at the time given by
       the variable \code{left}.
     }
     \item{\code{sex}}{
-      sex of the child: \code{sex = 0} corresponds to male, \code{sex =
-        1} to female.
+      sex of the child: \code{sex = 0} corresponds to male,
+      \code{sex = 1} to female. 
     }
     \item{\code{dmf}}{
       status of permanent tooth 24's primary predecessor: \code{dmf = 0}
-      is sound; \code{dmf = 1} indicates decayed, missing due to caries
+      is sound; \code{dmf = 1} indicates decayed, missing due to caries,
       or filled.
     }
   }

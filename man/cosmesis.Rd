@@ -22,7 +22,7 @@
       right endpoint of the censoring interval in months
     }
     \item{\code{treat}}{
-      factor with levels \code{RT} and \code{RT+chemo} representing
+      factor with levels \code{RT} and \code{RCT} representing
       radiotherapy-only and radiation plus chemotherapy treatments,
       respectively
     }

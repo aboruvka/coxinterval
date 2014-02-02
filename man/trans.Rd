@@ -1,46 +1,45 @@
 \name{trans}
 \alias{trans}
-%- Also NEED an '\alias' for EACH other topic documented here.
-\title{Specify transition type in model terms}
+
+\title{Identify transition type in model terms}
+
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  A special function for Cox models fit with \code{\link{coxic}} that
+  identifies formula terms specifying the state-transition type.
 }
-\usage{
-trans(from, to)
-}
-%- maybe also 'usage' for other objects documented here.
+
+\usage{trans(from, to)}
+
 \arguments{
   \item{from}{
-%%     ~~Describe \code{from} here~~
-}
+    a variable representing the originating state.
+  }
   \item{to}{
-%%     ~~Describe \code{to} here~~
-}
-}
-\details{
-%%  ~~ If necessary, more details than the description above ~~
-}
-\value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
-}
-\references{
-%% ~put references to the literature/web site here ~
-}
-\author{
-%%  ~~who you are~~
-}
-\note{
-%%  ~~further notes~~
+    a variable representing the subsequent state.
+  }
 }
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
+\value{
+  A combination of the \code{from} and \code{to} arguments by column
+  with two following two attributes.
+  \item{\code{"states"}}{
+    a vector giving the unique non-missing values in the \code{from} and
+    \code{to} arguments ordered so that the initial state appears first,
+    the intermediate state second, and the terminal state last.
+  }
+  \item{\code{"types"}}{
+    a vector of transition type labels in terms of the values in the
+    \code{from} and \code{to} arguments ordered so that the
+    intermediate transition appears first, the terminal transition
+    directly from the initial state second, and the terminal transition
+    from the intermediate state last.
+  }
+}
 
 \seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+  \code{\link{coxic}}
 }
-\examples{}
-\keyword{ ~kwd1 }
+
+\examples{with(dualrc, trans(from, to))}
+
+\keyword{survival}

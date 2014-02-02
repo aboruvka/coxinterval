@@ -7,7 +7,7 @@
 \description{
   Data from a Markov illness-death process with interval-censored
   progression times, simulated according to the initial scenario
-  described in Boruvka and Cook (2014).
+  described in Boruvka and Cook (2014b).
 }
 
 \usage{data(dualic)}
@@ -27,8 +27,9 @@
       subsequent state index.
     }
     \item{\code{start}}{
-      left-endpoint of the time interval at which the subject is at risk
-      for a transition between state \code{from} and state \code{to}.
+      left-endpoint of the time interval at which the subject is known
+      to be at risk for a transition between state \code{from} and state
+      \code{to}.
     }
     \item{\code{stop}}{
       right-endpoint of the at-risk interval.
@@ -43,17 +44,15 @@
   }
 }
 
-\details{
-  Dual-censored observations have \code{from = NA}. In this case the
-  length of at-risk interval is also unknown
-}
-
 \references{
-  Boruvka, A. and Cook, R. J. (2014)
+  Boruvka, A. and Cook, R. J. (2014b)
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
 \examples{data(dualic)}
 
+\seealso{
+  \code{\link{coxic}}
+}
+
 \keyword{datasets}
-\keyword{survival}

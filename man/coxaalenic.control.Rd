@@ -26,9 +26,9 @@ coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
   }
   \item{armijo}{
     a scale factor in (0, 1/2) for Armijo's (1966) rule---a step-halving
-    line search used to ensure that the updated fit on each iteration
-    achieves an adequate increase in the log-likelihood.  The model fit
-    is not particularly sensitive to this value.
+    line search used to ensure that each iteration achieves an adequate
+    increase in the log-likelihood.  The model fit is not particularly
+    sensitive to this value.
   }
   \item{coef.typ}{
     a scalar or vector of typical (absolute) values for the

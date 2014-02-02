@@ -1,5 +1,6 @@
 \name{coxic}
 \alias{coxic}
+\alias{print.coxic}
 
 \title{Cox model for a Markov illness-death process under dual censoring}
 

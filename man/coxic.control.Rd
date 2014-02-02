@@ -52,7 +52,7 @@ coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
 
 \details{
   For a given sample size \emph{n}, the resulting sieve has size
-  at most \code{sieve.const * }\emph{n}\code{^sieve.rate}.  Any reduction
+  at most \code{sieve.const*}\emph{n}\code{^sieve.rate}.  Any reduction
   in size from this value is applied to ensure that each subinterval in
   the sieve's time partition captures at least one support point from
   the semiparametric maximum likelihood estimator based on the "singly"
@@ -69,7 +69,7 @@ coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
 \examples{
 coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
       + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
-      + I(z* (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
+      + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
       control = coxic.control(eps = 1e-5, sieve.rate = 2/5))
 }
 
