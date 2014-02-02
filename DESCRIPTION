@@ -6,10 +6,10 @@ Depends: Matrix, parallel, survival, timereg, R (>= 2.13.0)
 LazyData: Yes
 LazyLoad: Yes
 Author: Audrey Boruvka and Richard J. Cook
-Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
+Maintainer: Audrey Boruvka <ajboruvka@uwaterloo.ca>
 Description: Fits Cox-type models based on interval-censored data from a
              progressive process
 SystemRequirements: IBM ILOG CPLEX (>= 12.5, 32 bit with Windows)
 License: GPL (>= 2)
-URL: http://github.com/aboruvka/coxinterval
-BugReports: http://github.com/aboruvka/coxinterval/issues
+URL: https://bitbucket.org/aboruvka/coxinterval
+BugReports: https://bitbucket.org/aboruvka/coxinterval/issues

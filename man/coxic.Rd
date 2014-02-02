@@ -1,6 +1,9 @@
 \name{coxic}
 \alias{coxic}
 \alias{print.coxic}
+\alias{na.coxic}
+\alias{na.coxic.default}
+\alias{na.coxic.data.frame}
 
 \title{Cox model for a Markov illness-death process under dual censoring}
 
