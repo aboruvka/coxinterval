@@ -28,8 +28,8 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     respectively.
   }
   \item{data}{
-    an optional data frame in which to interpret the variables in
-    \code{formula} and \code{formula.coxph}.
+    an optional data frame in which to interpret the variables named in
+    the arguments \code{formula} and \code{formula.coxph}.
   }
   \item{subset}{
     expression specifying which rows of \code{data} should be used
@@ -71,16 +71,16 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \details{
-  A valid \code{formula} argument can be expressed as
-  \preformatted{Surv(<start>, <end>, <event>) ~ cluster(<id>) +
-  trans(<from>, <to>) + <covariate terms>} where \code{(<start>, <end>]}
-  is largest \emph{known} time interval over which individual
-  \code{<id>} is at risk for a transition between the states
-  \code{<from>} and \code{<to>}.  The variable \code{<event>} indicates
-  whether or not a transition is observed to occur at \code{<end>}.  The
-  observation scheme may prevent us from "knowing" an at-risk interval
-  with positive length.  In this case we use the convention
-  \code{<start> = <end>}.
+  A valid \code{formula} argument can be expressed
+  as \preformatted{Surv(<start>, <end>, <event>)
+    ~ cluster(<id>) + trans(<from>, <to>) + <covariate terms>}
+  where (\code{<start>}, \code{<end>}] is largest \emph{known} time
+  interval over which individual \code{<id>} is at risk for a transition
+  between the states \code{<from>} and \code{<to>}.  The variable
+  \code{<event>} indicates whether or not a transition is observed to
+  occur at \code{<end>}.  The observation scheme may prevent us from
+  "knowing" an at-risk interval with positive length.  In this case we
+  use the convention \code{<start> = <end>}.
 
   Under dual censoring (Boruvka and Cook, 2014b), both the originating
   state for an at-risk interval may be unknown; this case is handled

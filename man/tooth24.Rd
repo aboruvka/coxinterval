@@ -7,8 +7,8 @@
 
 \description{
   Interval-censored times to emergence of the permanent maxillary left
-  first premolar (tooth 24) among Belgian school children participating
-  in the Signal Tandmobiel® study.
+  first premolar (known as tooth 24) among Belgian school children
+  participating in the Signal Tandmobiel® study.
 }
 
 \usage{data(tooth24)}
@@ -47,15 +47,16 @@
 
 \references{
   Gómez, G., Calle, M. L., Oller, R. and Langohr, K. (2009)
-  Tutorial on methods for interval-censored data and their
-  implementation in R.
-  \emph{Statistical Modelling}, \bold{9}, 259--297.
+  \href{http://dx.doi.org/10.1177/1471082X0900900402}{
+    Tutorial on methods for interval-censored data and their
+    implementation in R}.
+  \emph{Statistical Modelling} \bold{9}, 259--297.
 
   Vanobbergen, J., Martens, L., Lesaffre, E. and Declerck, D (2000)
   The Signal-Tandmobiel® project -- A longitudinal intervention health
   promotion study in Flanders (Belgium): Baseline and first year
   results.
-  \emph{European Journal of Paediatric Dentistry}, \bold{2}, 87--96.
+  \emph{European Journal of Paediatric Dentistry} \bold{2}, 87--96.
 }
 
 \examples{data(tooth24)}

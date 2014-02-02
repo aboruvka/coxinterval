@@ -1,3 +1,5 @@
+\newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+
 \name{coxaalenic}
 \alias{coxaalenic}
 \alias{print.coxaalenic}
@@ -21,11 +23,11 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     \code{response} is a survival object returned by the \code{Surv}
     function and \code{terms} contains at least one multiplicative
     term identified by the \code{\link[timereg]{prop}} function
-    from the \pkg{timereg} package.
+    from the \CRANpkg{timereg} package.
   }
   \item{data}{
-    an optional data frame in which to interpret the variables in
-    \code{formula} and \code{formula.timereg}.
+    an optional data frame in which to interpret the variables named in
+    the arguments \code{formula} and \code{formula.timereg}.
   }
   \item{subset}{
     expression specifying which rows of \code{data} should be used
@@ -44,7 +46,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{formula.timereg}{
     a list of formula objects specifying models to fit with
-    the \pkg{timereg} package's \code{\link[timereg]{cox.aalen}}
+    the \CRANpkg{timereg} package's \code{\link[timereg]{cox.aalen}}
     function using right-censored observations in \code{data}.  Here the
     shorthand \code{"."} refers to the same \code{terms} given in
     \code{formula}.
@@ -71,12 +73,13 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \details{
   A valid response in the \code{formula} argument can be expressed
-  as \preformatted{Surv(<left>, <right>, type = "interval2")} where
-  \code{(<left>, <right>]} is the censoring interval for the survival
-  time.  Following the \code{type = "interval2"} format for the
-  \code{\link[survival]{Surv}} function, any right-censoring times are
-  given in the variable \code{<left>} and \code{<right>} is set to the
-  \code{NA} value.
+  as \preformatted{Surv(<left>, <right>, type = "interval2")}
+  where (\code{<left>}, \code{<right>}] is the censoring interval for
+  the survival time.  Following the \CRANpkg{survival} package's
+  \code{type = "interval2"} censoring for the
+  \code{\link[survival]{Surv}} function, we use the convention that any
+  right-censoring times are provided in the variable \code{<left>}
+  and \code{<right>} is set to the \code{NA} value.
 
   Terms in the \code{formula} have either time-varying additive effects
   on the survival hazard, as in Aalen's additive regression model, or
@@ -151,12 +154,13 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   A Cox-Aalen model for interval-censored data.
 
   Martinussen, T. and Scheike, T. H. (2006)
-  \emph{Dynamic Regression Models for Survival Data.}
-  Springer.
+  Dynamic Regression Models for Survival Data.
+  New York: Springer.
 
   Scheike, T. H. and Zhang, M.-J. (2002)
-  An additive-multiplicative Cox-Aalen regression model.
-  \emph{Scandinavian Journal of Statistics}, \bold{29}, 75--88.
+  \href{http://dx.doi.org/10.1111/1467-9469.00065}{
+    An additive-multiplicative Cox-Aalen regression model}.
+  \emph{Scandinavian Journal of Statistics} \bold{29}, 75--88.
 }
 
 \seealso{
@@ -171,13 +175,13 @@ fit <- coxaalenic(Surv(left, right, type = "interval2")
 fit
 plot(fit$basehaz, type = "s")
 
-# Fit a Cox-Aalen model to the tooth emergence dataset
+\donttest{# Fit a Cox-Aalen model to the tooth emergence dataset
 fit <- coxaalenic(Surv(left, right, type = "interval2") ~ sex + prop(dmf),
                   data = tooth24)
 fit
 par(mfrow=c(1, 2))
 plot(fit$basehaz[, -3], type = "s", main = "Cumulative baseline hazard")
-plot(fit$basehaz[, -2], type = "s", main = "Cumulative coefficient")
+plot(fit$basehaz[, -2], type = "s", main = "Cumulative coefficient")}
 }
 
 \keyword{survival}

@@ -31,17 +31,20 @@
 
 \source{
   Finkelstein, D. M. and Wolfe, R. A. (1985)
-  A semiparametric model for regression analysis of interval-censored
-  failure time data.
-  \emph{Biometrics}, \bold{41}, 933--945.
+  \href{http://www.jstor.org/stable/2530698}{
+    A semiparametric model for regression analysis of interval-censored
+    failure time data}.
+  \emph{Biometrics} \bold{41}, 933--945.
 }
 
 \references{
   Finkelstein, D. M. (1986)
-  A proportional hazards model for interval-censored failure time data.
-  \emph{Biometrics}, \bold{42}, 845--854.
+  \href{http://www.jstor.org/stable/2530698}{
+    A proportional hazards model for interval-censored failure time data}.
+  \emph{Biometrics} \bold{42}, 845--854.
 }
 
 \examples{data(cosmesis)}
 
+% RShowDoc("KEYWORDS")
 \keyword{datasets}

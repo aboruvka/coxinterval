@@ -59,9 +59,10 @@ coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
   A Cox-Aalen model for interval-censored data.
 
   Armijo, L. (1966)
-  Minimization of functions having Lipschitz continuous first partial
-  derivatives.
-  \emph{Pacific Journal of Mathematics}, \bold{16}, 1--3.
+  \href{http://dx.doi.org/10.2140/pjm.1966.16.1}{
+    Minimization of functions having Lipschitz continuous first partial
+    derivatives.}
+  \emph{Pacific Journal of Mathematics} \bold{16}, 1--3.
 }
 
 \seealso{\code{\link{coxaalenic}}}
