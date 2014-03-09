@@ -1,5 +1,6 @@
 ### convert jumps to cumulative values
-jump2step <- function(jump, time = NULL, stratum = NULL) {
+jump2step <- function(jump, time = NULL, stratum = NULL)
+{
   f <- function(x) if (length(dim(x))) apply(x, 2, cumsum) else cumsum(x)
   if (!is.null(stratum)) {
     if (is.null(time)) time <- stratum - 1

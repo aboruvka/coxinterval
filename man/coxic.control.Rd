@@ -1,7 +1,7 @@
 \name{coxic.control}
 \alias{coxic.control}
 
-\title{Control a Cox model fit}
+\title{Control Cox model fit}
 
 \description{
   Set parameters controlling the model fit returned by

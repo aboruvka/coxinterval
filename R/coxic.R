@@ -1,6 +1,6 @@
-### fit a Cox model to an interval-censored Markov illness-death process
 coxic <- function(formula, data = parent.frame(), subset, init = NULL,
-                  formula.coxph = NULL, init.coxph = FALSE, control, ...) {
+                  formula.coxph = NULL, init.coxph = FALSE, control, ...)
+{
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   datargs <- c("formula", "data", "subset")
@@ -148,7 +148,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.double(control$coef.typ),
             as.double(control$coef.max),
             iter = as.integer(0),
-            fenchel = as.double(0),
+            gradnorm = as.double(0),
             maxnorm = as.double(0),
             cputime = as.double(0),
             flag = as.integer(0),
@@ -174,18 +174,17 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   bhaz$trans <- as.factor(bhaz$trans)
   levels(bhaz$trans) <- attr(mf, "types")
   censor.rate <- with(d, c(sum(contrib != 0 & absorb), sum(contrib == 0)))
-  censor.rate <- c(censor.rate[1], n - censor.rate[1] - censor.rate[2],
-                   censor.rate[2]) / n
-  names(censor.rate) <-
-    if (censor == "right") c("exact", "single", "double")
-    else c("status and survival", "only status", "neither")
+  censor.rate <- matrix(c(censor.rate[1], n - censor.rate[1] - censor.rate[2],
+                          censor.rate[2]) / n, nrow = 1)
+  dimnames(censor.rate) <-
+    list("Observation rate", c("(S, T)", "1(S < T)", "Neither"))
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf), p = ncov,
               coef = fit$coef, var = var, basehaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
-              fenchel = fit$fenchel, maxnorm = fit$maxnorm,
+              gradnorm = fit$gradnorm, maxnorm = fit$maxnorm,
               cputime = fit$cputime, fit.coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
-  class(fit) <- "coxic"
+  class(fit) <- c("coxic", "coxinterval")
   fit
 }

@@ -1,6 +1,5 @@
 \name{coxic}
 \alias{coxic}
-\alias{print.coxic}
 \alias{na.coxic}
 \alias{na.coxic.default}
 \alias{na.coxic.data.frame}
@@ -23,7 +22,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     an expression of the form \code{response ~ terms}, where
     \code{response} is a survival object returned by the
     \code{\link[survival]{Surv}} function and \code{terms} contain
-    clustering and state transition terms identified by the
+    clustering and state-transition variables identified by the
     \code{\link[survival]{cluster}} and \code{\link{trans}} functions,
     respectively.
   }
@@ -80,9 +79,9 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   \code{<event>} indicates whether or not a transition is observed to
   occur at \code{<end>}.  The observation scheme may prevent us from
   "knowing" an at-risk interval with positive length.  In this case we
-  use the convention \code{<start> = <end>}.
+  use the convention \code{<start> = NA}.
 
-  Under dual censoring (Boruvka and Cook, 2014b), both the originating
+  Under dual censoring (Boruvka and Cook, 2014b), the originating
   state for an at-risk interval may be unknown; this case is handled
   with \code{from = NA}, \code{<to>} equal to the index of the terminal
   state and any transition-type--specific covariates taking on the
@@ -102,8 +101,8 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \value{
-  An object of the class \code{"coxic"}, which is a list with the
-  following components.
+  An object of the classes \code{"coxinterval"} and \code{"coxic"}, which
+  is a list with the following components.
   \item{call}{
     the matched call to \code{coxic}.
   }
@@ -141,13 +140,12 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   \item{iter}{
     number of iterations needed to achieve the model fit.
   }
-  \item{fenchel}{
-    the inner product between the final parameter value and the score
-    function.
+  \item{gradnorm}{
+    the maximum norm of the score function at the final parameter value.
   }
   \item{maxnorm}{
-    the supremum norm between the penultimate and final parameter
-    values.
+    the maximum norm of the difference between the penultimate and final
+    parameter values.
   }
   \item{cputime}{
     the processing time used for parameter and variance estimation.

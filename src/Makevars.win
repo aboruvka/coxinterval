@@ -1,3 +1,6 @@
+ifdef CPLEXHOME
+CPLEXDIR = $(CPLEXHOME)
+endif
 ifndef CPLEXDIR
 CPLEXDIR = $(shell ls -d c:/PROGRA~2/IBM/ILOG/CPLEX* | head -n1)
 endif

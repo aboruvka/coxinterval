@@ -1,7 +1,7 @@
-### fit a Cox-Aalen model to interval-censored failure times
 coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
                        formula.timereg = NULL, init.timereg = FALSE,
-                       close.cplex = TRUE, control, ...) {
+                       close.cplex = TRUE, control, ...)
+{
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   datargs <- c("formula", "data", "subset")
@@ -131,10 +131,11 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   bhaz <- cbind(time$int[, 2], t(matrix(fit$bhaz, nadd)))
   bhaz <- as.data.frame(rbind(0, bhaz))
   names(bhaz) <- c("time", colnames(mm)[jadd])
-  censor.rate <- c(sum(mf[, irsp][, 1] == 0),
-                   sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
-                   sum(mf[, irsp][, 3] == 0)) / n
-  names(censor.rate) <- c("left", "interval", "right")
+  censor.rate <- matrix(c(sum(mf[, irsp][, 1] == 0),
+                          sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
+                          sum(mf[, irsp][, 3] == 0)) / n, nrow = 1)
+  dimnames(censor.rate) <-
+    list("Censoring rate", c("Left", "Interval", "Right"))
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
               basehaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
@@ -142,6 +143,6 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
               cputime = fit$cputime, fit.timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
-  class(fit) <- "coxaalenic"
+  class(fit) <- c("coxaalenic", "coxinterval")
   fit
 }

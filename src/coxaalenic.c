@@ -10,7 +10,8 @@ static int n, p, q, d, dq;
 static double *grad1c, *grad2c, *grad3c, *grad1L, *grad2L;
 
 static double
-loglik(double *c, double *L, double *z, double *w, int *J) {
+loglik(double *c, double *L, double *z, double *w, int *J)
+{
   int i, j, k, l, m;
   double zc[n], wL[n*d], A[n*d], S[n*d], U[n*d], prob[n], grad1[n], grad2[n],
     grad3[n], ll = 0, temp;
@@ -106,7 +107,8 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
            double *w, int *ncolw, int *J, double *A, int *nrowA, double *eps,
            int *maxiter, double *armijo, double *typc, double *supc, int *trace,
            int *maxthread, double *var, double *ll, int *numiter,
-           double *fenchel, double *maxnorm, double *cputime, int *flag) {
+           double *fenchel, double *maxnorm, double *cputime, int *flag)
+{
   clock_t begtime, endtime;
   char uplo = 'U', errmsg[1024];
   int i, j, k, l, m, status = 0, r = *nrowA, iter = 0, steppow, screen = *trace,

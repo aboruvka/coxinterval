@@ -1,5 +1,6 @@
 ### linear approximation
-linapprox <- function(xyin, xout) {
+linapprox <- function(xyin, xout)
+{
   xyin <- xyin[xyin[, 1] > 0 & xyin[, 2] > 0, ]
   x <- sort(unique(xyin[, 1]))
   y <- as.vector(tapply(xyin[, 2], xyin[, 1], max))

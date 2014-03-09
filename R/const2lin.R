@@ -1,5 +1,6 @@
 ### accumulate values from piecewise constant function of time
-const2lin <- function(const, time = NULL, stratum = NULL) {
+const2lin <- function(const, time = NULL, stratum = NULL)
+{
   f <- function(x) c(0, -x[-length(x)]) + x
   g <- function(x) if (length(dim(x))) apply(x, 2, f) else f(x)
   h <- function(x) if (length(dim(x))) apply(x, 2, cumsum) else cumsum(x)

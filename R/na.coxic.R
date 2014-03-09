@@ -1,6 +1,6 @@
-### custom NA action adapted from na.omit.data.frame
 na.coxic <- function(object, ...) UseMethod("na.coxic")
-na.coxic.default <- function(object, ...) {
+na.coxic.default <- function(object, ...)
+{
   n <- length(object)
   omit <- FALSE
   vars <- seq_len(n)

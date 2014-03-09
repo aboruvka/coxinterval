@@ -1,5 +1,6 @@
 ### construct inequality constraint matrix (requires Matrix)
-coxaalenic.ineq <- function(w, k) {
+coxaalenic.ineq <- function(w, k)
+{
   if (!length(dim(w))) w <- matrix(w)
   m <- ncol(w)
   if (m == 0) mat <- matrix(1)

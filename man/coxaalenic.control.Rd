@@ -21,8 +21,9 @@ coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
   }
   \item{iter.max}{
     maximum number of iterations to attempt.  This ensures that
-    \code{\link{coxaalenic}} will eventually exit, even when there are
-    convergence issues.
+    \code{\link{coxaalenic}} will eventually exit, even when the
+    stopping rule is not met.  A warning issued whenever the estimation
+    routine has stopped before converging on a final parameter value.
   }
   \item{armijo}{
     a scale factor in (0, 1/2) for Armijo's (1966) rule---a step-halving

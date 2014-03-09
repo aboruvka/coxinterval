@@ -1,5 +1,6 @@
 ### format data for C fitting routine
-coxic.data <- function(id, time1, time2, from, to, status, z, states) {
+coxic.data <- function(id, time1, time2, from, to, status, z, states)
+{
   p <- max(1, ncol(z))
   z <- data.frame(id, from, to, status, z)
   names(z) <- c("id", "from", "to", "status", paste("z", 1:p, sep = ""))

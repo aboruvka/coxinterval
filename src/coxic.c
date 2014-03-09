@@ -12,7 +12,8 @@ static double *newh, *grad1c, *grad2c, *grad3c, *grad1h;
 
 /* piecewise function for baseline intensity */
 static double
-H(double *h, double *t, int j, double beg, double end) {
+H(double *h, double *t, int j, double beg, double end)
+{
   int i;
   double val = 0;
   for (i = 1; i < d[j]; i++)
@@ -23,7 +24,8 @@ H(double *h, double *t, int j, double beg, double end) {
 
 /* ... length */
 static double
-L(double *t, int j, int k, double beg, double end) {
+L(double *t, int j, int k, double beg, double end)
+{
   double val;
   val = max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
   return val;
@@ -31,7 +33,8 @@ L(double *t, int j, int k, double beg, double end) {
 
 static double
 loglik(double *c, double *h, double *z, double *t, double *s, double *left,
-       double *right, double *u, double *v, int *contrib, int *absorb) {
+       double *right, double *u, double *v, int *contrib, int *absorb)
+{
   int i, j, k, l;
   double ll = 0, prob, prob1, prob2, A01, A02, A12, a01, a02, a12, h02, h12,
     rsk[M], g1c1[p], g1c2[p], g2c1[p*p], g2c2[p*p], g3c1[p], g3c2[p], g1cr[p],
@@ -288,7 +291,8 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       int *dims, double *z, int *nrow, double *left, double *right, double *u,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
       double *eps, int *maxiter, double *typc, double *supc, int *numiter,
-      double *fenchel, double *maxnorm, double *cputime, int *flag) {
+      double *gradnorm, double *maxnorm, double *cputime, int *flag)
+{
   clock_t begtime, endtime;
   char uplo = 'U';
   int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork;
@@ -392,19 +396,24 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     ++iter;
     ll[iter] = newll;
     *maxnorm = 0;
-    *fenchel = 0;
+    *gradnorm = 0;
     for (i = 0; i < p; i++) {
       *maxnorm = max(*maxnorm, fabs(stepc[i]));
       c[i] = candc[i];
-      *fenchel -= grad1c[i] * c[i];
+      *gradnorm -= grad1c[i] * c[i];
     }
     for (i = 0; i < M; i++)
       for (j = 1; j < d[i]; j++) {
         *maxnorm = max(*maxnorm, fabs(steph[j + D[i]]));
         h[j + D[i]] = candh[j + D[i]];
-        *fenchel += grad1h[j + D[i]] * h[j + D[i]];
+        *gradnorm += grad1h[j + D[i]] * h[j + D[i]];
       }
   } while (*maxnorm > *eps && iter < *maxiter);
+  if (iter == 1) {
+    REprintf("'Converged' after one step. Try another starting value.\n");
+    *flag = 1;
+    goto deallocate;
+  }
   *numiter = iter;
   for (i = 0; i < p; i++) { /* curvature scale */
     fixc[i] = c[i];

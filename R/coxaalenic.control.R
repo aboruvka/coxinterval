@@ -1,7 +1,8 @@
 ### set parameters controlling the model fit
 coxaalenic.control <- function(eps = 1e-7, iter.max = 5000, armijo = 1/3,
                                coef.typ = 1, coef.max = 10, trace = FALSE,
-                               thread.max = 1) {
+                               thread.max = 1)
+{
   if (eps <= .Machine$double.eps)
     stop("Invalid epsilon. Choose a small value > ", .Machine$double.eps, ".")
   if (iter.max < 0)

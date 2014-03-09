@@ -1,7 +1,8 @@
 #include "rcplex.h"
 
 void
-freecplex(void) {
+freecplex(void)
+{
   int status = 0;
   char errmsg[1024];
   if (lp != NULL) {
@@ -27,7 +28,8 @@ freecplex(void) {
 int
 qpcplex(const int ncol, const int nrow, const double *c, const double *Q,
         const double *A, double *soln, const int screen, const int threads,
-        char *errmsg) {
+        char *errmsg)
+{
   int status = 0, i, j, Abeg[ncol], Aind[nrow * ncol], Acnt[ncol], Qbeg[ncol],
     Qind[ncol * ncol], Qcnt[ncol];
   char *probname = "icsurv", sense[ncol];

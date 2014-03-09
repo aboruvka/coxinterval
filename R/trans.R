@@ -1,5 +1,5 @@
-### specify transition type in model terms
-trans <- function(from, to) {
+trans <- function(from, to)
+{
   x <- cbind(table(from, to), sort(unique(from)), sort(unique(to)))
   state1 <- x[apply(x[, 1:2] == 0, 1, any), 3]
   state0 <- x[x[, 3] != state1, 3]

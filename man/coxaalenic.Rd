@@ -2,7 +2,6 @@
 
 \name{coxaalenic}
 \alias{coxaalenic}
-\alias{print.coxaalenic}
 
 \title{Cox-Aalen model for interval-censored survival data}
 
@@ -34,14 +33,14 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     in the fit.  All observations are included by default.
   }
   \item{init}{
-    a list of the vector \code{coef}, specifying the initial
-    multiplicative regression coefficient values, and data frame
+    a list of the vector \code{coef}, specifying the initial values of
+    the multiplicative regression coefficient, and data frame
     \code{basehaz}, giving the initial cumulative baseline hazard
     function and any cumulative additive coefficients (referred to as
     the cumulative "regression functions") evaluated at time points
     based on the maximal intersections of the censoring intervals.  By
     default \code{coef} is zero, the intercept component of
-    \code{basehaz} coincides with time and any remaining regression
+    \code{basehaz} coincides with time, and any remaining regression
     functions are zero.
   }
   \item{formula.timereg}{
@@ -82,15 +81,15 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   and \code{<right>} is set to the \code{NA} value.
 
   Terms in the \code{formula} have either time-varying additive effects
-  on the survival hazard, as in Aalen's additive regression model, or
-  fixed multiplicative effects, as in the Cox model.  Multiplicative
-  terms are identified by wrapping them individually in the
-  \code{\link[timereg]{prop}} function.
+  on the survival hazard as in Aalen's additive regression model, or
+  fixed multiplicative effects as in the Cox model. Multiplicative terms
+  are distinguished by applying \CRANpkg{timereg}'s
+  \code{\link[timereg]{prop}} function to each corresponding variable.
 }
 
 \value{
-  An object of the class \code{"coxaalenic"}, which is a list with the
-  following components.
+  An object of the class \code{"coxinterval"} and \code{"coxaalenic"},
+  which is a list with the following components.
   \item{call}{
     the matched call to \code{coxic}.
   }
@@ -126,11 +125,11 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     function.
   }
   \item{maxnorm}{
-    the supremum norm between the penultimate and final parameter
-    values.
+    the maximum norm of the difference between the penultimate and final
+    parameter values.
   }
   \item{cputime}{
-    the processing time used for parameter and variance estimation.
+    the processing time for parameter and variance estimation.
   }
   \item{fit.timereg}{
     an unnamed list whose components give the
@@ -170,8 +169,8 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \examples{
 # Fit a Cox model to the breast cosmesis dataset
-fit <- coxaalenic(Surv(left, right, type = "interval2")
-                  ~ prop(treat), data = cosmesis)
+fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
+                  data = cosmesis)
 fit
 plot(fit$basehaz, type = "s")
 
