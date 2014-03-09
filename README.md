@@ -1,6 +1,7 @@
-# Cox-type models for interval-censored data
+# coxinterval
+## An R package for Cox-type models with interval-censored data
 
-To install this package, download the source and run from the command line
+To install, download the source and run from the command line
 ```
 R CMD build coxinterval
 R CMD check coxinterval_<version>.tar.gz
@@ -20,4 +21,3 @@ Installation of `coxinterval` with 32-bit CPLEX and 32-bit R on a 64-bit Windows
 R --arch=i386 CMD check --no-multiarch coxinterval_<version>.tar.gz
 R --arch=i386 CMD INSTALL --no-multiarch coxinterval_<version>.tar.gz
 ```
-
