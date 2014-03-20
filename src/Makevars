@@ -3,18 +3,18 @@ CPLEXDIR = $(CPLEXHOME)
 endif
 ifndef CPLEXDIR
 ifeq ($(UNAME), "Darwin")
-CPLEXHOME = /Users/*/Applications/IBM/ILOG/CPLEX*
+CPLEXDIR = /Users/*/Applications/IBM/ILOG/CPLEX*
 else
-CPLEXHOME = /opt/*/ILOG/CPLEX*
+CPLEXDIR = /opt/*/ILOG/CPLEX*
 endif
 endif
 ifndef CPLEXLIBDIR
-CPLEXLIBDIR = $(shell ls -d $(CPLEXHOME)/cplex/lib/*/* | head -n1)
+CPLEXLIBDIR = $(shell ls -d $(CPLEXDIR)/cplex/lib/*/* | head -n1)
 endif
 ifndef CLNFLAGS
 CLNFLAGS = -lcplex -lm
 endif
-CPLEXINDIR = $(wildcard $(CPLEXHOME)/cplex/include)
+CPLEXINDIR = $(wildcard $(CPLEXDIR)/cplex/include)
 PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) -I$(CPLEXINDIR)
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
 	-L$(CPLEXLIBDIR) $(CLNFLAGS)
