@@ -2,7 +2,8 @@ ifdef CPLEXHOME
 CPLEXDIR = $(CPLEXHOME)
 endif
 ifndef CPLEXDIR
-ifeq ($(UNAME), "Darwin")
+UNAME = $(shell uname -s)
+ifeq ($(UNAME), Darwin)
 CPLEXDIR = /Users/*/Applications/IBM/ILOG/CPLEX*
 else
 CPLEXDIR = /opt/*/ILOG/CPLEX*
