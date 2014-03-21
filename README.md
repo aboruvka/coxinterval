@@ -18,7 +18,7 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 
 ##### Mac OS X
 
-1. Install software listed at [tools](http://cran.r-project.org/bin/macosx/tools) section of the Mac OS X R download documentation. With R 3+, this amounts to the GNU Fortran compiler gfortran.
+1. Install software listed in the [tools](http://cran.r-project.org/bin/macosx/tools) section of the Mac OS X R download documentation. With R 3+, this amounts to the GNU Fortran compiler gfortran.
 
 ##### Windows
 
