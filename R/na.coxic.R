@@ -8,9 +8,13 @@ na.coxic.default <- function(object, ...)
     x <- object[[j]]
     if (!is.atomic(x))
       next
-    ## allow missing values for 'time1'
-    if (inherits(x, "Surv"))
+    if (inherits(x, "Surv")) {
+      ## allow missing values for 'time1'
       x[is.na(x[, 1]), 1] <- -1
+      ## set missing values for 'time2' to 'time1'
+      x[!is.na(x[, 1]) & is.na(x[, 2]), 2] <-
+        x[!is.na(x[, 1]) & is.na(x[, 2]), 1]
+    }
     ## save states attribute for 'trans' term
     ## allow missing values for ? -> 2 transitions
     if (!is.null(states <- attr(x, "states"))) {

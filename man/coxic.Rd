@@ -77,24 +77,33 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   interval over which individual \code{<id>} is at risk for a transition
   between the states \code{<from>} and \code{<to>}.  The variable
   \code{<event>} indicates whether or not a transition is observed to
-  occur at \code{<end>}.  The observation scheme may prevent us from
-  "knowing" an at-risk interval with positive length.  In this case we
-  use the convention \code{<start> = NA}.
+  occur at \code{<end>}.
 
-  Under dual censoring (Boruvka and Cook, 2014b), the originating
-  state for an at-risk interval may be unknown; this case is handled
-  with \code{from = NA}, \code{<to>} equal to the index of the terminal
-  state and any transition-type--specific covariates taking on the
-  values assumed when \code{<from>} is equal to the intermediate state
-  index.  The missing values are retained by the \code{NA} action
-  \code{\link{na.coxic}}.  The default \code{NA} action is used to handle
-  any missing values passed to \code{\link[survival]{coxph}}.
+  Under dual censoring (Boruvka and Cook, 2014b), both the originating
+  state and the left endpoint of an at-risk interval may be unknown.
+  This case is handled with \code{<start> = NA}, \code{<from> = NA},
+  \code{<to>} equal to the index of the terminal state and any
+  transition-type--specific covariates taking on the values assumed when
+  \code{<from>} is equal to the intermediate state index.  Under
+  discrete observation of non-terminal events, the right-endpoint of
+  some at-risk intervals may be unknown.  For these \code{<start>} is
+  the initial observation time (zero, unless left-truncated),
+  \code{<stop> = NA} and \code{<from>} is equal to the initial state
+  index.  Missing values are retained by the \code{NA} action
+  \code{\link{na.coxic}}.  The default \code{NA} action is used to
+  handle any missing values passed to \code{\link[survival]{coxph}}.
+
+  Dual censoring typically arises in two scenarios: (1) dual
+  right-censoring, where intermediate events are right-censored before
+  terminal events, and (2) interval-censored intermediate events.
+  For examples of these refer to \code{\link{dualrc}} and
+  \code{\link{dualic}}, respectively.
 
   A consequence of dual censoring is that any discrete maximum
   likelihood estimator has ambiguous support at any failure times
   associated with these \code{NA} values.  To resolve this, the
-  cumulative baseline transition intensities restricted to piecewise
-  linear functions over a sieve with size controlled by arguments passed
+  cumulative baseline transition intensities are restricted to piecewise
+  linear functions on a sieve with size controlled by arguments passed
   to \code{\link{coxic.control}}.  This approach requires that both types
   of transitions to the terminal state are, at least for some subjects,
   observed exactly.

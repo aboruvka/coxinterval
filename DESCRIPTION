@@ -11,5 +11,5 @@ Description: Fits Cox-type models based on interval-censored data from a
              progressive process
 SystemRequirements: IBM ILOG CPLEX (>= 12.5, 32 bit with Windows)
 License: GPL (>= 2)
-URL: https://bitbucket.org/aboruvka/coxinterval
-BugReports: https://bitbucket.org/aboruvka/coxinterval/issues
+URL: https://github.com/aboruvka/coxinterval
+BugReports: https://github.com/aboruvka/coxinterval/issues

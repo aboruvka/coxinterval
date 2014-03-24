@@ -55,8 +55,8 @@ coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
   at most \code{sieve.const*}\emph{n}\code{^sieve.rate}.  Any reduction
   in size from this value is applied to ensure that each subinterval in
   the sieve's time partition captures at least one support point from
-  the semiparametric maximum likelihood estimator based on the "singly"
-  right-censored data (Boruvka and Cook, 2014b).
+  the semiparametric maximum likelihood estimator based on the subsample
+  with known progression status (Boruvka and Cook, 2014b).
 }
 
 \references{
