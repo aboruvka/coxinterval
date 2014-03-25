@@ -16,8 +16,9 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states)
   rownames(z) <- NULL
   uid <- unique(id)
   n <- length(uid)
-  ## NA action permits missing 'time1' when 'time1' = 'time2'
+  ## NA action permits missing 'time1'/'time2' when 'time1' = 'time2'
   time1[is.na(time1) & !is.na(from)] <- time2[is.na(time1) & !is.na(from)]
+  time2[is.na(time2)] <- time1[is.na(time2)]
   ## largest and smallest observation times
   u <- as.vector(by(time1, id, min, na.rm = TRUE))
   v <- as.vector(by(time2, id, max))
