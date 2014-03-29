@@ -196,8 +196,8 @@ fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
              sieve.rate = 2/5)
 fit
 par(mfrow = c(1, 3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 1:2],
-   type = "l", main = paste(x[1, 3]), xlim = c(0, 4), ylim = c(0, 2)))
+by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
+   type = "l", main = paste(x[1, 3]), xlim = c(0, 2), ylim = c(0, 4)))
 
 # Fit Cox model to data with interval-censored progression times
 fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
@@ -205,8 +205,8 @@ fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
              + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
 fit
 par(mfrow=c(1, 3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 1:2],
-   type = "l", main = paste(x[1, 3]), xlim = c(0, 4), ylim = c(0, 2)))
+by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
+   type = "l", main = paste(x[1, 3]), xlim = c(0, 2), ylim = c(0, 4)))
 }
 
 \keyword{survival}

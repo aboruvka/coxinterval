@@ -5,9 +5,9 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states)
   z <- data.frame(id, from, to, status, z)
   names(z) <- c("id", "from", "to", "status", paste("z", 1:p, sep = ""))
   ## type-specific covariates (nb: ? -> 2 presumed to hold values for 1 -> 2)
-  z <- merge(merge(subset(z, from == states[1] & to == states[2]),
-                   subset(z, from == states[1] & to == states[3]), by = "id"),
-             subset(z, is.element(from, c(states[2], NA)) & to == states[3]),
+  z <- merge(merge(subset(z, from %in% states[1] & to == states[2]),
+                   subset(z, from %in% states[1] & to == states[3]), by = "id"),
+             subset(z, from %in% c(states[2], NA) & to == states[3]),
              by = "id", all = TRUE)
   z <- z[, substr(names(z), 1, 1) == "z"]
   z[is.na(z)] <- 0

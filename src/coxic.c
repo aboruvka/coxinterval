@@ -77,7 +77,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       EdN[j] = 0;
       EY[j] = 0;
     }
-    /* contribution via 0 -> 1 -> 2*/
+    /* contribution via 0 -> 1 -> 2 */
     for (j = lidx[i]; contrib[i] != 2 && j <= ridx[i]; j++) {
       beg = max(left[i], s[j - 1]);
       end = min(right[i], s[j]);
@@ -211,9 +211,9 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
                 * (s1 * (1 + (beg - y) * dseg) - s0 * (1 + (end - y) * dseg));
             }
             else {
-              y = (t[l + D[k]] <= beg && k < M - 1)
-                * (t[l + D[k]] - t[l - 1 + D[k]])
-                + (end <= t[l-1 + D[k]] && k == M-1) * L(t, k, l, u[i], v[i]);
+              y = (t[l + D[k]] <= beg && k < M - 1) * L(t, k, l, u[i], beg)
+                + ((end <= t[l - 1 + D[k]] && k == M - 1)
+                   * L(t, k, l, u[i], v[i]));
               g1h1[l + D[k]] -= rsk[k] * y * pseg * rseg;
               EY[l + D[k]] += y * pseg * rseg;
             }
@@ -348,7 +348,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     /* Netwon-Raphson step for regression coefficient c */
     lwork = -1;
     F77_CALL(dsytrf)(&uplo, &p, grad2c, &p, ipiv, work, &lwork, &status);
-    if (status) { /* can'tould not query DSYTRF workspace */
+    if (status) { /* can't query DSYTRF workspace */
       *flag = 1;
       goto deallocate;
     }

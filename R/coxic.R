@@ -75,7 +75,8 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
                m = NULL, na.action = NULL)
       else {
         fit.coxph[[i]]$basehaz <- basehaz(fit.coxph[[i]], centered = FALSE)
-        fit.coxph[[i]]$m = fit.coxph[[i]]$n
+        fit.coxph[[i]]$m <- fit.coxph[[i]]$n
+        fit.coxph[[i]]$n <- length(unique(mf[-fit.coxph[[i]]$na.action, icls]))
         if (censor == "right" & i == 1) {
           rownames(fit.coxph[[i]]$var) <-
             colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
