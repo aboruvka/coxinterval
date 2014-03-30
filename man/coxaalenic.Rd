@@ -173,14 +173,6 @@ fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
                   data = cosmesis)
 fit
 plot(fit$basehaz, type = "s")
-
-\donttest{# Fit a Cox-Aalen model to the tooth emergence dataset
-fit <- coxaalenic(Surv(left, right, type = "interval2") ~ sex + prop(dmf),
-                  data = tooth24)
-fit
-par(mfrow=c(1, 2))
-plot(fit$basehaz[, -3], type = "s", main = "Cumulative baseline hazard")
-plot(fit$basehaz[, -2], type = "s", main = "Cumulative coefficient")}
 }
 
 \keyword{survival}
