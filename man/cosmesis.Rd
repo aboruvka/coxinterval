@@ -6,8 +6,7 @@
 
 \description{
   Interval-censored times to cosmetic deterioration for breast cancer
-  patients undergoing radiation or radiation plus chemotherapy and
-  chemotherapy.
+  patients undergoing radiation or radiation plus chemotherapy.
 }
 
 \usage{data(cosmesis)}

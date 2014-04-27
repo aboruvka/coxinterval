@@ -19,10 +19,11 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 \arguments{
   \item{formula}{
     an expression of the form \code{response ~ terms}, where
-    \code{response} is a survival object returned by the \code{Surv}
-    function and \code{terms} contains at least one multiplicative
-    term identified by the \code{\link[timereg]{prop}} function
-    from the \CRANpkg{timereg} package.
+    \code{response} is a survival object returned by the
+    \code{\link[survival]{Surv}} function and \code{terms} contains at
+    least one multiplicative term identified by the
+    \code{\link[timereg]{prop}} function from the \CRANpkg{timereg}
+    package.
   }
   \item{data}{
     an optional data frame in which to interpret the variables named in
@@ -120,13 +121,13 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   \item{iter}{
     number of iterations needed to achieve the model fit.
   }
-  \item{fenchel}{
-    the inner product between the final parameter value and the score
-    function.
-  }
   \item{maxnorm}{
     the maximum norm of the difference between the penultimate and final
     parameter values.
+  }
+  \item{gradnorm}{
+    the inner product between the final parameter value and the score
+    function.
   }
   \item{cputime}{
     the processing time for parameter and variance estimation.

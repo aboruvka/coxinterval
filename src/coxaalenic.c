@@ -105,9 +105,10 @@ loglik(double *c, double *L, double *z, double *w, int *J)
 void
 coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
            double *w, int *ncolw, int *J, double *A, int *nrowA, double *eps,
-           int *maxiter, double *armijo, double *typc, double *supc, int *trace,
-           int *maxthread, double *var, double *ll, int *numiter,
-           double *fenchel, double *maxnorm, double *cputime, int *flag)
+           int *epsnorm, int *maxiter, double *armijo, double *typc,
+           double *supc, int *trace, int *maxthread, double *var, double *ll,
+           int *numiter, double *maxnorm, double *gradnorm, double *cputime,
+           int *flag)
 {
   clock_t begtime, endtime;
   char uplo = 'U', errmsg[1024];
@@ -188,20 +189,20 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
     } while (stepinc * pow(0.5, steppow) > candll - ll[iter]);
     /* update estimates */
     *maxnorm = 0;
-    *fenchel = 0;
+    *gradnorm = 0;
     for (i = 0; i < p; i++) {
       *maxnorm = max(*maxnorm, fabs(c[i] - candc[i]));
       c[i] = candc[i];
-      *fenchel -= grad1c[i] * c[i];
+      *gradnorm -= grad1c[i] * c[i];
     }
     for (i = 0; i < dq; i++) {
       *maxnorm = max(*maxnorm, fabs(L[i] - candL[i]));
       L[i] = candL[i];
-      *fenchel -= grad1L[i] * L[i];
+      *gradnorm -= grad1L[i] * L[i];
     }
     ++iter;
     ll[iter] = candll;
-  } while (*maxnorm > *eps && iter < *maxiter);
+  } while ((*epsnorm ? *maxnorm : fabs(*gradnorm)) > *eps && iter < *maxiter);
   *numiter = iter;
   for (i = 0; i < p; i++) { /* curvature scale */
     fixc[i] = c[i];

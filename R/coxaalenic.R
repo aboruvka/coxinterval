@@ -46,20 +46,20 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
         update.formula(fit.timereg[[i]]$formula, formula.timereg[[i]])
       ## cox.aalen arguments, constructed to avoid NA-related errors
       temp <-
-        list(formula = fit.timereg[[i]]$formula, data = data[keep, ], robust = 0,
-             silent = 1, max.timepoint.sim = nrow(data))
+        list(formula = fit.timereg[[i]]$formula, data = data[keep, ],
+             robust = 0, silent = 1, max.timepoint.sim = nrow(data))
       invisible(capture.output(fit.timereg[[i]] <-
                                try(do.call("cox.aalen", temp))))
-      if (inherits(fit.timereg[[i]], "try-error")) {
+      if (inherits(fit.timereg[[i]], "try-error"))
         fit.timereg[[i]] <-
-          list(call = temp, coef = NULL, var = NULL, bhaz = NULL)
-      }
+          list(call = temp, n = NULL, coef = NULL, var = NULL, bhaz = NULL)
       else {
         temp <- rownames(fit.timereg[[i]]$gamma)
         fit.timereg[[i]] <- list(call = fit.timereg[[i]]$call,
-                           coef = as.vector(fit.timereg[[i]]$gamma),
-                           var = fit.timereg[[i]]$var.gamma,
-                           bhaz = as.data.frame(fit.timereg[[i]]$cum))
+                                 n = length(keep),
+                                 coef = as.vector(fit.timereg[[i]]$gamma),
+                                 var = fit.timereg[[i]]$var.gamma,
+                                 bhaz = as.data.frame(fit.timereg[[i]]$cum))
         names(fit.timereg[[i]]$bhaz)[2] <- "intercept"
         names(fit.timereg[[i]]$coef) <- temp
       }
@@ -77,9 +77,9 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   control <- if (missing(control)) coxaalenic.control(...)
              else do.call(coxaalenic.control, control)
   ## initial parameter values
-  if (is.null(init)) {
-    init <- list()
-    init$coef <- rep(0, nprp)
+  if (is.null(init)) init <- list()
+  if (is.null(init$coef)) init$coef <- rep(0, nprp)
+  if (is.null(init$bhaz)) {
     init$bhaz <-
       rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd - 1, ntime))
     if (init.timereg & length(fit.timereg))
@@ -100,6 +100,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.double(A),
             as.integer(nrow(A)),
             as.double(control$eps),
+            as.integer(control$eps.norm == "max"),
             as.integer(control$iter.max),
             as.double(control$armijo),
             as.double(control$coef.typ),
@@ -109,8 +110,8 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
             var = as.double(rep(0, nprp^2)),
             loglik = as.double(rep(0, control$iter.max + 1)),
             iter = as.integer(0),
-            fenchel = as.double(0),
             maxnorm = as.double(0),
+            gradnorm = as.double(0),
             cputime = as.double(0),
             flag = as.integer(0))
   if (fit$flag == 1)
@@ -139,7 +140,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
               basehaz = bhaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
-              fenchel = fit$fenchel, maxnorm = fit$maxnorm,
+              maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, fit.timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)

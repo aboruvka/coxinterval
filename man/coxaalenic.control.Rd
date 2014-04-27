@@ -9,21 +9,29 @@
 }
 
 \usage{
-coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
-                   coef.typ = 1, coef.max = 10, trace = FALSE,
-                   thread.max = 1)
+coxaalenic.control(eps = 1e-07, eps.norm = c("max", "grad"),
+                   iter.max = 5000, armijo = 1/3, coef.typ = 1,
+                   coef.max = 10, trace = FALSE, thread.max = 1)
 }
 
 \arguments{
   \item{eps}{
-    maximum threshold for the relative change in the model fit required
-    to meet the iterative estimation routine's stopping rule.
+    threshold value for the norm used to measure convergence in the
+    parameter estimates.
+  }
+  \item{eps.norm}{
+    a character string identifying the norm to use in the convergence
+    criteria---either the maximum norm between the current and
+    previous parameter values (\code{eps.norm = "max"}) or the inner
+    product between the current value and the score
+    (\code{eps.norm = "grad"}).
   }
   \item{iter.max}{
     maximum number of iterations to attempt.  This ensures that
     \code{\link{coxaalenic}} will eventually exit, even when the
-    stopping rule is not met.  A warning issued whenever the estimation
-    routine has stopped before converging on a final parameter value.
+    stopping rule is not met.  A warning is issued whenever the
+    estimation routine has stopped before converging on a final
+    parameter value.
   }
   \item{armijo}{
     a scale factor in (0, 1/2) for Armijo's (1966) rule---a step-halving
@@ -47,7 +55,12 @@ coxaalenic.control(eps = 1e-07, iter.max = 5000, armijo = 1/3,
   }
   \item{thread.max}{
     maximum number of CPU threads to allocate to CPLEX.  Default value
-    disables multithreading.
+    disables multithreading.  A value of zero allows CPLEX to set the
+    number of threads automatically.  Any value exceeding the total
+    number of logical cores on the system is reset by
+    \code{coxaalenic.control} to \code{detectCores(logical = TRUE)}. If this
+    new value does not reflect the total number of available threads, it
+    is later adjusted by CPLEX.
   }
 }
 

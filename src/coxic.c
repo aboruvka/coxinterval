@@ -291,7 +291,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       int *dims, double *z, int *nrow, double *left, double *right, double *u,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
       double *eps, int *maxiter, double *typc, double *supc, int *numiter,
-      double *gradnorm, double *maxnorm, double *cputime, int *flag)
+      double *maxnorm, double *gradnorm, double *cputime, int *flag)
 {
   clock_t begtime, endtime;
   char uplo = 'U';
