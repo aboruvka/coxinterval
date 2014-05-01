@@ -71,8 +71,8 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
       invisible(capture.output(fit.coxph[[i]] <- try(do.call("coxph", temp))))
       if (inherits(fit.coxph[[i]], "try-error"))
         fit.coxph[[i]] <-
-          list(call = temp, coef = NULL, var = NULL, bhaz = NULL, loglik = NULL,
-               m = NULL, na.action = NULL)
+          list(call = temp, coef = NULL, var = NULL, basehaz = NULL,
+               loglik = NULL, m = NULL, na.action = NULL)
       else {
         fit.coxph[[i]]$basehaz <- basehaz(fit.coxph[[i]], centered = FALSE)
         fit.coxph[[i]]$m <- fit.coxph[[i]]$n
@@ -107,28 +107,28 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
     init <- list()
     init$coef <- rep(0, ncov)
     init$basehaz <- tvec / max(d$v)
-    bhaz <- NULL
+    basehaz <- NULL
   }
   else {
-    names(init) <- c("coef", "bhaz")
-    bhaz <- init$basehaz
+    names(init) <- c("coef", "basehaz")
+    basehaz <- init$basehaz
   }
   if (init.coxph) {
     init$coef <- fit.coxph[[1]]$coef
-    bhaz <- fit.coxph[[1]]$bhaz
+    basehaz <- fit.coxph[[1]]$basehaz
   }
-  if (!is.null(bhaz)) {
-    bhaz <- step2jump(bhaz, stratum = 3)
-    bhaz <- jump2step(bhaz[bhaz[, 1] > 0, ], stratum = 3)
+  if (!is.null(basehaz)) {
+    basehaz <- step2jump(basehaz, stratum = 3)
+    basehaz <- jump2step(basehaz[basehaz[, 1] > 0, ], stratum = 3)
     init$basehaz <-
-      do.call("c", mapply(linapprox, split(bhaz[, 2:1], bhaz[, 3]), part,
+      do.call("c", mapply(linapprox, split(basehaz[, 2:1], basehaz[, 3]), part,
                           SIMPLIFY = FALSE))
   }
   init$basehaz <- cbind(init$basehaz, tvec, rep(c(1, 2, 12), times = npart))
   rownames(init$basehaz) <- NULL
   fit <- .C("coxic",
             coef = as.double(init$coef),
-            bhaz = as.double(lin2const(init$basehaz, stratum = 3)[, 1]),
+            basehaz = as.double(lin2const(init$basehaz, stratum = 3)[, 1]),
             as.integer(ncov),
             as.integer(npart),
             as.double(tvec),
@@ -156,7 +156,8 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             NAOK = TRUE)
   if (fit$flag == 1)
     stop("Parameter estimation failed; coefficient Hessian not invertible.")
-  if (with(fit, any(is.na(coef), is.nan(coef), is.na(bhaz), is.nan(bhaz))))
+  if (with(fit,
+           any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
     stop("Parameter estimation failed.")
   if (fit$flag == 2)
     stop("Variance estimation failed; profile information not invertible.")
@@ -169,18 +170,18 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   rownames(var) <- colnames(var) <- colnames(mm)[jcov]
   init$basehaz <- data.frame(init$basehaz)
   init$init.coxph <- init.coxph
-  bhaz <-
-    data.frame(const2lin(cbind(fit$bhaz, init$basehaz[, -1]), stratum = 3))
-  names(bhaz) <- names(init$basehaz) <- c("hazard", "time", "trans")
-  bhaz$trans <- as.factor(bhaz$trans)
-  levels(bhaz$trans) <- attr(mf, "types")
+  basehaz <-
+    data.frame(const2lin(cbind(fit$basehaz, init$basehaz[, -1]), stratum = 3))
+  names(basehaz) <- names(init$basehaz) <- c("hazard", "time", "trans")
+  basehaz$trans <- as.factor(basehaz$trans)
+  levels(basehaz$trans) <- attr(mf, "types")
   censor.rate <- with(d, c(sum(contrib != 0 & absorb), sum(contrib == 0)))
   censor.rate <- matrix(c(censor.rate[1], n - censor.rate[1] - censor.rate[2],
                           censor.rate[2]) / n, nrow = 1)
   dimnames(censor.rate) <-
     list("Observation rate", c("(S, T)", "1(S < T)", "Neither"))
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf), p = ncov,
-              coef = fit$coef, var = var, basehaz = bhaz, init = init,
+              coef = fit$coef, var = var, basehaz = basehaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, fit.coxph = fit.coxph,

@@ -10,7 +10,7 @@
   \code{\link[survival]{Surv}} object.
 }
 
-\usage{maximalint(x, size = FALSE)}
+\usage{maximalint(x)}
 
 \arguments{
   \item{x}{
@@ -18,21 +18,14 @@
     function with argument \code{type = "interval"} or
     \code{type = "interval2"}
   }
-  \item{size}{
-    logical value indicating whether or not only the number of maximal
-    intersections should be returned by the function
-  }
 }
 
 \value{
-  If \code{size = FALSE}, a named list with items:
   \item{int}{a two-column matrix whose rows give the maximal
   intersections (Wong and Yu, 1999) of the censoring intervals
   represented in \code{x}}
   \item{ind}{a \code{nrow(x)} by \code{nrow(int)} matrix that indicates
   overlap between each maximal intersection and censoring interval}
-  Otherwise, only the number of maximal intersections (\code{nrow(int)})
-  are returned.
 }
 
 \details{
@@ -61,5 +54,4 @@
 \examples{
 s <- with(cosmesis[1:10, ], Surv(left, right, type = "interval2"))
 maximalint(s)
-maximalint(s, size = TRUE)
 }

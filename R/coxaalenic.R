@@ -52,15 +52,15 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
                                try(do.call("cox.aalen", temp))))
       if (inherits(fit.timereg[[i]], "try-error"))
         fit.timereg[[i]] <-
-          list(call = temp, n = NULL, coef = NULL, var = NULL, bhaz = NULL)
+          list(call = temp, n = NULL, coef = NULL, var = NULL, basehaz = NULL)
       else {
         temp <- rownames(fit.timereg[[i]]$gamma)
         fit.timereg[[i]] <- list(call = fit.timereg[[i]]$call,
                                  n = length(keep),
                                  coef = as.vector(fit.timereg[[i]]$gamma),
                                  var = fit.timereg[[i]]$var.gamma,
-                                 bhaz = as.data.frame(fit.timereg[[i]]$cum))
-        names(fit.timereg[[i]]$bhaz)[2] <- "intercept"
+                                 basehaz = as.data.frame(fit.timereg[[i]]$cum))
+        names(fit.timereg[[i]]$basehaz)[2] <- "intercept"
         names(fit.timereg[[i]]$coef) <- temp
       }
       fit.timereg[[i]]$call$data <- cl$data
@@ -79,8 +79,8 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   ## initial parameter values
   if (is.null(init)) init <- list()
   if (is.null(init$coef)) init$coef <- rep(0, nprp)
-  if (is.null(init$bhaz)) {
-    init$bhaz <-
+  if (is.null(init$basehaz)) {
+    init$basehaz <-
       rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd - 1, ntime))
     if (init.timereg & length(fit.timereg))
       if (!is.null(fit.timereg[[1]])) init$coef <- fit.timereg[[1]]$coef
@@ -89,7 +89,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (close.cplex) on.exit(.C("freecplex"))
   fit <- .C("coxaalenic",
             coef = as.double(init$coef),
-            bhaz = as.double(init$bhaz),
+            basehaz = as.double(init$basehaz),
             as.integer(ntime),
             as.double(as.matrix(mm[, jprp])),
             as.integer(n),
@@ -116,7 +116,8 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
             flag = as.integer(0))
   if (fit$flag == 1)
     stop("Parameter estimation failed; coefficient Hessian not invertible.")
-  if (with(fit, any(is.na(coef), is.nan(coef), is.na(bhaz), is.nan(bhaz))))
+  if (with(fit,
+           any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
     stop("Parameter estimation failed.")
   if (fit$flag == 2)
     stop("Variance estimation failed; profile information not invertible.")
@@ -129,16 +130,16 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   names(fit$coef) <- colnames(mm)[jprp]
   var <- matrix(fit$var, nprp)
   rownames(var) <- colnames(var) <- colnames(mm)[jprp]
-  bhaz <- cbind(time$int[, 2], t(matrix(fit$bhaz, nadd)))
-  bhaz <- as.data.frame(rbind(0, bhaz))
-  names(bhaz) <- c("time", colnames(mm)[jadd])
+  basehaz <- cbind(time$int[, 2], t(matrix(fit$basehaz, nadd)))
+  basehaz <- as.data.frame(rbind(0, basehaz))
+  names(basehaz) <- c("time", colnames(mm)[jadd])
   censor.rate <- matrix(c(sum(mf[, irsp][, 1] == 0),
                           sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
                           sum(mf[, irsp][, 3] == 0)) / n, nrow = 1)
   dimnames(censor.rate) <-
     list("Censoring rate", c("Left", "Interval", "Right"))
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
-              basehaz = bhaz, init = init,
+              basehaz = basehaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, fit.timereg = fit.timereg,

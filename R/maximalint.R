@@ -1,5 +1,5 @@
 ### find maximal intersections from an interval-type survival object
-maximalint <- function(x, size = FALSE)
+maximalint <- function(x)
 {
   if (ncol(x) > 2) x[x[, 3] == 0, 2] <- Inf
   else x[x[, 1] == x[, 2], 1] <- x[x[, 1] == x[, 2], 2] - .Machine$double.eps
@@ -16,12 +16,9 @@ maximalint <- function(x, size = FALSE)
   s <- s[order(s[, 1]), ]
   s <- cbind(s, rbind(s[-1, ], NA))
   s <- s[s[, 2] == 0 & s[, 4] == 1, c(1, 3)]
-  if (size) nrow(s)
-  else {
-    ## indicator matrix
-    i <-
-      t(apply(x[, 1:2], 1, function(x) 1 * (s[, 1] >= x[1] & s[, 2] <= x[2])))
-    colnames(s) <- c("s", "t")
-    list(int = s, ind = i)
-  }
+  ## indicator matrix
+  i <-
+    t(apply(x[, 1:2], 1, function(x) 1 * (s[, 1] >= x[1] & s[, 2] <= x[2])))
+  colnames(s) <- c("s", "t")
+  list(int = s, ind = i)
 }

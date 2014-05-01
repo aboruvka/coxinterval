@@ -57,9 +57,9 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   \item{init.coxph}{
     a logical value indicating that \code{init} should be overrided by
     estimates based on the \code{\link[survival]{coxph}} fit to the
-    first model in \code{formula.coxph}.
+    first model specified in \code{formula.coxph}.
   }
-  \item{control}{
+  \item{control}{x
     a named list of parameters controlling the model fit, returned by
     the function \code{\link{coxic.control}}.  This defaults to
     \code{coxic.control()}.
@@ -71,13 +71,13 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 
 \details{
   A valid \code{formula} argument can be expressed
-  as \preformatted{Surv(<start>, <end>, <event>)
+  as \preformatted{Surv(<start>, <stop>, <status>)
     ~ cluster(<id>) + trans(<from>, <to>) + <covariate terms>}
-  where (\code{<start>}, \code{<end>}] is largest \emph{known} time
+  where (\code{<start>}, \code{<stop>}] is largest \emph{known} time
   interval over which individual \code{<id>} is at risk for a transition
   between the states \code{<from>} and \code{<to>}.  The variable
-  \code{<event>} indicates whether or not a transition is observed to
-  occur at \code{<end>}.
+  \code{<status>} indicates whether or not a transition is observed to
+  occur at \code{<stop>}.
 
   Under dual censoring (Boruvka and Cook, 2014b), both the originating
   state and the left endpoint of an at-risk interval may be unknown.
