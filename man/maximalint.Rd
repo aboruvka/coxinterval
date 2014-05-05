@@ -14,23 +14,30 @@
 
 \arguments{
   \item{x}{
-    a survival object returned by the \code{\link[survival]{Surv}}
-    function with argument \code{type = "interval"} or
-    \code{type = "interval2"}
+    a two-column matrix or data frame giving the left- and
+    right-endpoints of the censoring intervals or, alternatively, a
+    \code{type = "interval"} or \code{type = "interval2"}
+    \code{\link[survival]{Surv}} object.  Following the
+    \code{type = "interval2"} format, any \code{NA}-valued right
+    endpoints are considered the same as \code{Inf}.
   }
 }
 
 \value{
-  \item{int}{a two-column matrix whose rows give the maximal
-  intersections (Wong and Yu, 1999) of the censoring intervals
-  represented in \code{x}}
-  \item{ind}{a \code{nrow(x)} by \code{nrow(int)} matrix that indicates
-  overlap between each maximal intersection and censoring interval}
+  \item{int}{
+    a two-column matrix whose rows give the maximal
+    intersections (Wong and Yu, 1999) of the censoring intervals
+    represented in \code{x}
+  }
+  \item{ind}{
+    a \code{nrow(x)} by \code{nrow(int)} matrix that indicates
+    overlap between each maximal intersection and censoring interval
+  }
 }
 
 \details{
   Each censoring interval is assumed to exclude its left
-  endpoint. Following Maathuis (2005, Section 2.1) ties between the
+  endpoint.  Following Maathuis (2005, Section 2.1) ties between the
   unique (open) left and (closed) right endpoints among the censoring
   intervals are broken by subtracting a small value from the right
   endpoint value before constructing the maximal intersections.

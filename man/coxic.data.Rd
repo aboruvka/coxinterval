@@ -11,7 +11,9 @@
   action and its \code{subset} argument.
 }
 
-\usage{coxic.data(id, time1, time2, from, to, status, z, states)}
+\usage{
+coxic.data(id, start, stop, from, to, status, z, states)
+}
 
 \arguments{
   \item{id}{
@@ -19,12 +21,12 @@
     the special \code{\link[survival]{cluster}} term in the
     \code{formula} argument
   }
-  \item{time1}{
+  \item{start}{
     vector for the start time of the at-risk interval, passed to the
     \code{\link[survival]{Surv}} function in the response term of 
     \code{\link{coxic}}'s \code{formula} argument
   }
-  \item{time2}{
+  \item{stop}{
     vector for the stop time of the at-risk interval, passed to the
     \code{\link[survival]{Surv}} function in the response term of
     \code{\link{coxic}}'s \code{formula} argument    
@@ -32,12 +34,12 @@
   \item{from}{
     vector for the originating state in the transition type, passed as
     the first argument to \code{\link{coxic}} in the special
-    \code{\link[survival]{trans}} \code{formula} term
+    \code{\link{trans}} \code{formula} term
   }
   \item{to}{
     vector for the originating state in the transition type, passed as
     the second argument to \code{\link{coxic}} in the special
-    \code{\link[survival]{trans}} \code{formula} term
+    \code{\link{trans}} \code{formula} term
   }
   \item{status}{
     vector for the event status at the end of the at-risk interval,
@@ -55,8 +57,38 @@
 }
 
 \value{
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
+  \item{supp}{
+    named list giving the support points for the progression (\code{t01}),
+    progression-free survival (\code{t02}) and
+    survival-after-progression (\code{t12}) times assigned by the
+    semiparametric maximum likelihood estimator based on the subsample
+    with known progression status
+  }
+  \item{left}{
+    left endpoint of the potential censoring interval for the
+    progression time
+  }
+  \item{right}{
+    right endpoint of the potential censoring interval for the
+    progression time
+  }
+  \item{u}{
+    smallest observation times
+  }
+  \item{v}{
+    largest observation times
+  }
+  \item{contrib}{
+    likelihood contribution type: \code{contrib = 0} corresponds to
+    negative progression status at \code{v}, \code{contrib = 1} to
+    positive status, and \code{contrib = 2} to unknown status
+  }
+  \item{absorb}{
+    survival status at \code{v}
+  }
+  \item{z}{
+    \code{z} expanded to give transition-type--specific covariates
+  }
 }
 
 \seealso{

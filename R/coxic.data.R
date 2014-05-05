@@ -1,5 +1,5 @@
 ### format data for C fitting routine
-coxic.data <- function(id, time1, time2, from, to, status, z, states)
+coxic.data <- function(id, start, stop, from, to, status, z, states)
 {
   p <- max(1, ncol(z))
   z <- data.frame(id, from, to, status, z)
@@ -16,12 +16,12 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states)
   rownames(z) <- NULL
   uid <- unique(id)
   n <- length(uid)
-  ## NA action permits missing 'time1'/'time2' when 'time1' = 'time2'
-  time1[is.na(time1) & !is.na(from)] <- time2[is.na(time1) & !is.na(from)]
-  time2[is.na(time2)] <- time1[is.na(time2)]
+  ## NA action permits missing 'start'/'stop' when 'start' = 'stop'
+  start[is.na(start) & !is.na(from)] <- stop[is.na(start) & !is.na(from)]
+  stop[is.na(stop)] <- start[is.na(stop)]
   ## largest and smallest observation times
-  u <- as.vector(by(time1, id, min, na.rm = TRUE))
-  v <- as.vector(by(time2, id, max))
+  u <- as.vector(by(start, id, min, na.rm = TRUE))
+  v <- as.vector(by(stop, id, max))
   ## T observed?
   absorb <- is.element(uid, id[to == states[3] & status == 1])
   ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?
@@ -29,15 +29,18 @@ coxic.data <- function(id, time1, time2, from, to, status, z, states)
   contrib[uid %in% id[from %in% states[2]]] <- 1
   contrib[uid %in% id[is.na(from)]] <- 0
   ## (possible) censoring intervals (L, R] with L = R if T01 observed exactly
-  left <- time2[to == states[2]]
+  left <- stop[to == states[2]]
   left[!absorb & contrib == 2] <- v[!absorb & contrib == 2]
   right <- rep(Inf, n)
-  right[contrib == 0] <- time2[is.na(from)]
-  right[contrib == 1] <- time1[from %in% states[2]]
+  right[contrib == 0] <- stop[is.na(from)]
+  right[contrib == 1] <- start[from %in% states[2]]
   right[absorb & contrib == 0] <- v[absorb & contrib == 0] - .Machine$double.eps
+  if (!any(contrib == 0) | !any(contrib == 1 & absorb))
+    stop("Estimation requires at least some exactly-observed transition times")
   ## maximal intersections containing 0 -> 1 support
   maxint <- cbind(left, right)[contrib == 1, ]
   t01 <- maximalint(maxint)$int[, 2]
+  names(t01) <- NULL
   t02 <- v[absorb & contrib == 2]
   t12 <- v[absorb & contrib == 1]
   list(supp = list(t01 = t01, t02 = sort(unique(t02)), t12 = sort(unique(t12))),
