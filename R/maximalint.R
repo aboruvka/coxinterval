@@ -1,3 +1,4 @@
+### maximal intersections from an interval-type Surv object
 maximalint <- function(x)
 {
   if (is.null(nrow(x))) x <- matrix(x, nrow = 1)
@@ -12,7 +13,7 @@ maximalint <- function(x)
   ## break ties
   if (sum(!ind)) {
     l <- unique(x[!ind, 1])
-    r <- unique(x[!ind, 2])
+    r <- r.minus <- unique(x[!ind, 2])
     if (max(l, r[r < Inf]) <= 2) delta <- .Machine$double.eps
     else {
       s <- sort(unique(c(l, r)))
@@ -20,26 +21,27 @@ maximalint <- function(x)
         delta <- min(s[-1] - s[-length(s)]) / 10
       else
         delta <- s / 10
-      r[r %in% l] <- r[r %in% l] - delta
     }
+    r.minus[r %in% l] <- r[r %in% l] - delta
   }
-  else l <- r <- NULL
+  else l <- r <- r.minus <- NULL
   if (sum(ind)) {
+    ## open left-endpoint
     x[ind, 1] <- x[ind, 2] - .Machine$double.eps
     l <- c(l, unique(x[ind, 1]))
+    r.minus <- c(r.minus, unique(x[ind, 2]))
     r <- c(r, unique(x[ind, 2]))
   }
-  s <- rbind(cbind(l, 0), cbind(r, 1))
+  s <- rbind(cbind(l, l, 0), cbind(r.minus, r, 1))
   s <- s[order(s[, 1]), ]
   s <- cbind(s, rbind(s[-1, ], NA))
-  s <- s[s[, 2] == 0 & s[, 4] == 1, c(1, 3)]
+  ## maximal intersection left endpoint, right endpoint without and with ties 
+  s <- s[s[, 3] == 0 & s[, 6] == 1, c(1, 4, 5)]
   if (is.null(nrow(s))) s <- matrix(s, nrow = 1)
-  ## indicator matrix
-  if (nrow(s) < 2)
-    i <- matrix(1)
+  ## maximal intersection overlap with censoring interval indicator matrix
+  if (nrow(s) < 2) i <- matrix(1)
   else
     i <-
       t(apply(x[, 1:2], 1, function(x) 1 * (s[, 1] >= x[1] & s[, 2] <= x[2])))
-  colnames(s) <- c("s", "t")
   list(int = s, ind = i)
 }

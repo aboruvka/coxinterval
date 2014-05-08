@@ -400,13 +400,13 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     for (i = 0; i < p; i++) {
       *maxnorm = max(*maxnorm, fabs(stepc[i]));
       c[i] = candc[i];
-      *gradnorm -= grad1c[i] * c[i];
+      *gradnorm = max(*gradnorm, fabs(grad1c[i]));
     }
     for (i = 0; i < M; i++)
       for (j = 1; j < d[i]; j++) {
         *maxnorm = max(*maxnorm, fabs(steph[j + D[i]]));
         h[j + D[i]] = candh[j + D[i]];
-        *gradnorm += grad1h[j + D[i]] * h[j + D[i]];
+        *gradnorm = max(*gradnorm, fabs(grad1h[j + D[i]]));
       }
   } while (*maxnorm > *eps && iter < *maxiter);
   if (iter == 1) {

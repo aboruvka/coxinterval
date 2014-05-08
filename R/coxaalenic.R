@@ -35,7 +35,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
       | !(all(mf[, irsp][, 3] %in% c(0, 3))))
     stop("Response is not an 'interval2'-type 'Surv' object")
   ## fit right-censored data alternatives with timereg's cox.aalen
-  fit.timereg <- list()
+  fit.timereg <- list(NULL)
   if (!is.null(formula.timereg)) {
     if (!missing(subset)) warning("Model alternatives not based on subset")
     keep <- 1:nrow(data)
@@ -60,12 +60,12 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
                                  coef = as.vector(fit.timereg[[i]]$gamma),
                                  var = fit.timereg[[i]]$var.gamma,
                                  basehaz = as.data.frame(fit.timereg[[i]]$cum))
-        names(fit.timereg[[i]]$basehaz)[2] <- "intercept"
         names(fit.timereg[[i]]$coef) <- temp
       }
       fit.timereg[[i]]$call$data <- cl$data
     }
   }
+  fit.timereg <- NULL
   n <- nrow(mf)
   nadd <- length(jadd)
   nprp <- length(jprp)
@@ -78,18 +78,56 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
              else do.call(coxaalenic.control, control)
   ## initial parameter values
   if (is.null(init)) init <- list()
+  init.timereg <- init.timereg & !is.null(fit.timereg[[1]])
+  if (init.timereg) {
+    init$coef <- fit.timereg[[1]]$coef
+    init$basehaz <- fit.timereg[[1]]$basehaz
+  }
   if (is.null(init$coef)) init$coef <- rep(0, nprp)
+  else {
+    if (length(init$coef) == 1) init$coef <- rep(init$coef, nprp)
+    else if (length(init$coef) != nprp)
+      stop("Initial value needs ", nprp, " regression coefficients.")
+  }
   if (is.null(init$basehaz)) {
     init$basehaz <-
-      rbind(time$int[, 2] / time$int[ntime, 2], matrix(0, nadd - 1, ntime))
+      cbind(with(time, int[, 2] / int[ntime, 2]), matrix(0, ntime, nadd - 1))
     if (init.timereg & length(fit.timereg))
       if (!is.null(fit.timereg[[1]])) init$coef <- fit.timereg[[1]]$coef
+    basehaz <- NULL
   }
-  init$init.timereg <- init.timereg
+  else {
+    if (ncol(init$basehaz) != nadd + 1)
+      stop("Invalid initial baseline cumulative hazard data frame.")
+    if (!is.data.frame(init$basehaz)) init$basehaz <- data.frame(init$basehaz)
+    colnames(init$basehaz)[match(c("intercept", "Intercept"),
+                                 colnames(init$basehaz))] <- "(Intercept)"
+    if (all(c("time", colnames(mm)[jadd]) %in% colnames(init$basehaz)))
+      init$basehaz <- init$basehaz[c("time", colnames(mm)[jadd])]
+    else names(init$basehaz) <- c("time", colnames(mm)[jadd])
+    init$basehaz <- init$basehaz[order(init$basehaz$time), ]
+    basehaz <- init$basehaz
+  }
+  if (!is.null(basehaz)) {
+    ## evaluate on tied right endpoints of maximal intersections
+    if (nadd > 1)
+      init$basehaz <-
+        apply(basehaz[, -1], 2,
+              function(x) linapprox(data.frame(basehaz$time, x), time$int[, 3]))
+    else init$basehaz <- linapprox(basehaz[, 1:2], time$int[, 3])
+    ## add to baseline hazard if linear constraints are not met
+    basehaz <-
+      matrix(A %*% as.vector(t(init$basehaz)), ncol = nadd, byrow = TRUE)
+    basehaz[basehaz > 0] <- 0
+    basehaz <- cumsum(apply(-basehaz, 1, max))
+    if (length(dim(init$basehaz)))
+      init$basehaz[, "(Intercept)"] <- init$basehaz[, "(Intercept)"] + basehaz
+    else init$basehaz <- init$basehaz + basehaz
+  }
   if (close.cplex) on.exit(.C("freecplex"))
   fit <- .C("coxaalenic",
             coef = as.double(init$coef),
-            basehaz = as.double(init$basehaz),
+            basehaz = as.double(t(init$basehaz)),
             as.integer(ntime),
             as.double(as.matrix(mm[, jprp])),
             as.integer(n),
@@ -127,12 +165,15 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
-  names(fit$coef) <- colnames(mm)[jprp]
+  names(fit$coef) <- names(init$coef) <- colnames(mm)[jprp]
   var <- matrix(fit$var, nprp)
   rownames(var) <- colnames(var) <- colnames(mm)[jprp]
-  basehaz <- cbind(time$int[, 2], t(matrix(fit$basehaz, nadd)))
-  basehaz <- as.data.frame(rbind(0, basehaz))
-  names(basehaz) <- c("time", colnames(mm)[jadd])
+  init$init.timereg <- init.timereg
+  init$basehaz <- data.frame(time$int[, 2], init$basehaz)
+  init$basehaz <- rbind(0, init$basehaz)
+  basehaz <- data.frame(time$int[, 2], t(matrix(fit$basehaz, nadd)))
+  basehaz <- rbind(0, basehaz)
+  names(basehaz) <- names(init$basehaz) <- c("time", colnames(mm)[jadd])
   censor.rate <- matrix(c(sum(mf[, irsp][, 1] == 0),
                           sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
                           sum(mf[, irsp][, 3] == 0)) / n, nrow = 1)

@@ -29,8 +29,7 @@ summary.coxinterval <- function(object, conf.int = 0.95, scale = 1, ...)
   s <- c(s, f(object))
   temp <- do.call("c", sapply(c("fit.coxph", "fit.timereg"),
                               function(y) object[[y]], simplify = FALSE))
-  if (length(temp))
-    s$rcfit <- lapply(temp, f)
+  if (length(temp)) s$rcfit <- lapply(temp, f)
   else s$rcfit <- NULL
   class(s) <- "summary.coxinterval"
   s

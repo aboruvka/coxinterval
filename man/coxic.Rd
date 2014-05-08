@@ -35,13 +35,18 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     in the fit.  All observations are included by default.
   }
   \item{init}{
-    a list of the vector \code{coef}, specifying the initial coefficient
-    values, and data frame \code{basehaz}, giving the initial cumulative
-    baseline transition intensities at the time partition ultimately
-    defined by the \code{coxic.control} parameters \code{sieve.const}
-    and \code{sieve.rate}.  By default \code{coef} is zero and
-    \code{basehaz} corresponds to linear functions of time with an upper
-    bound of one.
+    a named list of the vector \code{coef}, specifying the initial
+    coefficient values, and data frame \code{basehaz}, on which to base
+    the initial cumulative baseline transition intensities.  The
+    \code{basehaz} data frame should contain the columns "hazard",
+    "time" and "trans" to respectively give the cumulative hazard,
+    corresponding time and transition type.  The \code{NULL} value for
+    \code{init} or its components enables default values. For
+    \code{coef} the default is zero. For \code{basehaz} the default
+    corresponds to linear functions of time with an upper bound of one.
+    Under any alternatives arising from this or the \code{init.coxph}
+    arguments, \code{basehaz} is interpreted as a step function of
+    time and the initial value is its piecewise linear approximation.
   }
   \item{formula.coxph}{
     a list of formula objects specifying models to fit with
@@ -59,7 +64,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
     estimates based on the \code{\link[survival]{coxph}} fit to the
     first model specified in \code{formula.coxph}.
   }
-  \item{control}{x
+  \item{control}{
     a named list of parameters controlling the model fit, returned by
     the function \code{\link{coxic.control}}.  This defaults to
     \code{coxic.control()}.
@@ -110,8 +115,8 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \value{
-  An object of the classes \code{"coxinterval"} and \code{"coxic"}, which
-  is a list with the following components.
+  An object of the classes \code{"coxinterval"} and \code{"coxic"},
+  which is a list with the following components.
   \item{call}{
     the matched call to \code{coxic}.
   }

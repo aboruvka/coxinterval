@@ -1,19 +1,19 @@
 ### convert jumps to cumulative values
-jump2step <- function(jump, time = NULL, stratum = NULL)
+jump2step <- function(jump, stratum = NULL, time)
 {
+  if (is.character(stratum)) stratum <- match(stratum, colnames(jump))
+  if (missing(time)) time <- "time"
+  if (is.character(time)) time <- match(time, colnames(jump))
+  m <- max(1, ncol(jump[, -c(time, stratum)]))
   f <- function(x) if (length(dim(x))) apply(x, 2, cumsum) else cumsum(x)
   if (!is.null(stratum)) {
-    if (is.null(time)) time <- stratum - 1
-    m <- ncol(jump) - 2
     step <- by(jump[, -c(time, stratum)], jump[, stratum], f, simplify = FALSE)
-    step <- do.call(rbind, lapply(step, matrix, ncol = max(1, m)))
+    step <- do.call("rbind", lapply(step, matrix, ncol = m))
   }
-  else {
-    if (is.null(time)) time <- ncol(jump)
-    step <- cumsum(jump[, 1])
-  }
+  else step <- f(jump[, -time])
   step <- cbind(step, jump[, c(time, stratum)])
   rownames(step) <- rownames(jump)
   colnames(step) <- colnames(jump)
-  step
+  if (is.data.frame(jump)) data.frame(step)
+  else step
 }
