@@ -65,7 +65,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
       fit.timereg[[i]]$call$data <- cl$data
     }
   }
-  fit.timereg <- NULL
+  else fit.timereg <- NULL
   n <- nrow(mf)
   nadd <- length(jadd)
   nprp <- length(jprp)
