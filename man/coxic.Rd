@@ -36,17 +36,22 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{init}{
     a named list of the vector \code{coef}, specifying the initial
-    coefficient values, and data frame \code{basehaz}, on which to base
-    the initial cumulative baseline transition intensities.  The
-    \code{basehaz} data frame should contain the columns "hazard",
-    "time" and "trans" to respectively give the cumulative hazard,
-    corresponding time and transition type.  The \code{NULL} value for
-    \code{init} or its components enables default values. For
-    \code{coef} the default is zero. For \code{basehaz} the default
-    corresponds to linear functions of time with an upper bound of one.
-    Under any alternatives arising from this or the \code{init.coxph}
-    arguments, \code{basehaz} is interpreted as a step function of
-    time and the initial value is its piecewise linear approximation.
+    coefficient values, and matrix or data frame \code{basehaz}, on
+    which to base the initial cumulative baseline transition
+    intensities.  The \code{basehaz} element should contain columns
+    representing the cumulative transition intensity, time and
+    transition type. If the columns do not appear in this order, they
+    should be indicated by the column names "hazard", "time" and
+    "trans", respectively.  The sorted values used to represent the
+    transition types should respectively denote the initial to
+    intermediate, initial to terminal, and intermediate to terminal
+    state transitions.  The \code{NULL} value for \code{init} or its
+    components enables default values.  For \code{coef} the default is
+    zero.  For \code{basehaz} the default corresponds to linear
+    functions of time with an upper bound of one.  Under any
+    alternatives arising from this or the \code{init.coxph} arguments,
+    \code{basehaz} is interpreted as a step function of time and the
+    initial value is its piecewise linear approximation.
   }
   \item{formula.coxph}{
     a list of formula objects specifying models to fit with

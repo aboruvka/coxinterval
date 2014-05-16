@@ -7,7 +7,7 @@
 Required software for coxinterval is summarized as follows. System-specific notes for items 1 and 2 are provided below.
 
 1. Development tools for R
-2. C API for CPLEX available with [IBM ILOG CPLEX Optimization Studio 12.5+](https://www14.software.ibm.com/webapp/iwm/web/reg/signup.do?source=scholars)
+2. C API for CPLEX available with [IBM ILOG CPLEX Optimization Studio 12.5+](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/). Members of [IBM's Academic Initiative](http://www-304.ibm.com/ibm/university/academic/pub/page/academic_initiative) can obtain CPLEX at [no charge](https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en).
 3. Contributed R package [timereg](http://cran.r-project.org/web/packages/timereg/index.html)
 
 coxinterval also depends on the Matrix, parallel and survival packages from the standard R library.

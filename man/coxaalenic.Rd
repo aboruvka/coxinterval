@@ -34,12 +34,20 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     in the fit.  All observations are included by default.
   }
   \item{init}{
-    a vector \code{coef} specifying the initial values of
-    the multiplicative regression coefficient.  By
-    default \code{coef} is zero.  The initial value for the cumulative
-    baseline hazard function is linear with time.  Any remaining
-    additive coefficients (also referred to as "regression functions")
-    are initialized to zero.
+    a list with elements named \code{coef} and \code{basehaz}.  The
+    \code{coef} element should be a scalar or vector specifying the
+    initial values of the multiplicative regression coefficient.  If
+    \code{init = NULL} or \code{coef = NULL}, this coefficient will be
+    initialized to zero.  The element \code{basehaz} should be a matrix
+    or data frame whose columns represent time and the corresponding
+    value for the cumulative baseline hazard function and any remaining
+    additive cumulative coefficients (also referred to as
+    "regression functions").  The cumulative regression functions are
+    then initialized by linearly interpolating or extrapolating these
+    values. If \code{init = NULL} or \code{basehaz = NULL}, the
+    cumulative baseline hazard function is initialized to a linear
+    function of time and any cumulative coefficients are started at
+    zero.
   }
   \item{formula.timereg}{
     a list of formula objects specifying models to fit with
