@@ -27,7 +27,7 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 
 ### Building and installing
 
-Download the source and run from the command line:
+[Download the source](https://github.com/aboruvka/coxinterval/releases) and run from the command line:
 ```
 R CMD build coxinterval
 R CMD check coxinterval_<version>.tar.gz
