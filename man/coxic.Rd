@@ -202,7 +202,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 # Fit Cox model to dual-right--censored data
 fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
              + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
-             + I(z* (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
+             + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
              sieve.rate = 2/5)
 fit
 par(mfrow = c(1, 3))
@@ -211,7 +211,7 @@ by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
 
 # Fit Cox model to data with interval-censored progression times
 fit <- coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
-             + I(z *(to == 1)) + I(z * (from \%in\% 0 & to == 2))
+             + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
              + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
 fit
 par(mfrow=c(1, 3))

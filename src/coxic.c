@@ -1,9 +1,4 @@
-#include "matrix.h"
-
-#ifndef max
-#  define max(a, b) ((a) > (b) ? (a) : (b))
-#  define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
+#include "coxinterval.h"
 
 #define M 3
 
@@ -290,8 +285,9 @@ void
 coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       int *dims, double *z, int *nrow, double *left, double *right, double *u,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
-      double *eps, int *maxiter, double *typc, double *supc, int *numiter,
-      double *maxnorm, double *gradnorm, double *cputime, int *flag)
+      double *eps, int *maxiter, double *typc, double *supc, int *zeroc,
+      int *numiter, double *maxnorm, double *gradnorm, double *cputime,
+      int *flag)
 {
   clock_t begtime, endtime;
   char uplo = 'U';
@@ -345,6 +341,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
   begtime = clock();
   ll[iter] = loglik(c, h, z, t, s, left, right, u, v, contrib, absorb);
   do { /* estimate parameters */
+    if (*zeroc) goto emstep;
     /* Netwon-Raphson step for regression coefficient c */
     lwork = -1;
     F77_CALL(dsytrf)(&uplo, &p, grad2c, &p, ipiv, work, &lwork, &status);
@@ -372,6 +369,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
         stepc[i] -= grad2c[i + j*p] * grad1c[j];
       candc[i] = c[i] + stepc[i];
     }
+  emstep:
     /* EM step for baseline transition intensities h */
     loglik(candc, h, z, t, s, left, right, u, v, contrib, absorb);
     for (i = 0; i < M; i++)
@@ -381,7 +379,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       }
     newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
     /* overshoot also characterized by exp(z*c) = Inf => log-likelihood NaN */
-    while (newll < ll[iter] || ISNAN(newll)) { /* step "halving" */
+    while (newll < ll[iter] || ISNAN(newll)) { /* step halving */
       for (i = 0; i < p; i++) {
         stepc[i] *= 0.5;
         candc[i] = c[i] + stepc[i];
@@ -415,6 +413,7 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     goto deallocate;
   }
   *numiter = iter;
+  if (*zeroc) goto deallocate;
   for (i = 0; i < p; i++) { /* curvature scale */
     fixc[i] = c[i];
     for (j = 0; j <= i; j++)
@@ -490,9 +489,9 @@ coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       varc[i + j*p] = varc[j + i*p];
     }
   }
+deallocate:
   endtime = clock();
   *cputime = ((double) (endtime - begtime)) / CLOCKS_PER_SEC;
-deallocate:
   Free(sidx);
   Free(lidx);
   Free(ridx);

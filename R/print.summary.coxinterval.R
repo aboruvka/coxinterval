@@ -11,12 +11,15 @@ print.summary.coxinterval <-
       cat("Formula:\n")
       dput(fit$formula)
     }
-    if (is.null(fit$mat)) cat("  Estimation failed\n")
+    if (is.null(fit$mat) & fit$p > 0) cat("  Estimation failed\n")
     else {
-      fit$mat[, grep("z", colnames(fit$mat))] <-
-        signif(fit$mat[, grep("z", colnames(fit$mat))], digits - 1)
       cat("\n")
-      prmatrix(fit$mat)
+      if (fit$p > 0) {
+        fit$mat[, grep("z", colnames(fit$mat))] <-
+          signif(fit$mat[, grep("z", colnames(fit$mat))], digits - 1)
+        prmatrix(fit$mat)
+      }
+      else cat("Null model\n")
       cat("\n")
       cat("Based on ")
       cat("n =", fit$n)

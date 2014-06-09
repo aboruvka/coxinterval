@@ -19,15 +19,17 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (length(itrn) != 1) stop("Model requires exactly one 'trans' term.")
   if (length(icls) != 1) stop("Model requires exactly one 'cluster' term.")
   icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, itrn, icls)]
-  if (!length(icov)) stop("Model has no covariates.")
   mf$formula <- ftrm
   mf$na.action <- as.name("na.coxic")
   suppressWarnings(mf <- eval(mf, parent.frame()))
   mt <- attr(mf, "terms")
   mm <- model.matrix(mt, mf)
   ## find covariates model matrix
-  asgn <- frame.assign(mf, mt, mm)
-  jcov <- subset.data.frame(asgn, frame %in% icov)$matrix
+  if (length(icov)) {
+    asgn <- frame.assign(mf, mt, mm)
+    jcov <- subset.data.frame(asgn, frame %in% icov)$matrix
+  }
+  else jcov <- 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object.")
   if (attr(mf[, irsp], "type") != "counting")
     stop("Response is not a 'counting'-type 'Surv' object.")
@@ -76,10 +78,13 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
       fit.coxph[[i]] <- cl
       fit.coxph[[i]]$formula <-
         update.formula(fit.coxph[[i]]$formula, formula.coxph[[i]])
-      temp <- paste(gsub("trans\\(", "strata\\(",
-                         deparse(fit.coxph[[i]]$formula[[3]])), collapse = "")
+      temp <- gsub("^trans\\(", "strata\\(",
+                   attr(terms(fit.coxph[[i]]$formula), "term.labels"))
+      ## dispense with extraneous terms for null model
+      if (!length(icov)) temp <- c(temp[grep("^strata\\(", temp)], "1")
       fit.coxph[[i]]$formula <-
-        update.formula(fit.coxph[[i]]$formula, as.formula(paste("~", temp)))
+        update.formula(fit.coxph[[i]]$formula,
+                       as.formula(paste("~", paste(temp, collapse = " + "))))
       temp <- list(formula = fit.coxph[[i]]$formula, data = data,
                    na.action = "na.omit")
       if (!missing(subset)) temp <- c(temp, subset)
@@ -99,7 +104,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
                basehaz = basehaz(fit.coxph[[i]], centered = FALSE),
                loglik = fit.coxph[[i]]$loglik,
                na.action = fit.coxph[[i]]$na.action)
-        if (censor == "right" & i == 1) {
+        if (censor == "right" & i == 1 & length(icov)) {
           rownames(fit.coxph[[i]]$var) <-
             colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
           names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "trans")
@@ -115,7 +120,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
     init$coef <- fit.coxph[[1]]$coef
     init$basehaz <- fit.coxph[[1]]$basehaz
   }
-  if (is.null(init$coef)) init$coef <- rep(0, ncov)
+  if (is.null(init$coef) | !length(icov)) init$coef <- rep(0, ncov)
   else {
     if (length(init$coef) == 1) init$coef <- rep(init$coef, ncov)
     else if (length(init$coef) != ncov)
@@ -174,6 +179,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.integer(control$iter.max),
             as.double(control$coef.typ),
             as.double(control$coef.max),
+            as.integer(length(icov) == 0),
             iter = as.integer(0),
             maxnorm = as.double(0),
             gradnorm = as.double(0),
@@ -206,8 +212,9 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
                           censor.rate[2]) / n, nrow = 1)
   dimnames(censor.rate) <-
     list("Observation rate", c("Status and T", "Status only", "Neither"))
-  fit <- list(call = cl, censor = censor, n = n, m = nrow(mf), p = ncov,
-              coef = fit$coef, var = var, basehaz = basehaz, init = init,
+  fit <- list(call = cl, censor = censor, n = n, m = nrow(mf),
+              p = ncov * (length(icov) > 0), coef = fit$coef, var = var,
+              basehaz = basehaz, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, fit.coxph = fit.coxph,

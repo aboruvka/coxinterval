@@ -3,8 +3,8 @@ summary.coxinterval <- function(object, conf.int = 0.95, scale = 1, ...)
   s <- sapply(c("call", "loglik", "iter", "censor.rate", "censor"),
               function(x) object[[x]], simplify = FALSE)
   f <- function(fit) {
-    out <-
-      sapply(c("n", "m", "na.action"), function(y) fit[[y]], simplify = FALSE)
+    out <- sapply(c("n", "p", "m", "na.action"),
+                  function(y) fit[[y]], simplify = FALSE)
     out$formula <- fit$call$formula
     if (is.null(fit$coef)) out$fit <- NULL
     else {

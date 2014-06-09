@@ -1,10 +1,5 @@
-#include "matrix.h"
+#include "coxinterval.h"
 #include "rcplex.h"
-
-#ifndef max
-#  define max(a, b) ((a) > (b) ? (a) : (b))
-#  define min(a, b) ((a) < (b) ? (a) : (b))
-#endif
 
 static int n, p, q, d, dq;
 static double *grad1c, *grad2c, *grad3c, *grad1L, *grad2L;
