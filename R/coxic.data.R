@@ -38,12 +38,10 @@ coxic.data <- function(id, start, stop, from, to, status, z, states)
   if (!any(contrib == 0) | !any(contrib == 1 & absorb))
     stop("Estimation requires some exactly-observed transition times.")
   ## maximal intersections containing 0 -> 1 support
-  maxint <- cbind(left, right)[contrib == 1, ]
-  t01 <- maximalint(maxint)$int[, 2]
+  t01 <- maximalint(cbind(left, right)[contrib == 1, ])$int[, 2]
   names(t01) <- NULL
-  t02 <- v[absorb & contrib == 2]
-  t12 <- v[absorb & contrib == 1]
-  supp <- list(t01 = t01, t02 = sort(unique(t02)), t12 = sort(unique(t12)))
-  list(supp = supp, left = left, right = right, u = u, v = v, contrib = contrib,
-       absorb = absorb, z = z)
+  t02 <- sort(unique(v[absorb & contrib == 2]))
+  t12 <- sort(unique(v[absorb & contrib == 1]))
+  list(supp = list(t01 = t01, t02 = t02, t12 = t12), left = left, right = right,
+       u = u, v = v, contrib = contrib, absorb = absorb, z = z)
 }

@@ -11,7 +11,7 @@ print.summary.coxinterval <-
       cat("Formula:\n")
       dput(fit$formula)
     }
-    if (is.null(fit$mat) & fit$p > 0) cat("  Estimation failed\n")
+    if (is.null(fit$mat) & x$p > 0) cat("  Estimation failed\n")
     else {
       cat("\n")
       if (fit$p > 0) {
