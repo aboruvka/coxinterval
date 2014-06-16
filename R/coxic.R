@@ -207,11 +207,13 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
                         trans = init$basehaz$trans)
   basehaz <- const2lin(basehaz, stratum = "trans")
   rownames(basehaz) <- rownames(init$basehaz) <- NULL
-  censor.rate <- with(d, c(sum(contrib != 0 & absorb), sum(contrib == 0)))
-  censor.rate <- matrix(c(censor.rate[1], n - censor.rate[1] - censor.rate[2],
-                          censor.rate[2]) / n, nrow = 1)
+  censor.rate <-
+    with(d, c(sum(contrib != 0 & absorb), sum(contrib != 0 & !absorb),
+              sum(contrib == 0 & absorb), sum(contrib == 0 & !absorb)))
+  censor.rate <- matrix(censor.rate/n, nrow = 1)
   dimnames(censor.rate) <-
-    list("Observation rate", c("Status and T", "Status only", "Neither"))
+    list("Observation rate",
+         c("Status and survival", "Status only", "Survival only", "Neither"))
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf),
               p = ncov * (length(icov) > 0), coef = fit$coef, var = var,
               basehaz = basehaz, init = init,
