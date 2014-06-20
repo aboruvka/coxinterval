@@ -21,7 +21,7 @@
 
 \value{
   A combination of the \code{from} and \code{to} arguments by column
-  with two following two attributes.
+  with two attributes:
   \item{\code{"states"}}{
     a vector giving the unique non-missing values in the \code{from} and
     \code{to} arguments ordered so that the initial state appears first,

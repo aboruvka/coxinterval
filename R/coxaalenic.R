@@ -57,6 +57,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
         temp <- rownames(fit.timereg[[i]]$gamma)
         fit.timereg[[i]] <- list(call = fit.timereg[[i]]$call,
                                  n = length(keep),
+                                 p = nrow(fit.timereg[[i]]$gamma),
                                  coef = as.vector(fit.timereg[[i]]$gamma),
                                  var = fit.timereg[[i]]$var.gamma,
                                  basehaz = as.data.frame(fit.timereg[[i]]$cum))

@@ -13,7 +13,7 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 
 ##### Windows
 
-Install 32-bit CPLEX. Note that this means coxinterval must be used with 32-bit R. On a 64-bit Windows system use `R --arch=i386 CMD INSTALL --no-multiarch` in the following install instructions.
+The package compiles without issue for 32-bit CPLEX. This means that coxinterval and CPLEX should be used with 32-bit R. On a 64-bit Windows system apply the option settings `R --arch=i386 CMD INSTALL --no-multiarch` in the following install instructions.
 
 ### Installing
 
@@ -21,7 +21,7 @@ Install 32-bit CPLEX. Note that this means coxinterval must be used with 32-bit 
 ```
 R CMD INSTALL coxinterval_<version>.tar.gz
 ```
-Alternatively in an R session run:
+or from an R session run:
 ```
 install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
 ```
