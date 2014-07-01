@@ -22,18 +22,11 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 
 ##### Windows
 
-1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run:
+1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run `set PATH` and ensure that the value for the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH`. For example:
 
    ```
-   set PATH
-   ```
-
-and ensure that the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH`. For example:
-
-    ```
     set PATH=C:/Rtools/bin;C:/Rtools/gcc-4.6.3/bin;C:/Program Files/R/R-3.1.0/bin;%PATH%
-    ```
-
+   ```
 2. Install 32-bit CPLEX. Note that this means coxinterval must be used with 32-bit R. 
 
 ### Installing
