@@ -2,10 +2,10 @@ ifdef CPLEXHOME
 CPLEXDIR = $(CPLEXHOME)
 endif
 ifndef CPLEXDIR
-CPLEXDIR = $(shell ls -d c:/PROGRA~2/IBM/ILOG/CPLEX* | head -n1)
+CPLEXDIR = $(shell ls -d C:/PROGRA~2/IBM/ILOG/CPLEX* | head -n1)
 endif
 ifndef CPLEXDIR
-CPLEXDIR = $(shell ls -d c:/PROGRA~1/IBM/ILOG/CPLEX* | head -n1)
+CPLEXDIR = $(shell ls -d C:/PROGRA~1/IBM/ILOG/CPLEX* | head -n1)
 endif
 ifndef CPLEXLIBDIR
 CPLEXLIBDIR = $(shell ls -d $(CPLEXDIR)/cplex/lib/*/* | head -n1)
