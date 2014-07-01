@@ -23,13 +23,17 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 ##### Windows
 
 1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run:
+
    ```
    set PATH
    ```
+
 and ensure that the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH`. For example:
+
     ```
     set PATH=C:/Rtools/bin;C:/Rtools/gcc-4.6.3/bin;C:/Program Files/R/R-3.1.0/bin;%PATH%
     ```
+
 2. Install 32-bit CPLEX. Note that this means coxinterval must be used with 32-bit R. 
 
 ### Installing
@@ -39,10 +43,13 @@ Download the package tarball [`coxinterval_<version>.tar.gz`](https://github.com
 ##### Unix-alike and Mac OS X
 
 From your system command line run:
+
 ```
 R CMD INSTALL coxinterval_<version>.tar.gz
 ```
+
 Alternatively from an R session run:
+
 ```
 install.packages("<path to tarball>/coxinterval_<version>.tar.gz", repos = NULL, type = "source")
 ```
@@ -50,6 +57,7 @@ install.packages("<path to tarball>/coxinterval_<version>.tar.gz", repos = NULL,
 ##### Windows
 
 From a command prompt run:
+
 ```
 R --arch=i386 CMD INSTALL --no-multiarch coxinterval_<version>.tar.gz
 ```
@@ -57,16 +65,22 @@ R --arch=i386 CMD INSTALL --no-multiarch coxinterval_<version>.tar.gz
 ##### Overriding build defaults for custom CPLEX installations
 
 The package's Makevars files finds default installations of CPLEX, which have the following general form.
+
 - Unix-alike: `/opt/*/ILOG/CPLEX*`
 - Mac OS X: `/Users/*/Applications/IBM/ILOG/CPLEX*`
 - Windows 64-bit: `C:/PROGRA~2/IBM/ILOG/CPLEX*`
 - Windows 32-bit: `C:/PROGRA~1/IBM/ILOG/CPLEX*`
+
 A custom installation directory can be specified in POSIX format with the `CPLEXHOME` or `CPLEXDIR` environment variables. One of these must be defined for a system with multiple CPLEX installations. For example, on a 64-bit Windows system with CPLEX installed in the directory
+
 ```
 C:\Program Files (x86)\CPLEX_Studio126
 ```
+
 we can define `CPLEXDIR` from a command prompt with:
+
 ```
 set CPLEXDIR=C:/PROGRA~2/CPLEX_Studio126
 ```
+
 CPLEX provides various library formats. By default Makevars(.win) links to the first one returned by `ls`. To override this, provide the POSIX-style path to the desired library in the `CPLEXLIBDIR` environment variable.
