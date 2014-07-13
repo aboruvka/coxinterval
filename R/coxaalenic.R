@@ -4,6 +4,8 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
 {
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
+  if (!is.loaded("coxaalenic", "coxinterval"))
+    stop("'coxaalenic' requires CPLEX")
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")

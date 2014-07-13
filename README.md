@@ -42,7 +42,7 @@ R CMD INSTALL coxinterval_<version>.tar.gz
 Alternatively from an R session run:
 
 ```R
-install.packages("<path to tarball>/coxinterval_<version>.tar.gz", repos = NULL, type = "source")
+install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
 ```
 
 ##### Overriding build defaults for custom CPLEX installations
@@ -68,14 +68,20 @@ set CPLEXDIR=C:/PROGRA~2/CPLEX_Studio126
 
 from the command prompt.
 
-GNU make extensions are further used to set names for include, libraries and compiler flags following CPLEX's directory structure and Makefile. In particular `PKG_CPPFLAGS` is appended with `CPX_FLAGS`, which includes (`-I`) the directory containing the `ilcplex/cplex.h` header file. `PKG_LIBS` is appended with `CPX_LIBS`, which links (`-L`) to at least one CPLEX library of the form `$(CPLEXDIR)/cplex/lib/<machine>/<libformat>` and enables `-lcplex -lm`. In the absence of GNU make or to override these settings, define the environment variables `CPX_FLAGS` and `CPX_LIBS` before installing.
+GNU make extensions are further used to set names for include, libraries and compiler flags following CPLEX's directory structure and Makefile. In particular `PKG_CPPFLAGS` is appended with `CPX_FLAGS`, which includes the directory `-I$(CPLEXDIR)/cplex/include` containing the `ilcplex/cplex.h` header file. `PKG_LIBS` is appended with `CPX_LIBS`, which has the general form
+
+```
+-L$(CPLEXDIR)/cplex/lib/<machine>/<libformat> -lcplex -lm
+```
+
+In the absence of GNU make or to override these settings, define the environment variables `CPX_FLAGS` and `CPX_LIBS` before installing.
 
 ##### Installing without both CPLEX and GNU make
 
 For systems without both GNU make and CPLEX, set the environment variable `NO_CPLEX` before installing:
 
 ```shell
-set NO_CPLEX=TRUE    # Windows
-setenv NO_CPLEX=TRUE # OS X
 export NO_CPLEX=TRUE # Unix-alike
+setenv NO_CPLEX=TRUE # OS X
+set NO_CPLEX=TRUE    # Windows
 ```

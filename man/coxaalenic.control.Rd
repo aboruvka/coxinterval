@@ -82,6 +82,7 @@ coxaalenic.control(eps = 1e-07, eps.norm = c("max", "grad"),
 \seealso{\code{\link{coxaalenic}}}
 
 \examples{
+if (is.loaded("coxaalenic", "coxinterval"))
 coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
            data = cosmesis, control = coxaalenic.control(iter.max = 2,
            trace = TRUE))

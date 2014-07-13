@@ -175,10 +175,12 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \examples{
 # Fit a Cox model to the breast cosmesis dataset
-fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
-                  data = cosmesis)
-fit
-plot(fit$basehaz, type = "s")
+if (is.loaded("coxaalenic", "coxinterval")) \{
+  fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
+                    data = cosmesis)
+  fit
+  plot(fit$basehaz, type = "s")
+\}
 }
 
 \keyword{survival}
