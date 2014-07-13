@@ -91,6 +91,11 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   fixed multiplicative effects as in the Cox model. Multiplicative terms
   are distinguished by applying \CRANpkg{timereg}'s
   \code{\link[timereg]{prop}} function to each corresponding variable.
+
+  \code{coxaalenic} requires C functions, which are loaded only if
+  \code{coxinterval} is installed from source on a system with
+  \href{(http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/)}{
+  CPLEX}. Refer to the package's README for detailed instructions.
 }
 
 \value{

@@ -47,7 +47,7 @@ install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
 
 ##### Overriding build defaults for custom CPLEX installations
 
-The package's Makevars files uses GNU make extensions locate default installations of CPLEX, which have the following general form.
+The package's [Makevars](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars) files uses non-standard [GNU make extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Writing-portable-packages) to locate default installations of CPLEX, which have the following general form.
 
 - Unix-alike: `/opt/*/ILOG/CPLEX*`
 - Mac OS X: `/Users/*/Applications/IBM/ILOG/CPLEX*`
