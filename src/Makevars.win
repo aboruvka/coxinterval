@@ -2,6 +2,7 @@ SOURCES = coxaalenic.c rcplex.c coxic.c
 OBJECTS = coxaalenic.o rcplex.o coxic.o
 
 ifndef CPX_LIBS
+ifneq "$(NO_CPLEX)" "TRUE"
 ifndef CPLEXDIR
 ifneq "$(WIN)" "64"
 CPLEXDIR = $(wildcard c:/PROGRA~2/IBM/ILOG/CPLEX*)
@@ -20,6 +21,7 @@ CPLEXVER = $(basename $(subst cplex, , $(CPLEXLIB)))
 CPLEXINDIR = $(shell ls -d $(CPLEXDIR)/cplex/include | head -n1)
 CPX_LIBS = -L$(quote)$(CPLEXLIBDIR)$(quote) -lcplex$(CPLEXVER) -lm
 CPX_FLAGS = -I$(quote)$(CPLEXINDIR)$(quote)
+endif
 endif
 endif
 

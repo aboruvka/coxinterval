@@ -2,6 +2,7 @@ SOURCES = coxaalenic.c rcplex.c coxic.c
 OBJECTS = coxaalenic.o rcplex.o coxic.o
 
 ifndef CPX_LIBS
+ifneq "$(NO_CPLEX)" "TRUE"
 ifndef CPLEXDIR
 CPLEXDIR = $(wildcard /Users/*/Applications/IBM/ILOG/CPLEX*)
 endif
@@ -13,6 +14,7 @@ CPLEXLIBDIR = $(wildcard $(CPLEXDIR)/cplex/lib/*/*)
 CPX_LIBS = $(addprefix -L, $(CPLEXLIBDIR)) -lcplex -lm
 CPLEXINDIR = $(CPLEXDIR)/cplex/include
 CPX_FLAGS = $(addprefix -I, $(CPLEXINDIR))
+endif
 endif
 endif
 
