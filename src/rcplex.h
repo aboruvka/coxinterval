@@ -1,8 +1,7 @@
 #include <stdlib.h>
-#include <ilcplex/cplex.h>
 #include <R.h>
-#include <Rinternals.h>
 #include <unistd.h>
+#include <ilcplex/cplex.h>
 
 CPXENVptr env;
 CPXLPptr lp;
