@@ -14,8 +14,6 @@ endif
 endif
 ifneq "$(CPLEXDIR)" ""
 quote = "#"
-SOURCES = coxaalenic.c rcplex.c coxic.c
-OBJECTS = coxaalenic.o rcplex.o coxic.o
 CPLEXLIBDIR = $(shell ls -d $(CPLEXDIR)/cplex/lib/*/* | head -n1)
 CPLEXLIB = $(shell basename $(shell ls $(CPLEXLIBDIR)/*.lib | head -n1))
 CPLEXVER = $(basename $(subst cplex, , $(CPLEXLIB)))
