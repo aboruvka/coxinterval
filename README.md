@@ -31,7 +31,7 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
 
 ## Installing
 
-To install from CRAN, from an R session run:
+To install from CRAN, run in an R session:
 
 ```R
 > install.packages("coxinterval", type = "source")
@@ -61,9 +61,11 @@ With custom or multiple installations of CPLEX, a directory must specified in PO
 On systems without GNU make, the compiler variables must be set directly. Continuing the above example:
 
 ```R
-> Sys.setenv(CPLEXINVARS = paste('-I"', Sys.getenv("CPLEXDIR"), '/cplex/include"', sep = ""))
-> Sys.setenv(CPLEXLNVARS = paste('-L"', Sys.getenv("CPLEXDIR"),
-                                 '/cplex/lib/x86_windows_vs2010/stat_mda" -lcplex1260 -lm', sep = ""))
+> Sys.setenv(CPLEXINVARS =
+    paste('-I"', Sys.getenv("CPLEXDIR"), '/cplex/include"', sep = ""))
+> Sys.setenv(CPLEXLNVARS =
+    paste('-L"', Sys.getenv("CPLEXDIR"),
+          '/cplex/lib/x86_windows_vs2010/stat_mda" -lcplex1260 -lm', sep = ""))
 ```
 
 Note the use of quotes here to correctly refer to directory names. These are unnecessary on (mostly) POSIX-compliant systems like Linux and Mac.
