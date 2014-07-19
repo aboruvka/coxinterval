@@ -1,34 +1,53 @@
 SOURCES = coxaalenic.c rcplex.c coxic.c
 OBJECTS = coxaalenic.o rcplex.o coxic.o
 
-ifndef CPX_LIBS
-ifneq "$(NO_CPLEX)" "TRUE"
-ifndef CPLEXDIR
-CPLEXDIR = $(wildcard /Users/*/Applications/IBM/ILOG/CPLEX*)
+ifeq "$(CPLEXLNVARS)$(CPLEXINVARS)$(NOCPLEX)" ""
+ifeq "$(wildcard $(CPLEXDIR)/cplex)" ""
+CPLEXDIR = 
 endif
+ifeq "$(wildcard $(CPLEXINCDIR)/ilcplex/cplex.h)" ""
+CPLEXINCDIR = 
+endif
+ifeq "$(wildcard $(CPLEXLIBDIR)/cplex*.lib)" ""
+CPLEXLIBDIR = 
+endif
+ifeq "$(CPLEXDIR)" ""
+CPLEXDIR = $(wildcard /Users/*/Applications/IBM/ILOG/CPLEX*)
 ifeq "$(CPLEXDIR)" ""
 CPLEXDIR = $(wildcard /opt/*/ILOG/CPLEX*)
 endif
+endif
 ifneq "$(CPLEXDIR)" ""
-CPLEXLIBDIR = $(wildcard $(CPLEXDIR)/cplex/lib/*/*)
-CPX_LIBS = $(addprefix -L, $(CPLEXLIBDIR)) -lcplex -lm
-CPLEXINDIR = $(CPLEXDIR)/cplex/include
-CPX_FLAGS = $(addprefix -I, $(CPLEXINDIR))
+ifeq "$(CPLEXLIBDIR)" ""
+CPLEXLIBDIR = $(firstword $(wildcard $(CPLEXDIR)/cplex/lib/*/*))
 endif
+ifeq "$(CPLEXINCDIR)" ""
+CPLEXINCDIR = $(firstword $(wildcard $(CPLEXDIR)/cplex/include))
+endif
+endif
+ifneq "$(CPLEXLIBDIR)" ""
+CPLEXLNVARS = -L$(CPLEXLIBDIR) -lcplex -lm
+endif
+CPLEXINC = $(wildcard $(CPLEXINCDIR)/ilcplex/cplex.h)
+ifneq "$(CPLEXINC)" ""
+CPLEXINVARS = -I$(CPLEXINCDIR)
 endif
 endif
 
-ifeq "$(CPX_FLAGS)" ""
-NO_CPLEX = TRUE
+ifndef CPLEXLNVARS
+CPLEXINVARS =
 endif
 
-ifeq "$(NO_CPLEX)" "TRUE"
+ifneq "$(NOCPLEX)" ""
+CPLEXINVARS =
+endif
+
+ifndef CPLEXINVARS
 SOURCES = coxic.c
 OBJECTS = coxic.o
-CPX_FLAGS =
-CPX_LIBS =
+CPLEXLNVARS =
 endif
 
-PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPX_FLAGS)
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINVARS)
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
-	$(CPX_LIBS)
+	$(CPLEXLNVARS)

@@ -1,8 +1,8 @@
-## coxinterval
+# coxinterval
 
 *An R package for Cox-type models with interval-censored data*
 
-### Requirements
+## Requirements
 
 Required software for coxinterval is summarized as follows. System-specific notes for items 1 and 2 are provided below.
 
@@ -12,15 +12,15 @@ Required software for coxinterval is summarized as follows. System-specific note
 
 coxinterval also depends on the Matrix, parallel and survival packages from the standard R library.
 
-##### Unix-alike
+### Linux
 
 1. Install the r-base-dev package. For further details, see the [R download](http://cran.r-project.org/bin/linux/) documentation for your Linux distribution.
 
-##### Mac OS X
+### Mac
 
 1. Install software listed in the [tools](http://cran.r-project.org/bin/macosx/tools) section of the Mac OS X R download documentation. With R 3+, this amounts to the GNU Fortran compiler gfortran.
 
-##### Windows
+### Windows
 
 1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run `set PATH` and ensure that the value for the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH`. For example:
 
@@ -29,59 +29,49 @@ coxinterval also depends on the Matrix, parallel and survival packages from the 
    ```
 2. Install 32-bit CPLEX. Note that this means that the package's CPLEX-dependent functions are limited to 32-bit R.
 
-### Installing
+## Installing
 
-Download the package tarball [`coxinterval_<version>.tar.gz`](https://github.com/aboruvka/coxinterval/releases).
-
-From your system command line run:
-
-```shell
-R CMD INSTALL coxinterval_<version>.tar.gz
-```
-
-Alternatively from an R session run:
+To install from CRAN, from an R session run:
 
 ```R
-install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
+> install.packages("coxinterval", type = "source")
 ```
 
-##### Overriding build defaults for custom CPLEX installations
+To install a development release from GitHub, [download the package tarball](https://github.com/aboruvka/coxinterval/releases) to your R session working directory and run:
 
-The package's [Makevars](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars) files uses non-standard [GNU make extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Writing-portable-packages) to locate default installations of CPLEX, which have the following general form.
+```R
+> install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
+```
 
-- Unix-alike: `/opt/*/ILOG/CPLEX*`
-- Mac OS X: `/Users/*/Applications/IBM/ILOG/CPLEX*`
+#### Overriding installer defaults
+
+In the interest of easy installation over complete portability, the package's [Makevars](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars) files uses non-standard [GNU make extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Writing-portable-packages) to locate CPLEX's default directory, which depends on the system.
+
+- Linux: `/opt/*/ILOG/CPLEX*`
+- Mac: `/Users/*/Applications/IBM/ILOG/CPLEX*`
 - Windows 64-bit: `C:/PROGRA~2/IBM/ILOG/CPLEX*`
 - Windows 32-bit: `C:/PROGRA~1/IBM/ILOG/CPLEX*`
 
-For systems with custom or multiple installations of CPLEX, an installation directory must specified in POSIX-type format with the `CPLEXDIR` environment variable. For example, on a 64-bit Windows system with CPLEX installed in the directory
+With custom or multiple installations of CPLEX, a directory must specified in POSIX-like format with the `CPLEXDIR` environment variable. For example, on a 64-bit Windows system with both 32- and 64-bit versions of CPLEX 12.6, the `install.packages` command should be preceded with:
 
-```
-C:\Program Files (x86)\CPLEX_Studio126
-```
-
-we can precede the above installation instructions by running
-
-```shell
-set CPLEXDIR=C:/PROGRA~2/CPLEX_Studio126
+```R
+> Sys.setenv(CPLEXDIR = "C:/PROGRA~2/IBM/ILOG/CPLEX_Studio126")
 ```
 
-from the command prompt.
+On systems without GNU make, the compiler variables must be set directly. Continuing the above example:
 
-GNU make extensions are further used to set names for include, libraries and compiler flags following CPLEX's directory structure and Makefile. In particular `PKG_CPPFLAGS` is appended with `CPX_FLAGS`, which includes the directory `-I$(CPLEXDIR)/cplex/include` containing the `ilcplex/cplex.h` header file. `PKG_LIBS` is appended with `CPX_LIBS`, which has the general form
-
+```R
+> Sys.setenv(CPLEXINVARS = paste('-I"', Sys.getenv("CPLEXDIR"), '/cplex/include"', sep = ""))
+> Sys.setenv(CPLEXLNVARS = paste('-L"', Sys.getenv("CPLEXDIR"),
+                                 '/cplex/lib/x86_windows_vs2010/stat_mda" -lcplex1260 -lm', sep = ""))
 ```
--L$(CPLEXDIR)/cplex/lib/<machine>/<libformat> -lcplex -lm
-```
 
-In the absence of GNU make or to override these settings, define the environment variables `CPX_FLAGS` and `CPX_LIBS` before installing.
+Note the use of quotes here to correctly refer to directory names. These are unnecessary on (mostly) POSIX-compliant systems like Linux and Mac.
 
-##### Installing without both CPLEX and GNU make
+In general the include directory has the form `<CPLEXDIR>/cplex/include` and should point to the header file `<CPLEXDIR>/cplex/ilcplex/cplex.h`. Under Linux and Mac, the library directory follows: `<CPLEXDIR>/cplex/lib/<machine>/<library format>`. Under Windows: `<CPLEXDIR>/cplex/<compiler>/<library format>`. The choice of the library format has no consequence for CPLEX's C API. The linking variable `CPLEXLNVARS` also includes options where, under Windows, it is unfortunately necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/<compiler>/<library format>/cplex<version>.lib`. With Linux and Mac, just `-lcplex -lm` suffices.
 
-For systems without both GNU make and CPLEX, set the environment variable `NO_CPLEX` before installing:
+For systems without both GNU make and CPLEX, precede the `install.packages` command by setting the `NOCPLEX` variable to a non-empty value:
 
-```shell
-export NO_CPLEX=TRUE # Unix-alike
-setenv NO_CPLEX=TRUE # OS X
-set NO_CPLEX=TRUE    # Windows
+```R
+> Sys.setenv(NOCPLEX = "TRUE")
 ```

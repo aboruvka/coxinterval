@@ -1,6 +1,4 @@
-#include <stdlib.h>
 #include <R.h>
-#include <unistd.h>
 #include <ilcplex/cplex.h>
 
 CPXENVptr env;

@@ -1,9 +1,5 @@
 #include <R.h>
 #include <Rmath.h>
-#include <Rinternals.h>
-#include <math.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
 
 #ifndef max

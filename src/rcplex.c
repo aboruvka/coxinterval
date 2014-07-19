@@ -1,3 +1,4 @@
+#include <R.h>
 #include "rcplex.h"
 
 void
@@ -10,7 +11,7 @@ freecplex(void)
     lp = NULL;
     if (status) {
       CPXgeterrorstring(env, status, errmsg);
-      REprintf("Could not free CPLEX problem.\n%s\n", errmsg);
+      error("Could not free CPLEX problem.\n%s\n", errmsg);
     }
   }
   if (env != NULL && closecplex) {
@@ -21,7 +22,7 @@ freecplex(void)
       error("Could not close CPLEX.\n%s\n", errmsg);
     }
     else
-      REprintf("Closed CPLEX.\n");
+      Rprintf("Closed CPLEX.\n");
   }
 }
 
@@ -38,7 +39,7 @@ qpcplex(const int ncol, const int nrow, const double *c, const double *Q,
     env = CPXopenCPLEX(&status);
     if (env == NULL) {
       CPXgeterrorstring(env, status, errmsg);
-      error("Could not open CPLEX.\n%s\n", errmsg);
+      warning("Could not open CPLEX.\n%s\n", errmsg);
     }
   }
   if (lp == NULL) {
@@ -51,7 +52,7 @@ qpcplex(const int ncol, const int nrow, const double *c, const double *Q,
     lp = CPXcreateprob(env, &status, probname);
     if (lp == NULL) {
       closecplex = 1;
-      error("Could not create CPLEX problem.\n");
+      warning("Could not create CPLEX problem.\n");
     }
   }
   for (i = 0; i < nrow; i++) {
