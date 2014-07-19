@@ -77,7 +77,13 @@ In general the include and linking directories have the form
 <CPLEXDIR>/cplex/lib/<machine or compiler>/<library format>
 ```
 
-respectively, where include directory points to the header file `<CPLEXDIR>/cplex/include/ilcplex/cplex.h`. The choice of the library format has no consequence for CPLEX's C API. Adequate linking option settings are `-lcplex -lm` under Linux and Mac. With Windows it is necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/lib/<compiler>/<library format>/cplex<version>.lib`.
+respectively, where include directory points to the header file `<CPLEXDIR>/cplex/include/ilcplex/cplex.h`. The choice of the library format has no consequence for CPLEX's C API. Adequate linking option settings are
+
+```
+-lcplex -lm
+```
+
+under Linux and Mac. With Windows it is necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/lib/<compiler>/<library format>/cplex<version>.lib`.
 
 For systems without both GNU make and CPLEX, precede the `install.packages` command by setting the `NOCPLEX` variable to a non-empty value:
 
