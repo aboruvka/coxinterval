@@ -70,7 +70,19 @@ On systems without GNU make, the compiler variables must be set directly. Contin
 
 Note the use of quotes here to correctly refer to directory names. These are unnecessary on (mostly) POSIX-compliant systems like Linux and Mac.
 
-In general the include directory has the form `<CPLEXDIR>/cplex/include` and should point to the header file `<CPLEXDIR>/cplex/ilcplex/cplex.h`. Under Linux and Mac, the library directory follows: `<CPLEXDIR>/cplex/lib/<machine>/<library format>`. Under Windows: `<CPLEXDIR>/cplex/<compiler>/<library format>`. The choice of the library format has no consequence for CPLEX's C API. The linking variable `CPLEXLNVARS` also includes options where, under Windows, it is unfortunately necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/<compiler>/<library format>/cplex<version>.lib`. With Linux and Mac, just `-lcplex -lm` suffices.
+In general the include directory has the form `<CPLEXDIR>/cplex/include` and should point to the header file `<CPLEXDIR>/cplex/include/ilcplex/cplex.h`. Under Linux and Mac, the library directory follows:
+
+```
+<CPLEXDIR>/cplex/lib/<machine>/<library format>
+```
+
+Under Windows:
+
+```
+<CPLEXDIR>/cplex/lib/<compiler>/<library format>
+```
+
+The choice of the library format has no consequence for CPLEX's C API. The linking variable `CPLEXLNVARS` also includes options where, under Windows, it is unfortunately necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/<compiler>/<library format>/cplex<version>.lib`. With Linux and Mac, just `-lcplex -lm` suffices.
 
 For systems without both GNU make and CPLEX, precede the `install.packages` command by setting the `NOCPLEX` variable to a non-empty value:
 
