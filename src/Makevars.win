@@ -2,7 +2,7 @@ quote = "#"
 SOURCES = coxaalenic.c rcplex.c coxic.c
 OBJECTS = coxaalenic.o rcplex.o coxic.o
 
-ifeq "$(CPLEXLNVARS)$(CPLEXINVARS)$(NOCPLEX)" ""
+ifeq "$(CPLEXLIBVARS)$(CPLEXINCVARS)" ""
 ifeq "$(wildcard $(CPLEXDIR)/cplex)" ""
 CPLEXDIR = 
 endif
@@ -28,33 +28,29 @@ endif
 endif
 CPLEXLIB = $(firstword $(wildcard $(CPLEXLIBDIR)/cplex*.lib))
 ifneq "$(CPLEXLIB)" ""
-CPLEXLNVARS = -L$(quote)$(CPLEXLIBDIR)$(quote) \
+CPLEXLIBVARS = -L$(quote)$(CPLEXLIBDIR)$(quote) \
 	-l$(notdir $(basename $(CPLEXLIB))) -lm
 endif
 CPLEXINC = $(wildcard $(CPLEXINCDIR)/ilcplex/cplex.h)
 ifneq "$(CPLEXINC)" ""
-CPLEXINVARS = -I$(quote)$(CPLEXINCDIR)$(quote)
+CPLEXINCVARS = -I$(quote)$(CPLEXINCDIR)$(quote)
 endif
 endif
 
-ifndef CPLEXLNVARS
-CPLEXINVARS =
-endif
-
-ifneq "$(NOCPLEX)" ""
-CPLEXINVARS =
+ifndef CPLEXLIBVARS
+CPLEXINCVARS =
 endif
 
 ifeq "$(WIN)" "64"
-CPLEXINVARS =
+CPLEXINCVARS =
 endif
 
-ifndef CPLEXINVARS
+ifndef CPLEXINCVARS
 SOURCES = coxic.c
 OBJECTS = coxic.o
-CPLEXLNVARS =
+CPLEXLIBVARS =
 endif
 
-PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINVARS)
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINCVARS)
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
-	$(CPLEXLNVARS)
+	$(CPLEXLIBVARS)

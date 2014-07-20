@@ -7,11 +7,9 @@ LazyData: Yes
 LazyLoad: Yes
 Author: Audrey Boruvka and Richard J. Cook
 Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
-Description: Fits Cox-type models based on interval-censored data from a
-             progressive process
-SystemRequirements: IBM ILOG CPLEX (>= 12.5, 32-bit with Windows), GNU make.
-                    These are recommendations; limited functionality is offered
-                    otherwise.
+Description: Fits Cox-type models based on interval-censored data from a survival
+             or illness-death process
+SystemRequirements: GNU make
 NeedsCompilation: Yes
 License: GPL-3
 URL: https://github.com/aboruvka/coxinterval

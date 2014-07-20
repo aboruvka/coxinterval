@@ -2,4 +2,5 @@
 \.Rhistory
 \.Rcheck
 \.tar\.gz$
+README.md
 out

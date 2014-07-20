@@ -6,11 +6,9 @@
 
 Required software for coxinterval is summarized as follows. System-specific notes for items 1 and 2 are provided below.
 
-1. Development tools for R
+1. Development tools for R, including GNU make
 2. C API for CPLEX available with [IBM ILOG CPLEX Optimization Studio 12.5+](http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/). Members of [IBM's Academic Initiative](http://www-304.ibm.com/ibm/university/academic/pub/page/academic_initiative) can obtain CPLEX at [no charge](https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en). Without CPLEX, coxinterval offers reduced functionality.
 3. Contributed R package [timereg](http://cran.r-project.org/web/packages/timereg/index.html)
-
-coxinterval also depends on the Matrix, parallel and survival packages from the standard R library.
 
 ### Linux
 
@@ -43,7 +41,7 @@ To install a development release from GitHub, [download the package tarball](htt
 > install.packages("coxinterval_<version>.tar.gz", repos = NULL, type = "source")
 ```
 
-#### Overriding installer defaults
+### Overriding installer defaults
 
 In the interest of easy installation over complete portability, the package's [Makevars](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Using-Makevars) files uses non-standard [GNU make extensions](http://cran.r-project.org/doc/manuals/r-release/R-exts.html#Writing-portable-packages) to locate CPLEX's default directory, which depends on the system.
 
@@ -52,18 +50,18 @@ In the interest of easy installation over complete portability, the package's [M
 - Windows 64-bit: `C:/PROGRA~2/IBM/ILOG/CPLEX*`
 - Windows 32-bit: `C:/PROGRA~1/IBM/ILOG/CPLEX*`
 
-With custom or multiple installations of CPLEX, a directory must specified in POSIX-like format with the `CPLEXDIR` environment variable. For example, on a 64-bit Windows system with both 32- and 64-bit versions of CPLEX 12.6, the `install.packages` command should be preceded with:
+With custom or multiple installations of CPLEX, a directory must specified in POSIX-like format with the `CPLEXDIR` environment variable. For example, on a 64-bit Windows system, `install.packages` could be preceded with:
 
 ```R
 > Sys.setenv(CPLEXDIR = "C:/PROGRA~2/IBM/ILOG/CPLEX_Studio126")
 ```
 
-On systems without GNU make, the compiler variables must be set directly. Continuing the above example:
+The CPLEX compiler variables can alternatively be set directly. Continuing the above example:
 
 ```R
-> Sys.setenv(CPLEXINVARS =
+> Sys.setenv(CPLEXINCVARS =
     paste('-I"', Sys.getenv("CPLEXDIR"), '/cplex/include"', sep = ""))
-> Sys.setenv(CPLEXLNVARS =
+> Sys.setenv(CPLEXLIBVARS =
     paste('-L"', Sys.getenv("CPLEXDIR"),
           '/cplex/lib/x86_windows_vs2010/stat_mda" -lcplex1260 -lm', sep = ""))
 ```
@@ -73,20 +71,28 @@ Note the use of quotes for correct reference to directory names. These are unnec
 In general the include and linking directories have the form
 
 ```
-<CPLEXDIR>/cplex/include
-<CPLEXDIR>/cplex/lib/<machine or compiler>/<library format>
+CPLEXINCDIR = <CPLEXDIR>/cplex/include
+CPLEXLIBDIR = <CPLEXDIR>/cplex/lib/<machine or compiler>/<library format>
 ```
 
-respectively, where include directory points to the header file `<CPLEXDIR>/cplex/include/ilcplex/cplex.h`. The choice of the library format has no consequence for CPLEX's C API. Adequate linking option settings are
+respectively, where include directory points to the header file `<CPLEXINCDIR>/ilcplex/cplex.h`. The choice of the library format has no consequence for CPLEX's C API. Under Linux and Mac adequate linking option settings are `-lcplex -lm`. With Windows it is necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXLIBDIR>/cplex<version>.lib`.
 
-```
--lcplex -lm
-```
+### Installing on systems without GNU make
 
-under Linux and Mac. With Windows it is necessary to specify the CPLEX version number in the library name: `-lcplex<version> -lm`, where `<version>` can be obtained from the library file name `<CPLEXDIR>/cplex/lib/<compiler>/<library format>/cplex<version>.lib`.
+Precede the install instructions with:
 
-For systems without both GNU make and CPLEX, precede the `install.packages` command by setting the `NOCPLEX` variable to a non-empty value:
+1. Extract the source from the package tarball
+2. Revise the `coxinterval/src/Makevars` file according to the template below
+3. Rebuild the package tarball with `R CMD build coxinterval`
 
-```R
-> Sys.setenv(NOCPLEX = "TRUE")
+```make
+CPLEXDIR = <add-on software directory>/IBM/ILOG/CPLEX_Studio<version>
+CPLEXINCDIR = $(CPLEXDIR)/cplex/include
+CPLEXLIBDIR = $(CPLEXDIR)/cplex/lib/<machine>/<library format>
+CPLEXINCVARS = -I$(CPLEXINCDIR)
+CPLEXLIBVARS = -L$(CPLEXLIBDIR) -lcplex -lm
+
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINCVARS)
+PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
+	$(CPLEXLIBVARS)
 ```

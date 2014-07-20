@@ -1,7 +1,7 @@
 SOURCES = coxaalenic.c rcplex.c coxic.c
 OBJECTS = coxaalenic.o rcplex.o coxic.o
 
-ifeq "$(CPLEXLNVARS)$(CPLEXINVARS)$(NOCPLEX)" ""
+ifeq "$(CPLEXLIBVARS)$(CPLEXINCVARS)" ""
 ifeq "$(wildcard $(CPLEXDIR)/cplex)" ""
 CPLEXDIR = 
 endif
@@ -26,28 +26,24 @@ CPLEXINCDIR = $(firstword $(wildcard $(CPLEXDIR)/cplex/include))
 endif
 endif
 ifneq "$(CPLEXLIBDIR)" ""
-CPLEXLNVARS = -L$(CPLEXLIBDIR) -lcplex -lm
+CPLEXLIBVARS = -L$(CPLEXLIBDIR) -lcplex -lm
 endif
 CPLEXINC = $(wildcard $(CPLEXINCDIR)/ilcplex/cplex.h)
 ifneq "$(CPLEXINC)" ""
-CPLEXINVARS = -I$(CPLEXINCDIR)
+CPLEXINCVARS = -I$(CPLEXINCDIR)
 endif
 endif
 
-ifndef CPLEXLNVARS
-CPLEXINVARS =
+ifndef CPLEXLIBVARS
+CPLEXINCVARS =
 endif
 
-ifneq "$(NOCPLEX)" ""
-CPLEXINVARS =
-endif
-
-ifndef CPLEXINVARS
+ifndef CPLEXINCVARS
 SOURCES = coxic.c
 OBJECTS = coxic.o
-CPLEXLNVARS =
+CPLEXLIBVARS =
 endif
 
-PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINVARS)
+PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINCVARS)
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
-	$(CPLEXLNVARS)
+	$(CPLEXLIBVARS)
