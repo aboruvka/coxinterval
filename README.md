@@ -56,7 +56,7 @@ With custom or multiple installations of CPLEX, a directory must specified in PO
 > Sys.setenv(CPLEXDIR = "C:/PROGRA~2/IBM/ILOG/CPLEX_Studio126")
 ```
 
-The CPLEX compiler variables can alternatively be set directly. Continuing the above example:
+The CPLEX-related compiler variables can also be set directly, but the provided values are not validated. Continuing the above example:
 
 ```R
 > Sys.setenv(CPLEXINCVARS =
