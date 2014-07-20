@@ -11,6 +11,6 @@ Description: Fits Cox-type models based on interval-censored data from a surviva
              or illness-death process
 SystemRequirements: GNU make
 NeedsCompilation: Yes
-License: GPL-3
+License: GPL (>= 2)
 URL: https://github.com/aboruvka/coxinterval
 BugReports: https://github.com/aboruvka/coxinterval/issues
