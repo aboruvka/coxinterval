@@ -35,7 +35,7 @@ coxic.data <- function(id, start, stop, from, to, status, z, states)
   right[contrib == 0] <- stop[is.na(from)]
   right[contrib == 1] <- start[from %in% states[2]]
   right[absorb & contrib == 0] <- v[absorb & contrib == 0] - .Machine$double.eps
-  if (!any(contrib == 0) | !any(contrib == 1 & absorb))
+  if (!any(contrib == 2 & absorb) | !any(contrib == 1 & absorb))
     stop("Estimation requires some exactly-observed transition times.")
   ## maximal intersections containing 0 -> 1 support
   t01 <- maximalint(cbind(left, right)[contrib == 1, ])$int[, 2]

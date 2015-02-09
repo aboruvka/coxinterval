@@ -12,10 +12,10 @@ endif
 ifeq "$(wildcard $(CPLEXLIBDIR)/cplex*.lib)" ""
 CPLEXLIBDIR = 
 endif
-ifeq "$(CPLEXDIR)" ""
+ifeq "$(CPLEXDIR)$(WIN)" "64"
 CPLEXDIR = $(wildcard C:/PROGRA~2/IBM/ILOG/CPLEX*)
 endif
-ifeq "$(CPLEXDIR)" ""
+ifeq "$(CPLEXDIR)$(WIN)" "32"
 CPLEXDIR = $(wildcard C:/PROGRA~1/IBM/ILOG/CPLEX*)
 endif
 ifneq "$(CPLEXDIR)" ""
@@ -38,10 +38,6 @@ endif
 endif
 
 ifndef CPLEXLIBVARS
-CPLEXINCVARS =
-endif
-
-ifeq "$(WIN)" "64"
 CPLEXINCVARS =
 endif
 

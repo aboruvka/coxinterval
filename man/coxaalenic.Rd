@@ -92,10 +92,11 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   are distinguished by applying \CRANpkg{timereg}'s
   \code{\link[timereg]{prop}} function to each corresponding variable.
 
-  \code{coxaalenic} requires C functions, which are loaded only if
+  \code{coxaalenic} depends on libraries that are loaded only if
   \code{coxinterval} is installed from source on a system with
-  \href{(http://www-01.ibm.com/software/commerce/optimization/cplex-optimizer/)}{
-  CPLEX}. Refer to the package's README for detailed instructions.
+  \href{http://www-03.ibm.com/software/products/en/ibmilogcpleoptistud/}{
+    IBM ILOG CPLEX Optimization Studio}. Refer to the package's INSTALL
+  file for detailed instructions.
 }
 
 \value{
@@ -160,8 +161,10 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014a)
-  A Cox-Aalen model for interval-censored data.
+  Boruvka, A. and Cook, R. J. (2014)
+  \href{http://dx.doi.org/10.1111/sjos.12113}{
+    A Cox-Aalen model for interval-censored data}.
+  \emph{Scandinavian Journal of Statistics}, in press.
 
   Martinussen, T. and Scheike, T. H. (2006)
   Dynamic Regression Models for Survival Data.

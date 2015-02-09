@@ -12,8 +12,8 @@ H(double *h, double *t, int j, double beg, double end)
   int i;
   double val = 0;
   for (i = 1; i < d[j]; i++)
-    val +=
-      h[i + D[j]] * max(0, min(t[i + D[j]], end) - max(t[i - 1 + D[j]], beg));
+    val += h[i + D[j]]
+      * max(0, min(t[i + D[j]], end) - max(t[i - 1 + D[j]], beg));
   return val;
 }
 
@@ -21,9 +21,7 @@ H(double *h, double *t, int j, double beg, double end)
 static double
 L(double *t, int j, int k, double beg, double end)
 {
-  double val;
-  val = max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
-  return val;
+  return max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
 }
 
 static double
@@ -73,15 +71,17 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       EY[j] = 0;
     }
     /* contribution via 0 -> 1 -> 2 */
-    for (j = lidx[i]; contrib[i] != 2 && j <= ridx[i]; j++) {
+    a12 = (absorb[i]) ? (h[vidx[i + 2*n] + D[2]] * rsk[2]) : 1;
+    for (j = lidx[i]; contrib[i] != 2 && a12 > 0 && j <= ridx[i]; j++) {
+      a01 = h[sidx[j]] * rsk[0];
+      if (a01 <= 0) continue;
       beg = max(left[i], s[j - 1]);
       end = min(right[i], s[j]);
       len = end - beg;
       A01 = H(h, t, 0, u[i], beg) * rsk[0];
       A02 = H(h, t, 1, u[i], beg) * rsk[1];
       A12 = H(h, t, 2, end, v[i]) * rsk[2];
-      a01 = h[sidx[j]] * rsk[0];
-      a12 = (absorb[i]) ? (h[vidx[i + 2*n] + D[2]] * rsk[2]) : 1;
+      pseg = exp(-(A01 + A02)) * a01 * exp(-A12) * a12;
       for (k = 0; k < p; k++)
         g1c[k] = z[i + k*n] * (1 - A01)
           - z[i + k*n + n*p] * A02 + z[i + k*n + 2*n*p] * (absorb[i] - A12);
@@ -100,31 +100,30 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       }
       /* L = R = T01 */
       if (len == 0) {
-        prob1 += exp(-(A01 + A02)) * a01 * exp(-A12) * a12;
+        prob1 += pseg;
         for (k = 0; k < p; k++) {
-          g1c1[k] += g1c[k] * prob1;
-          g3c1[k] += g3c[k] * prob1;
+          g1c1[k] += g1c[k] * pseg;
+          g3c1[k] += g3c[k] * pseg;
           for (l = 0; l < p; l++)
-            g2c1[k + l*p] += g2c[k + l*p] * prob1;
+            g2c1[k + l*p] += g2c[k + l*p] * pseg;
         }
-        g1h1[sidx[j]] += rsk[0] * exp(-(A01 + A02)) * exp(-A12) * a12;
-        EdN[sidx[j]] += prob1;
+        g1h1[sidx[j]] += rsk[0] * pseg / a01;
+        EdN[sidx[j]] += pseg;
         for (k = 0; k < M - 1; k++)
           for (l = 1; l <= sidx[j + k*K]; l++) {
-            g1h1[l + D[k]] -= rsk[k] * prob1 * L(t, k, l, u[i], end);
-            EY[l + D[k]] += prob1 * L(t, k, l, u[i], end);
+            g1h1[l + D[k]] -= rsk[k] * pseg * L(t, k, l, u[i], end);
+            EY[l + D[k]] += pseg * L(t, k, l, u[i], end);
           }
         for (k = 1; k <= vidx[i + 2*n]; k++) {
-          g1h1[k + D[2]] -= rsk[2] * prob1 * L(t, 2, k, end, v[i]);
-          EY[k + D[2]] += prob1 * L(t, 2, k, end, v[i]);
+          g1h1[k + D[2]] -= rsk[2] * pseg * L(t, 2, k, end, v[i]);
+          EY[k + D[2]] += pseg * L(t, 2, k, end, v[i]);
         }
         g1h1[vidx[i + 2*n] + D[2]] +=
-          absorb[i] * rsk[2] * exp(-(A01 + A02)) * a01 * exp(-A12);
-        EdN[vidx[i + 2*n] + D[2]] += absorb[i] * prob1;
+          absorb[i] * rsk[2] * pseg / a12;
+        EdN[vidx[i + 2*n] + D[2]] += absorb[i] * pseg;
       }
       /* T01 in (L, R] */
       else {
-        pseg = exp(-(A01 + A02)) * a01 * exp(-A12) * a12;
         h02 = h[sidx[j + K] + D[1]] * rsk[1];
         h12 = h[sidx[j + 2*K] + D[2]] * rsk[2];
         s0 = exp(-len * (a01 + h02));
@@ -193,7 +192,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
                             + g2cr[k + l*p] * g1c[l] * rseg) * pseg;
           }
         }
-        g1h1[sidx[j]] += rsk[0] * exp(-(A01 + A02)) * rseg * exp(-A12) * a12;
+        g1h1[sidx[j]] += rsk[0] * pseg * rseg / a01;
         EdN[sidx[j]] += pseg * rseg;
         for (k = 0; k < M; k++)
           for (l = 1; l < d[k]; l++) {
@@ -214,7 +213,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
             }
           }
         g1h1[vidx[i + 2*n] + D[2]] +=
-          absorb[i] * rsk[2] * exp(-(A01 + A02)) * a01 * rseg * exp(-A12);
+          absorb[i] * rsk[2] * pseg * rseg / a12;
         EdN[vidx[i + 2*n] + D[2]] += absorb[i] * pseg * rseg;
       }
     }

@@ -48,17 +48,17 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   ## set parameters controlling model fit
   control <- if (missing(control)) coxic.control(...)
              else do.call(coxic.control, control)
-  ## reworked data
   d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
                   mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states)
   n <- nrow(d$z)
   ncov <- length(jcov)
-  sieve.size <- with(control, sieve.const * n^sieve.rate)
-  nobs <- mapply(function(x, y) max(1, round(length(x)/y)), d$supp, sieve.size)
-  ind <- mapply(function(x, y) seq(y, length(x), y), x = d$supp, y = nobs,
-                SIMPLIFY = FALSE)
   part <- mapply(function(x, y) c(0, x[y[-c(1, length(y))]], ceiling(max(d$v))),
-                 x = d$supp, y = ind, SIMPLIFY = FALSE)
+                 x = d$supp,
+                 y = mapply(function(x, y) seq(y, length(x), y),
+                   x = d$supp,
+                   y = mapply(function(x, y) max(1, round(length(x)/y)),
+                     d$supp, with(control, sieve.const * n^sieve.rate)),
+                   SIMPLIFY = FALSE), SIMPLIFY = FALSE)
   npart <- sapply(part, length)
   tvec <- do.call("c", part)
   names(tvec) <- NULL
@@ -94,9 +94,11 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
           list(call = temp, n = NULL, m = NULL, p = NULL, coef = NULL,
                var = NULL, basehaz = NULL, loglik = NULL, na.action = NULL)
       else {
+        temp <- if (is.null(fit.coxph[[i]]$na.action)) 1:nrow(mf)
+                else -fit.coxph[[i]]$na.action
         fit.coxph[[i]] <-
           list(call = fit.coxph[[i]]$call,
-               n = length(unique(mf[-fit.coxph[[i]]$na.action, icls])),
+               n = length(unique(mf[temp, icls])),
                m = fit.coxph[[i]]$n,
                p = length(fit.coxph[[i]]$coefficients),
                coef = fit.coxph[[i]]$coefficients,
@@ -188,8 +190,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             NAOK = TRUE)
   if (fit$flag == 1)
     stop("Parameter estimation failed; coefficient Hessian not invertible.")
-  if (with(fit,
-           any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
+  if (with(fit, any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
     stop("Parameter estimation failed.")
   if (fit$flag == 2)
     stop("Variance estimation failed; profile information not invertible.")

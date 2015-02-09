@@ -188,7 +188,7 @@ coxic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014b)
+  Boruvka, A. and Cook, R. J. (2015)
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 

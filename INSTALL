@@ -32,7 +32,7 @@ Windows
 -------
 
 1. Install Rtools (http://cran.r-project.org/bin/windows/Rtools/). From a command
-   prompt run `set PATH` and ensure that the value for the PATH environment
+   prompt run 'set PATH' and ensure that the value for the PATH environment
    variable includes the folders for both R and Rtools binaries. If not, update
    PATH. For example:
 
@@ -85,12 +85,13 @@ values are not validated. Continuing the above example:
 Note the use of quotes for correct reference to directory names. These are
 unnecessary on (mostly) POSIX-compliant systems like Linux and Mac.
 
-In general the include and linking directories have the form
+GNU make extensions are further used to locate CPLEX's include and library
+directories. In general these have the form
 
 CPLEXINCDIR = <CPLEXDIR>/cplex/include
 CPLEXLIBDIR = <CPLEXDIR>/cplex/lib/<machine or compiler>/<library format>
 
-respectively, where include directory points to the header file
+respectively, where the include directory points to the header file
 <CPLEXINCDIR>/ilcplex/cplex.h. The choice of the library format has no
 consequence for CPLEX's C API. Adequate linking option settings are -lcplex -lm
 under Linux and Mac. With Windows it is necessary to specify the CPLEX version
@@ -103,8 +104,11 @@ Installing on systems without GNU make
 Precede the install instructions with:
 
 1. Extract the source from the package tarball
-2. Revise the coxinterval/src/Makevars file according to the template below
+2. Revise the coxinterval/src/Makevars file according to one of the templates
+   below
 3. Rebuild the package tarball with R CMD build coxinterval
+
+Makevars template for systems with CPLEX:
 
 CPLEXDIR = <add-on software directory>/IBM/ILOG/CPLEX_Studio<version>
 CPLEXINCDIR = $(CPLEXDIR)/cplex/include
@@ -115,3 +119,8 @@ CPLEXLIBVARS = -L$(CPLEXLIBDIR) -lcplex -lm
 PKG_CPPFLAGS = $(SHLIB_PTHREAD_FLAGS) $(CPLEXINCVARS)
 PKG_LIBS = $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_PTHREAD_FLAGS) \
 	$(CPLEXLIBVARS)
+
+Without CPLEX, the first five lines can be replaced with:
+
+CPLEXINCVARS =
+CPLEXLIBVARS =
