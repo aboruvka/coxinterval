@@ -38,6 +38,7 @@ maximalint <- function(x)
   ## maximal intersection left endpoint, right endpoint without and with ties 
   s <- s[s[, 3] == 0 & s[, 6] == 1, c(1, 4, 5)]
   if (is.null(nrow(s))) s <- matrix(s, nrow = 1)
+  colnames(s) <- c("left", "right.untied", "right")
   ## maximal intersection overlap with censoring interval indicator matrix
   if (nrow(s) < 2) i <- matrix(1)
   else

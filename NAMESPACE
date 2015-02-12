@@ -4,6 +4,7 @@ export("coxic",
        "coxic.control",
        "coxaalenic",
        "coxaalenic.control",
+       "maximalint",
        "trans",
        "na.coxic")
 S3method(print, coxinterval)

@@ -33,8 +33,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     else 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object")
   ## Surv converts interval2 to interval
-  if (attr(mf[, irsp], "type") != "interval"
-      | !(all(mf[, irsp][, 3] %in% c(0, 3))))
+  if (attr(mf[, irsp], "type") != "interval")
     stop("Response is not an 'interval2'-type 'Surv' object")
   ## fit right-censored data alternatives with timereg's cox.aalen
   fit.timereg <- list(NULL)
@@ -179,11 +178,12 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   names(basehaz) <- names(init$basehaz) <- c("time", colnames(mm)[jadd])
   censor.rate <- matrix(c(sum(mf[, irsp][, 1] == 0),
                           sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
-                          sum(mf[, irsp][, 3] == 0)) / n, nrow = 1)
+                          sum(mf[, irsp][, 3] == 0),
+                          sum(mf[, irsp][, 3] == 1)) / n, nrow = 1)
   dimnames(censor.rate) <-
-    list("Censoring rate", c("Left", "Interval", "Right"))
+    list("Censoring rate", c("Left", "Interval", "Right", "Exact"))
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
-              basehaz = basehaz, init = init,
+              basehaz = basehaz, maximalint = time$int, init = init,
               loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, fit.timereg = fit.timereg,
