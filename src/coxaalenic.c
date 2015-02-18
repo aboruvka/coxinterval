@@ -199,7 +199,7 @@ coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
     ll[iter] = candll;
   } while ((*epsnorm ? *maxnorm : fabs(*gradnorm)) > *eps && iter < *maxiter);
   *numiter = iter;
-  if (*varc) goto deallocate;
+  if (*varc == 0) goto deallocate;
   for (i = 0; i < p; i++) { /* curvature scale */
     fixc[i] = c[i];
     for (j = 0; j <= i; j++)
