@@ -144,6 +144,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.integer(control$eps.norm == "max"),
             as.integer(control$iter.max),
             as.double(control$armijo),
+            as.integer(control$var.coef),
             as.double(control$coef.typ),
             as.double(control$coef.max),
             as.integer(control$trace),
@@ -169,8 +170,11 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(init$coef) <- colnames(mm)[jprp]
-  var <- matrix(fit$var, nprp)
-  rownames(var) <- colnames(var) <- colnames(mm)[jprp]
+  if (control$var.coef) {
+    var <- matrix(fit$var, nprp)
+    rownames(var) <- colnames(var) <- colnames(mm)[jprp]
+  }
+  else var <- matrix(NA, nprp, nprp)
   init$init.timereg <- init.timereg
   init$basehaz <- data.frame(time$int[, 2], init$basehaz)
   init$basehaz <- rbind(0, init$basehaz)

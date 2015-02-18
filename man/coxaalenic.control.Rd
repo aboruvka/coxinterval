@@ -10,8 +10,9 @@
 
 \usage{
 coxaalenic.control(eps = 1e-07, eps.norm = c("max", "grad"),
-                   iter.max = 5000, armijo = 1/3, coef.typ = 1,
-                   coef.max = 10, trace = FALSE, thread.max = 1)
+                   iter.max = 5000, armijo = 1/3, var.coef = TRUE,
+                   coef.typ = 1, coef.max = 10, trace = FALSE,
+                   thread.max = 1)
 }
 
 \arguments{
@@ -38,6 +39,10 @@ coxaalenic.control(eps = 1e-07, eps.norm = c("max", "grad"),
     line search used to ensure that each iteration achieves an adequate
     increase in the log-likelihood.  The model fit is not particularly
     sensitive to this value.
+  }
+  \item{var.coef}{
+    a logical value indicating that standard errors for the regression
+    coefficients should be estimated via profile likelihood.
   }
   \item{coef.typ}{
     a scalar or vector of typical (absolute) values for the
