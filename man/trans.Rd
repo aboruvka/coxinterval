@@ -4,7 +4,7 @@
 \title{Identify transition type in model terms}
 
 \description{
-  A special function for Cox models fit with \code{\link{coxic}} that
+  A special function for Cox models fit with \code{\link{coxdc}} that
   identifies formula terms specifying the state-transition type.
 }
 
@@ -37,7 +37,7 @@
 }
 
 \seealso{
-  \code{\link{coxic}}
+  \code{\link{coxdc}}
 }
 
 \examples{with(dualrc, trans(from, to))}

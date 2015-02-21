@@ -1,4 +1,4 @@
-coxic <- function(formula, data = parent.frame(), subset, init = NULL,
+coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
                   formula.coxph = NULL, init.coxph = FALSE, control, ...)
 {
   ## extract model frame and perform input validation
@@ -20,7 +20,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (length(icls) != 1) stop("Model requires exactly one 'cluster' term.")
   icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, itrn, icls)]
   mf$formula <- ftrm
-  mf$na.action <- as.name("na.coxic")
+  mf$na.action <- as.name("na.coxdc")
   suppressWarnings(mf <- eval(mf, parent.frame()))
   mt <- attr(mf, "terms")
   mm <- model.matrix(mt, mf)
@@ -46,10 +46,11 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   mf <- mf[ord, ]
   mm <- mm[ord, ]
   ## set parameters controlling model fit
-  control <- if (missing(control)) coxic.control(...)
-             else do.call(coxic.control, control)
-  d <- coxic.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
-                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states)
+  control <- if (missing(control)) coxdc.control(...)
+             else do.call(coxdc.control, control)
+  d <- coxdc.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
+                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states,
+                  control$sieve)
   n <- nrow(d$z)
   ncov <- length(jcov)
   part <- mapply(function(x, y) c(0, x[y[-c(1, length(y))]], ceiling(max(d$v))),
@@ -157,9 +158,10 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   }
   init$basehaz <- data.frame(hazard = init$basehaz, time = tvec,
                              trans = rep(c(1, 2, 12), times = npart))
-  basehaz <- lin2const(init$basehaz, stratum = "trans")
+  basehaz <- if (control$sieve) lin2const(init$basehaz, stratum = "trans")
+             else step2jump(init$basehaz, stratum = "trans")
   list(init = init, basehaz = basehaz)
-  fit <- .C("coxic",
+  fit <- .C("coxdc",
             coef = as.double(init$coef),
             basehaz = as.double(basehaz$hazard),
             as.integer(ncov),
@@ -182,6 +184,7 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
             as.double(control$coef.typ),
             as.double(control$coef.max),
             as.integer(length(icov) == 0),
+            as.integer(control$sieve),
             iter = as.integer(0),
             maxnorm = as.double(0),
             gradnorm = as.double(0),
@@ -206,15 +209,15 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
   levels(init$basehaz[, 3]) <- attr(mf, "types")
   basehaz <- data.frame(hazard = fit$basehaz, time = init$basehaz$time,
                         trans = init$basehaz$trans)
-  basehaz <- const2lin(basehaz, stratum = "trans")
+  basehaz <- if (control$sieve) const2lin(basehaz, stratum = "trans")
+             else jump2step(basehaz, stratum = "trans")
   rownames(basehaz) <- rownames(init$basehaz) <- NULL
-  censor.rate <-
-    with(d, c(sum(contrib != 0 & absorb), sum(contrib != 0 & !absorb),
-              sum(contrib == 0 & absorb), sum(contrib == 0 & !absorb)))
+  censor.rate <- with(d, c("Status and survival" = sum(contrib != 0 & absorb),
+                           "Status only" = sum(contrib != 0 & !absorb),
+                           "Survival only" = sum(contrib == 0 & absorb),
+                           "Neither" = sum(contrib == 0 & !absorb)))
   censor.rate <- matrix(censor.rate/n, nrow = 1)
-  dimnames(censor.rate) <-
-    list("Observation rate",
-         c("Status and survival", "Status only", "Survival only", "Neither"))
+  rownames(censor.rate) <- "Observation rate"
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf),
               p = ncov * (length(icov) > 0), coef = fit$coef, var = var,
               basehaz = basehaz, init = init,
@@ -223,6 +226,6 @@ coxic <- function(formula, data = parent.frame(), subset, init = NULL,
               cputime = fit$cputime, fit.coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
-  class(fit) <- c("coxic", "coxinterval")
+  class(fit) <- c("coxdc", "coxinterval")
   fit
 }

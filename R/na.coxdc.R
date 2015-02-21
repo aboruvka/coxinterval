@@ -1,5 +1,5 @@
-na.coxic <- function(object, ...) UseMethod("na.coxic")
-na.coxic.default <- function(object, ...)
+na.coxdc <- function(object, ...) UseMethod("na.coxdc")
+na.coxdc.default <- function(object, ...)
 {
   n <- length(object)
   omit <- FALSE

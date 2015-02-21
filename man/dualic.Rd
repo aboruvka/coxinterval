@@ -52,7 +52,7 @@
 \examples{data(dualic)}
 
 \seealso{
-  \code{\link{coxic}}
+  \code{\link{coxdc}}
 }
 
 \keyword{datasets}

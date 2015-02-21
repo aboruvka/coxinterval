@@ -1,15 +1,15 @@
-\name{coxic.control}
-\alias{coxic.control}
+\name{coxdc.control}
+\alias{coxdc.control}
 
 \title{Control Cox model fit}
 
 \description{
   Set parameters controlling the model fit returned by
-  \code{\link{coxic}}.
+  \code{\link{coxdc}}.
 }
 
 \usage{
-coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
+coxdc.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
               coef.max = 10, sieve.const = 1, sieve.rate = 1/3)
 }
 
@@ -20,7 +20,7 @@ coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
   }
   \item{iter.max}{
     maximum number of iterations to attempt.  This ensures that
-    \code{\link{coxic}} will eventually exit, even when there are
+    \code{\link{coxdc}} will eventually exit, even when there are
     convergence issues.
   }
   \item{coef.typ}{
@@ -64,13 +64,13 @@ coxic.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
-\seealso{\code{\link{coxic}}}
+\seealso{\code{\link{coxdc}}}
 
 \examples{
-coxic(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+coxdc(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
       + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
       + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
-      control = coxic.control(eps = 1e-5, sieve.rate = 2/5))
+      control = coxdc.control(eps = 1e-5, sieve.rate = 2/5))
 }
 
 \keyword{survival}

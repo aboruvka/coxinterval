@@ -1,5 +1,5 @@
-### format data for coxic.c
-coxic.data <- function(id, start, stop, from, to, status, z, states)
+### format data for coxdc.c
+coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
 {
   p <- max(1, ncol(z))
   z <- data.frame(id, from, to, status, z)
@@ -40,8 +40,16 @@ coxic.data <- function(id, start, stop, from, to, status, z, states)
   ## maximal intersections containing 0 -> 1 support
   t01 <- maximalint(cbind(left, right)[contrib == 1, ])$int[, 2]
   names(t01) <- NULL
-  t02 <- sort(unique(v[absorb & contrib == 2]))
-  t12 <- sort(unique(v[absorb & contrib == 1]))
+  if (sieve) {
+    t02 <- v[absorb & contrib == 2]
+    t12 <- v[absorb & contrib == 1]
+  }
+  else {
+    t02 <- v[absorb & contrib != 1]
+    t12 <- v[absorb & contrib != 2]
+  }
+  t02 <- sort(unique(t02))
+  t12 <- sort(unique(t12))
   list(supp = list(t01 = t01, t02 = t02, t12 = t12), left = left, right = right,
        u = u, v = v, contrib = contrib, absorb = absorb, z = z)
 }

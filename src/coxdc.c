@@ -2,8 +2,17 @@
 
 #define M 3
 
-static int n, p, K, d[M], D[M + 1], *sidx, *lidx, *ridx, *vidx;
+static int sv, n, p, K, d[M], D[M + 1], *sidx, *lidx, *ridx, *vidx;
 static double *newh, *grad1c, *grad2c, *grad3c, *grad1h;
+
+/* piecewise function for length */
+static double
+L(double *t, int j, int k, double beg, double end)
+{
+  if (sv == 0)
+    return min(t[k + D[j]], end) >= max(t[k - 1 + D[j]], beg);
+  else return max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
+}
 
 /* piecewise function for baseline intensity */
 static double
@@ -12,16 +21,8 @@ H(double *h, double *t, int j, double beg, double end)
   int i;
   double val = 0;
   for (i = 1; i < d[j]; i++)
-    val += h[i + D[j]]
-      * max(0, min(t[i + D[j]], end) - max(t[i - 1 + D[j]], beg));
+    val += h[i + D[j]] * L(t, j, i, beg, end);
   return val;
-}
-
-/* ... length */
-static double
-L(double *t, int j, int k, double beg, double end)
-{
-  return max(0, min(t[k + D[j]], end) - max(t[k - 1 + D[j]], beg));
 }
 
 static double
@@ -77,7 +78,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       if (a01 <= 0) continue;
       beg = max(left[i], s[j - 1]);
       end = min(right[i], s[j]);
-      len = end - beg;
+      len = sv * (end - beg);
       A01 = H(h, t, 0, u[i], beg) * rsk[0];
       A02 = H(h, t, 1, u[i], beg) * rsk[1];
       A12 = H(h, t, 2, end, v[i]) * rsk[2];
@@ -111,15 +112,16 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
         EdN[sidx[j]] += pseg;
         for (k = 0; k < M - 1; k++)
           for (l = 1; l <= sidx[j + k*K]; l++) {
+            if (h[l + D[k]] <= 0) continue;
             g1h1[l + D[k]] -= rsk[k] * pseg * L(t, k, l, u[i], end);
             EY[l + D[k]] += pseg * L(t, k, l, u[i], end);
           }
         for (k = 1; k <= vidx[i + 2*n]; k++) {
+          if (h[l + D[2]] <= 0) continue;
           g1h1[k + D[2]] -= rsk[2] * pseg * L(t, 2, k, end, v[i]);
           EY[k + D[2]] += pseg * L(t, 2, k, end, v[i]);
         }
-        g1h1[vidx[i + 2*n] + D[2]] +=
-          absorb[i] * rsk[2] * pseg / a12;
+        g1h1[vidx[i + 2*n] + D[2]] += absorb[i] * rsk[2] * pseg / a12;
         EdN[vidx[i + 2*n] + D[2]] += absorb[i] * pseg;
       }
       /* T01 in (L, R] */
@@ -212,16 +214,15 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
               EY[l + D[k]] += y * pseg * rseg;
             }
           }
-        g1h1[vidx[i + 2*n] + D[2]] +=
-          absorb[i] * rsk[2] * pseg * rseg / a12;
+        g1h1[vidx[i + 2*n] + D[2]] += absorb[i] * rsk[2] * pseg * rseg / a12;
         EdN[vidx[i + 2*n] + D[2]] += absorb[i] * pseg * rseg;
       }
     }
     /* contribution via 0 -> 2 */
-    if (contrib[i] != 1) {
+    a02 = (absorb[i]) ? (h[vidx[i + n] + D[1]] * rsk[1]) : 1;
+    if (contrib[i] != 1 && a02 > 0) {
       A01 = H(h, t, 0, u[i], v[i]) * rsk[0];
       A02 = H(h, t, 1, u[i], v[i]) * rsk[1];
-      a02 = (absorb[i]) ? (h[vidx[i + n] + D[1]] * rsk[1]) : 1;
       prob2 = exp(-(A01 + A02)) * a02;
       for (j = 0; j < p; j++)
         g1c[j] = -z[i + j*n] * A01 + z[i + j*n + n*p] * (absorb[i] - A02);
@@ -244,6 +245,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
       EdN[vidx[i + n] + D[1]] += absorb[i] * prob2;
       for (j = 0; j < M - 1; j++)
         for (k = 1; k <= vidx[i + j*n]; k++) {
+          if (h[k + D[j]] <= 0) continue;
           g1h2[k + D[j]] -= rsk[j] * prob2 * L(t, j, k, u[i], v[i]);
           EY[k + D[j]] += prob2 * L(t, j, k, u[i], v[i]);
         }
@@ -281,18 +283,19 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
 }
 
 void
-coxic(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
+coxdc(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       int *dims, double *z, int *nrow, double *left, double *right, double *u,
       double *v, int *contrib, int *absorb, double *varc, double *ll,
       double *eps, int *maxiter, double *typc, double *supc, int *zeroc,
-      int *numiter, double *maxnorm, double *gradnorm, double *cputime,
-      int *flag)
+      int *sieve, int *numiter, double *maxnorm, double *gradnorm,
+      double *cputime, int *flag)
 {
   clock_t begtime, endtime;
   char uplo = 'U';
   int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork;
   double oldll, newll, *candc, *stepc, *fixc, *candh, *steph, *ph, *curv,
     *delta, *pllvec, *pllmat, *work;
+  sv = *sieve;
   n = *nrow;
   p = *dimc;
   K = *dims;

@@ -103,7 +103,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   An object of the class \code{"coxinterval"} and \code{"coxaalenic"},
   which is a list with the following components.
   \item{call}{
-    the matched call to \code{coxic}.
+    the matched call to \code{coxdc}.
   }
   \item{n}{
     size of the sample used in the model fit.
@@ -156,7 +156,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     among the observations used in the model fit.
   }
   \item{control}{
-    a named list of arguments passed to \code{\link{coxic.control}}.
+    a named list of arguments passed to \code{\link{coxdc.control}}.
   }
 }
 

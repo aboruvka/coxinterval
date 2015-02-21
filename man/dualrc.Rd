@@ -50,7 +50,7 @@
 }
 
 \seealso{
-  \code{\link{coxic}}
+  \code{\link{coxdc}}
 }
 
 \examples{data(dualrc)}

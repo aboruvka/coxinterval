@@ -1,6 +1,6 @@
 quote = "#"
-SOURCES = coxaalenic.c rcplex.c coxic.c
-OBJECTS = coxaalenic.o rcplex.o coxic.o
+SOURCES = coxaalenic.c rcplex.c coxdc.c
+OBJECTS = coxaalenic.o rcplex.o coxdc.o
 
 ifeq "$(CPLEXLIBVARS)$(CPLEXINCVARS)" ""
 ifeq "$(wildcard $(CPLEXDIR)/cplex)" ""
@@ -42,8 +42,8 @@ CPLEXINCVARS =
 endif
 
 ifndef CPLEXINCVARS
-SOURCES = coxic.c
-OBJECTS = coxic.o
+SOURCES = coxdc.c
+OBJECTS = coxdc.o
 CPLEXLIBVARS =
 endif
 
