@@ -36,7 +36,7 @@ coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
   right[contrib == 1] <- start[from %in% states[2]]
   right[absorb & contrib == 0] <- v[absorb & contrib == 0] - .Machine$double.eps
   if (!any(contrib == 2 & absorb) | !any(contrib == 1 & absorb))
-    stop("Estimation requires some exactly-observed transition times.")
+    stop("Estimation needs some survival times with known progression status.")
   ## maximal intersections containing 0 -> 1 support
   t01 <- maximalint(cbind(left, right)[contrib == 1, ])$int[, 2]
   names(t01) <- NULL
@@ -45,6 +45,10 @@ coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
     t12 <- v[absorb & contrib == 1]
   }
   else {
+    ## wlog make the largest observation right-censored
+    absorb[v == max(v)] <- FALSE
+    ## wlog make 
+    absorb[contrib != 2 & v <= sort(right)[2]] <- FALSE
     t02 <- v[absorb & contrib != 1]
     t12 <- v[absorb & contrib != 2]
   }

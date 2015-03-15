@@ -36,36 +36,29 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   if (attr(mf[, irsp], "type") != "interval")
     stop("Response is not an 'interval2'-type 'Surv' object")
   ## fit right-censored data alternatives with timereg's cox.aalen
-  fit.timereg <- list(NULL)
   if (!is.null(formula.timereg)) {
     if (!missing(subset)) warning("Model alternatives not based on subset")
     keep <- 1:nrow(data)
     if (!is.null(omit <- attr(mf, "na.action"))) keep <- keep[-omit]
-    for (i in 1:length(formula.timereg)) {
-      fit.timereg[[i]] <- cl
-      fit.timereg[[i]]$formula <-
-        update.formula(fit.timereg[[i]]$formula, formula.timereg[[i]])
-      ## cox.aalen arguments, constructed to avoid NA-related errors
-      temp <-
-        list(formula = fit.timereg[[i]]$formula, data = data[keep, ],
-             robust = 0, silent = 1, max.timepoint.sim = nrow(data))
-      invisible(capture.output(fit.timereg[[i]] <-
-                               try(do.call("cox.aalen", temp))))
-      if (inherits(fit.timereg[[i]], "try-error"))
-        fit.timereg[[i]] <-
-          list(call = temp, n = NULL, coef = NULL, var = NULL, basehaz = NULL)
-      else {
-        temp <- rownames(fit.timereg[[i]]$gamma)
-        fit.timereg[[i]] <- list(call = fit.timereg[[i]]$call,
-                                 n = length(keep),
-                                 p = nrow(fit.timereg[[i]]$gamma),
-                                 coef = as.vector(fit.timereg[[i]]$gamma),
-                                 var = fit.timereg[[i]]$var.gamma,
-                                 basehaz = as.data.frame(fit.timereg[[i]]$cum))
-        names(fit.timereg[[i]]$coef) <- temp
-      }
-      fit.timereg[[i]]$call$data <- cl$data
+    fit.timereg <- cl
+    fit.timereg$formula <- update.formula(fit.timereg$formula, formula.timereg)
+    ## cox.aalen arguments, constructed to avoid NA-related errors
+    temp <- list(formula = fit.timereg$formula, data = data[keep, ],
+                 robust = 0, silent = 1, max.timepoint.sim = nrow(data))
+    invisible(capture.output(fit.timereg <- try(do.call("cox.aalen", temp))))
+    if (inherits(fit.timereg, "try-error"))
+      fit.timereg <- list(call = temp, error = fit.timereg[1])
+    else {
+      temp <- rownames(fit.timereg$gamma)
+      fit.timereg <- list(call = fit.timereg$call,
+                          n = length(keep),
+                          p = nrow(fit.timereg$gamma),
+                          coef = as.vector(fit.timereg$gamma),
+                          var = fit.timereg$var.gamma,
+                          basehaz = as.data.frame(fit.timereg$cum))
+      names(fit.timereg$coef) <- temp
     }
+    fit.timereg$call$data <- cl$data
   }
   else fit.timereg <- NULL
   n <- nrow(mf)
@@ -80,10 +73,10 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
              else do.call(coxaalenic.control, control)
   ## initial parameter values
   if (is.null(init)) init <- list()
-  init.timereg <- init.timereg & !is.null(fit.timereg[[1]])
+  init.timereg <- init.timereg & !is.null(fit.timereg$coef)
   if (init.timereg) {
-    init$coef <- fit.timereg[[1]]$coef
-    init$basehaz <- fit.timereg[[1]]$basehaz
+    init$coef <- fit.timereg$coef
+    init$basehaz <- fit.timereg$basehaz
   }
   if (is.null(init$coef)) init$coef <- rep(0, nprp)
   else {
@@ -95,7 +88,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
     init$basehaz <-
       cbind(with(time, int[, 2] / int[ntime, 2]), matrix(0, ntime, nadd - 1))
     if (init.timereg & length(fit.timereg))
-      if (!is.null(fit.timereg[[1]])) init$coef <- fit.timereg[[1]]$coef
+      if (!is.null(fit.timereg)) init$coef <- fit.timereg$coef
     basehaz <- NULL
   }
   else {
@@ -180,19 +173,20 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   basehaz <- data.frame(time$int[, 2], t(matrix(fit$basehaz, nadd)))
   basehaz <- rbind(0, basehaz)
   names(basehaz) <- names(init$basehaz) <- c("time", colnames(mm)[jadd])
-  censor.rate <- matrix(c(sum(mf[, irsp][, 1] == 0),
-                          sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
-                          sum(mf[, irsp][, 3] == 0),
-                          sum(mf[, irsp][, 3] == 1)) / n, nrow = 1)
-  dimnames(censor.rate) <-
-    list("Censoring rate", c("Left", "Interval", "Right", "Exact"))
+  censor.rate <-
+    cbind("Exact" = sum(mf[, irsp][, 3] == 1),
+          "Left" = sum(mf[, irsp][, 1] == 0),
+          "Interval" = sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
+          "Right" = sum(mf[, irsp][, 3] == 0)) / n
+  rownames(censor.rate) <- "Censoring rate"
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
               basehaz = basehaz, maximalint = time$int, init = init,
-              loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
+              loglik = n * fit$loglik[c(1, fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
-              cputime = fit$cputime, fit.timereg = fit.timereg,
+              cputime = fit$cputime, timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
+  if (!is.null(fit$timereg$coef)) class(fit$timereg) <- c("coxinterval")
   class(fit) <- c("coxaalenic", "coxinterval")
   fit
 }

@@ -53,75 +53,71 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
                   control$sieve)
   n <- nrow(d$z)
   ncov <- length(jcov)
-  part <- mapply(function(x, y) c(0, x[y[-c(1, length(y))]], ceiling(max(d$v))),
-                 x = d$supp,
-                 y = mapply(function(x, y) seq(y, length(x), y),
-                   x = d$supp,
-                   y = mapply(function(x, y) max(1, round(length(x)/y)),
-                     d$supp, with(control, sieve.const * n^sieve.rate)),
-                   SIMPLIFY = FALSE), SIMPLIFY = FALSE)
+  if (control$sieve)
+    part <-
+      mapply(function(x, y) c(0, x[y[-c(1, length(y))]], ceiling(max(d$v))),
+             x = d$supp,
+             y = mapply(function(x, y) seq(y, length(x), y),
+               x = d$supp,
+               y = mapply(function(x, y) max(1, round(length(x)/y)),
+                 d$supp, with(control, sieve.const * n^sieve.rate)),
+               SIMPLIFY = FALSE), SIMPLIFY = FALSE)
+  else part <- lapply(d$supp, function(x) c(0, x, ceiling(max(d$v))))
   npart <- sapply(part, length)
+  ## type-specific partition
   tvec <- do.call("c", part)
   names(tvec) <- NULL
+  ## common partition
   svec <- sort(unique(tvec))
   ## strictly dual right censoring?
   if (with(d, all(left[contrib == 1] == right[contrib == 1]))) censor <- "right"
   else censor <- "interval"
   ## fit right-censored data alternatives with survival's coxph
-  if (censor == "right") {
-    formula.coxph <-
-      if (is.null(formula.coxph)) list(cl$formula)
-      else c(cl$formula, formula.coxph)
-  }
-  fit.coxph <- list(NULL)
-  if (!is.null(formula.coxph))
-    for (i in 1:length(formula.coxph)) {
-      fit.coxph[[i]] <- cl
-      fit.coxph[[i]]$formula <-
-        update.formula(fit.coxph[[i]]$formula, formula.coxph[[i]])
-      temp <- gsub("^trans\\(", "strata\\(",
-                   attr(terms(fit.coxph[[i]]$formula), "term.labels"))
-      ## dispense with extraneous terms for null model
-      if (!length(icov)) temp <- c(temp[grep("^strata\\(", temp)], "1")
-      fit.coxph[[i]]$formula <-
-        update.formula(fit.coxph[[i]]$formula,
-                       as.formula(paste("~", paste(temp, collapse = " + "))))
-      temp <- list(formula = fit.coxph[[i]]$formula, data = data,
-                   na.action = "na.omit")
-      if (!missing(subset)) temp <- c(temp, subset)
-      invisible(capture.output(fit.coxph[[i]] <- try(do.call("coxph", temp))))
-      if (inherits(fit.coxph[[i]], "try-error"))
-        fit.coxph[[i]] <-
-          list(call = temp, n = NULL, m = NULL, p = NULL, coef = NULL,
-               var = NULL, basehaz = NULL, loglik = NULL, na.action = NULL)
-      else {
-        temp <- if (is.null(fit.coxph[[i]]$na.action)) 1:nrow(mf)
-                else -fit.coxph[[i]]$na.action
-        fit.coxph[[i]] <-
-          list(call = fit.coxph[[i]]$call,
-               n = length(unique(mf[temp, icls])),
-               m = fit.coxph[[i]]$n,
-               p = length(fit.coxph[[i]]$coefficients),
-               coef = fit.coxph[[i]]$coefficients,
-               var = fit.coxph[[i]]$var,
-               basehaz = basehaz(fit.coxph[[i]], centered = FALSE),
-               loglik = fit.coxph[[i]]$loglik,
-               na.action = fit.coxph[[i]]$na.action)
-        if (censor == "right" & i == 1 & length(icov)) {
-          rownames(fit.coxph[[i]]$var) <-
-            colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
-          names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "trans")
-        }
-        fit.coxph[[i]]$call$data <- cl$data
+  if (censor == "right" & is.null(formula.coxph))
+    formula.coxph <- cl$formula
+  if (!is.null(formula.coxph)) {
+    fit.coxph <- cl
+    fit.coxph$formula <- update.formula(fit.coxph$formula, formula.coxph)
+    temp <- gsub("^trans\\(", "strata\\(",
+                 attr(terms(fit.coxph$formula), "term.labels"))
+    ## dispense with extraneous terms for null model
+    if (!length(icov)) temp <- c(temp[grep("^strata\\(", temp)], "1")
+    fit.coxph$formula <-
+      update.formula(fit.coxph$formula,
+                     as.formula(paste("~", paste(temp, collapse = " + "))))
+    temp <- list(formula = fit.coxph$formula, data = data, na.action = "na.omit")
+    if (!missing(subset)) temp <- c(temp, subset)
+    invisible(capture.output(fit.coxph <- try(do.call("coxph", temp))))
+    if (inherits(fit.coxph, "try-error"))
+      fit.coxph <- list(call = temp, error = fit.coxph[1])
+    else {
+      temp <- if (is.null(fit.coxph$na.action)) 1:nrow(mf)
+              else -fit.coxph$na.action
+      fit.coxph <-
+        list(call = fit.coxph$call,
+             n = length(unique(mf[temp, icls])),
+             m = fit.coxph$n,
+             p = length(fit.coxph$coefficients),
+             coef = fit.coxph$coefficients,
+             var = fit.coxph$var,
+             basehaz = basehaz(fit.coxph, centered = FALSE),
+             iter = fit.coxph$iter,
+             loglik = fit.coxph$loglik,
+             na.action = fit.coxph$na.action)
+      if (censor == "right" & length(icov)) {
+        rownames(fit.coxph$var) <- colnames(fit.coxph$var) <- colnames(mm)[jcov]
+        names(fit.coxph$basehaz) <- c("hazard", "time", "trans")
       }
+      fit.coxph$call$data <- cl$data
     }
+  }
   else fit.coxph <- NULL
   ## initial values
   if (is.null(init)) init <- list()
-  init.coxph <- init.coxph & !is.null(fit.coxph[[1]])
+  init.coxph <- init.coxph & !is.null(fit.coxph$coef)
   if (init.coxph) {
-    init$coef <- fit.coxph[[1]]$coef
-    init$basehaz <- fit.coxph[[1]]$basehaz
+    init$coef <- fit.coxph$coef
+    init$basehaz <- fit.coxph$basehaz
   }
   if (is.null(init$coef) | !length(icov)) init$coef <- rep(0, ncov)
   else {
@@ -212,20 +208,21 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   basehaz <- if (control$sieve) const2lin(basehaz, stratum = "trans")
              else jump2step(basehaz, stratum = "trans")
   rownames(basehaz) <- rownames(init$basehaz) <- NULL
-  censor.rate <- with(d, c("Status and survival" = sum(contrib != 0 & absorb),
-                           "Status only" = sum(contrib != 0 & !absorb),
-                           "Survival only" = sum(contrib == 0 & absorb),
-                           "Neither" = sum(contrib == 0 & !absorb)))
-  censor.rate <- matrix(censor.rate/n, nrow = 1)
+  censor.rate <-
+    with(d, cbind("Status and survival" = sum(contrib != 0 & absorb),
+                  "Status only" = sum(contrib != 0 & !absorb),
+                  "Survival only" = sum(contrib == 0 & absorb),
+                  "Neither" = sum(contrib == 0 & !absorb))) / n
   rownames(censor.rate) <- "Observation rate"
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf),
               p = ncov * (length(icov) > 0), coef = fit$coef, var = var,
               basehaz = basehaz, init = init,
-              loglik = n * fit$loglik[1:(fit$iter + 1)], iter = fit$iter,
+              loglik = n * fit$loglik[c(1, fit$iter + 1)], iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
-              cputime = fit$cputime, fit.coxph = fit.coxph,
+              cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
+  if (!is.null(fit$coxph$coef)) class(fit$coxph) <- "coxinterval"
   class(fit) <- c("coxdc", "coxinterval")
   fit
 }

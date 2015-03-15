@@ -10,7 +10,8 @@
 
 \usage{
 coxdc.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
-              coef.max = 10, sieve.const = 1, sieve.rate = 1/3)
+              coef.max = 10, sieve = TRUE, sieve.const = 1,
+              sieve.rate = 1/3) 
 }
 
 \arguments{
@@ -32,6 +33,12 @@ coxdc.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
     coefficient.  This and the \code{coef.typ} arguments tune
     variance estimation via the curvature in the profile
     log-likelihood.
+  }
+  \item{sieve}{
+    a logical value indicating that the sieve rather than the
+    semiparametric MLE should be fit to the data.  \code{sieve = FALSE}
+    is gives an unbiased estimator only if the progression status is
+    known at all terminal event times.
   }
   \item{sieve.const}{
     a constant factor that, in part, determines the sieve size.  The

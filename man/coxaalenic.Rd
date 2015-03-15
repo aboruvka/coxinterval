@@ -152,8 +152,8 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     the \code{"na.action"} attribute of the model frame.
   }
   \item{censor.rate}{
-    a vector giving the rates of left-, interval- and right-censoring
-    among the observations used in the model fit.
+    a vector giving the rates of exact, left-censored, interval-censored
+    and right-censored observations used in the model fit.
   }
   \item{control}{
     a named list of arguments passed to \code{\link{coxdc.control}}.
