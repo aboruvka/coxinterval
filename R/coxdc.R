@@ -3,6 +3,9 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
 {
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
+  ## set parameters controlling model fit
+  control <- if (missing(control)) coxdc.control(...)
+             else do.call(coxdc.control, control)
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
@@ -45,24 +48,22 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   ord <- order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2])
   mf <- mf[ord, ]
   mm <- mm[ord, ]
-  ## set parameters controlling model fit
-  control <- if (missing(control)) coxdc.control(...)
-             else do.call(coxdc.control, control)
   d <- coxdc.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
                   mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states,
-                  control$sieve)
+                  control$sieve, control$eps)
   n <- nrow(d$z)
   ncov <- length(jcov)
-  if (control$sieve)
-    part <-
-      mapply(function(x, y) c(0, x[y[-c(1, length(y))]], ceiling(max(d$v))),
-             x = d$supp,
-             y = mapply(function(x, y) seq(y, length(x), y),
-               x = d$supp,
-               y = mapply(function(x, y) max(1, round(length(x)/y)),
-                 d$supp, with(control, sieve.const * n^sieve.rate)),
-               SIMPLIFY = FALSE), SIMPLIFY = FALSE)
-  else part <- lapply(d$supp, function(x) c(0, x, ceiling(max(d$v))))
+  if (control$sieve) {
+    part <- mapply(function(s, r) s[r > 1], d$supp, d$risk, SIMPLIFY = FALSE)
+    npart <- mapply(function(s, k) max(1, round(length(s)/k)), part,
+                    with(control, sieve.const * n^sieve.rate), SIMPLIFY = FALSE)
+    npart <- mapply(function(s, k) seq(k, length(s), k), part, npart,
+                    SIMPLIFY = FALSE)
+    part <- mapply(function(s, k) c(floor(min(d$u)), s[k[-c(1, length(k))]],
+                                    ceiling(max(d$v))), part, npart,
+                   SIMPLIFY = FALSE)
+  }
+  else part <- lapply(d$supp, function(x) c(0, x))
   npart <- sapply(part, length)
   ## type-specific partition
   tvec <- do.call("c", part)
@@ -179,22 +180,22 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
             as.integer(control$iter.max),
             as.double(control$coef.typ),
             as.double(control$coef.max),
-            as.integer(length(icov) == 0),
-            as.integer(control$sieve),
+            zerocoef = as.integer(length(icov) == 0),
+            sieve = as.integer(control$sieve),
             iter = as.integer(0),
             maxnorm = as.double(0),
             gradnorm = as.double(0),
             cputime = as.double(0),
             flag = as.integer(0),
             NAOK = TRUE)
-  if (fit$flag == 1)
-    stop("Parameter estimation failed; coefficient Hessian not invertible.")
+  if (fit$flag == 1 & length(icov) > 0)
+    warning("Parameter estimation failed; coefficient Hessian not invertible.")
   if (with(fit, any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
-    stop("Parameter estimation failed.")
+    warning("Parameter estimation failed.")
   if (fit$flag == 2)
-    stop("Variance estimation failed; profile information not invertible.")
+    warning("Variance estimation failed; profile information not invertible.")
   if (with(fit, any(is.na(diag(var)), is.nan(diag(var)))))
-    stop("Variance estimation failed.")
+    warning("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(init$coef) <- colnames(mm)[jcov]
@@ -221,7 +222,7 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
-              control = control)
+              control = control, data = d, nullmodel = fit$zerocoef)
   if (!is.null(fit$coxph$coef)) class(fit$coxph) <- "coxinterval"
   class(fit) <- c("coxdc", "coxinterval")
   fit

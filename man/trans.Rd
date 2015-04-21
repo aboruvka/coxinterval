@@ -40,6 +40,6 @@
   \code{\link{coxdc}}
 }
 
-\examples{with(dualrc, trans(from, to))}
+\examples{with(dualrc[1:10, ], trans(from, to))}
 
 \keyword{survival}

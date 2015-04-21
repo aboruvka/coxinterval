@@ -6,6 +6,9 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   cl <- match.call(expand.dots = FALSE)
   if (!is.loaded("coxaalenic", "coxinterval"))
     stop("Required CPLEX-dependent libraries are unavailable.")
+  ## set parameters controlling model fit
+  control <- if (missing(control)) coxaalenic.control(...)
+             else do.call(coxaalenic.control, control)
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
@@ -64,13 +67,14 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   n <- nrow(mf)
   nadd <- length(jadd)
   nprp <- length(jprp)
-  time <- maximalint(mf[, irsp])
+  tmax <- max(mf[, irsp][mf[, irsp][, 3] == 0, 1],
+              mf[, irsp][mf[, irsp][, 3] == 3, 2])
+  if (tmax == tmax - control$eps)
+    stop("Observations large relative to epsilon. Use a smaller time scale.")
+  time <- maximalint(mf[, irsp], eps = control$eps)
   ntime <- nrow(time$int) - 1
   time$int <- time$int[1:ntime, ]
   A <- coxaalenic.ineq(mm[, jadd[-1]], ntime)
-  ## set parameters controlling model fit
-  control <- if (missing(control)) coxaalenic.control(...)
-             else do.call(coxaalenic.control, control)
   ## initial parameter values
   if (is.null(init)) init <- list()
   init.timereg <- init.timereg & !is.null(fit.timereg$coef)

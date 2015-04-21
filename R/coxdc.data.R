@@ -1,5 +1,5 @@
 ### format data for coxdc.c
-coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
+coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve, eps)
 {
   p <- max(1, ncol(z))
   z <- data.frame(id, from, to, status, z)
@@ -22,8 +22,14 @@ coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
   ## largest and smallest observation times
   u <- as.vector(by(start, id, min, na.rm = TRUE))
   v <- as.vector(by(stop, id, max))
+  vmax <- max(v)
+  if (vmax == vmax - eps)
+    stop("Observations large relative to epsilon. Use a smaller time scale.")
+  eps <- min(eps, 1 / vmax)
   ## T observed?
   absorb <- is.element(uid, id[to == states[3] & status == 1])
+  ## wlog largest observation is right-censored
+  if (!sieve) absorb[v == vmax] <- FALSE
   ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?
   contrib <- rep(2, n)
   contrib[uid %in% id[from %in% states[2]]] <- 1
@@ -34,26 +40,32 @@ coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve)
   right <- rep(Inf, n)
   right[contrib == 0] <- stop[is.na(from)]
   right[contrib == 1] <- start[from %in% states[2]]
-  right[absorb & contrib == 0] <- v[absorb & contrib == 0] - .Machine$double.eps
-  if (!any(contrib == 2 & absorb) | !any(contrib == 1 & absorb))
-    stop("Estimation needs some survival times with known progression status.")
-  ## maximal intersections containing 0 -> 1 support
-  t01 <- maximalint(cbind(left, right)[contrib == 1, ])$int[, 2]
-  names(t01) <- NULL
+  right[absorb & contrib == 0] <- v[absorb & contrib == 0]
+  right[absorb & right == v] <- right[absorb & right == v] - eps
   if (sieve) {
+    t01 <- maximalint(cbind(left, right)[contrib == 1, ], eps)$int[, 2]
+    if (!any(contrib == 2 & absorb))
+      stop("Support for progression-free survival is ambiguous.")
+    if(!any(contrib == 1 & absorb))
+      stop("Support for survival following progression is ambiguous.")
     t02 <- v[absorb & contrib == 2]
     t12 <- v[absorb & contrib == 1]
   }
   else {
-    ## wlog make the largest observation right-censored
-    absorb[v == max(v)] <- FALSE
-    ## wlog make 
-    absorb[contrib != 2 & v <= sort(right)[2]] <- FALSE
+    t01 <- maximalint(cbind(left, right)[contrib != 2, ], eps)$int[, 2]
     t02 <- v[absorb & contrib != 1]
     t12 <- v[absorb & contrib != 2]
   }
+  names(t01) <- NULL
   t02 <- sort(unique(t02))
   t12 <- sort(unique(t12))
-  list(supp = list(t01 = t01, t02 = t02, t12 = t12), left = left, right = right,
-       u = u, v = v, contrib = contrib, absorb = absorb, z = z)
+  smax <- pmin(right, v)
+  sobs <- !sieve | contrib != 0
+  r01 <- apply(sapply(t01, function(x) sobs & smax >= x), 2, sum)
+  r02 <- apply(sapply(t02, function(x) sobs & smax >= x), 2, sum)
+  r12 <- apply(sapply(t12, function(x) sobs & right <= x & x <= v), 2, sum)
+  list(supp = list(t01 = t01, t02 = t02, t12 = t12),
+       risk = list(r01 = r01, r02 = r02, r12 = r12),
+       left = left, right = right, u = u, v = v, contrib = contrib,
+       absorb = absorb, z = z)
 }
