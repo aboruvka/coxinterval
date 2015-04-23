@@ -185,7 +185,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   rownames(censor.rate) <- "Censoring rate"
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
               basehaz = basehaz, maximalint = time$int, init = init,
-              loglik = n * fit$loglik[c(1, fit$iter + 1)], iter = fit$iter,
+              loglik = n * fit$loglik, iter = fit$iter,
               maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,

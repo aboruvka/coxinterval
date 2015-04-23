@@ -1,7 +1,7 @@
 Package: coxinterval
-Title: Cox-type Models for Interval-Censored Data
+Title: Cox-Type Models for Interval-Censored Data
 Version: 1.1
-Date: 2015-02-07
+Date: 2015-04-20
 Author: Audrey Boruvka and Richard J. Cook
 Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
 Description: Fits Cox-type models based on interval-censored data from a survival

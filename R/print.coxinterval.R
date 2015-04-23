@@ -16,7 +16,8 @@ print.coxinterval <- function(x, ...)
   if (!is.null(x$loglik)) {
     options(digits = ceiling(log10(x$n)) + digits)
     cat("Initial log-likelihood:", x$loglik[1], "\n")
-    cat("Log-likelihood after", x$iter, "iterations:", x$loglik[2], "\n")
+    cat("Log-likelihood after", x$iter, "iterations:", x$loglik[x$iter + 1],
+        "\n")
   }
   invisible(x)
 }

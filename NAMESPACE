@@ -1,10 +1,16 @@
 useDynLib(coxinterval)
 import(Matrix, parallel, survival, timereg)
-export("coxdc",
+export("const2lin",
+       "coxdc",
        "coxdc.control",
        "coxaalenic",
        "coxaalenic.control",
+       "jump2step",
+       "lin2const",
+       "linapprox",
        "maximalint",
+       "step2jump",
+       "step2stepfun",
        "trans",
        "na.coxdc")
 S3method(print, coxinterval)
