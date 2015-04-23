@@ -186,7 +186,7 @@ coxaalenic <- function(formula, data = parent.frame(), subset, init = NULL,
   fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
               basehaz = basehaz, maximalint = time$int, init = init,
               loglik = n * fit$loglik, iter = fit$iter,
-              maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
+              maxnorm = fit$maxnorm, gradnorm = abs(fit$gradnorm),
               cputime = fit$cputime, timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)

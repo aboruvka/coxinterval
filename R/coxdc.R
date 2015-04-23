@@ -196,15 +196,15 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
             flag = as.integer(0),
             NAOK = TRUE)
   if (fit$flag == 1 & length(icov) > 0)
-    warning("Parameter estimation failed; coefficient Hessian not invertible.")
+    stop("Parameter estimation failed; coefficient Hessian not invertible.")
   if (with(fit, any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
-    warning("Parameter estimation failed.")
+    stop("Parameter estimation failed.")
   if (fit$flag == 2)
-    warning("Variance estimation failed; profile information not invertible.")
+    stop("Variance estimation failed; profile information not invertible.")
   if (with(fit, any(is.na(diag(var)), is.nan(diag(var)))))
-    warning("Variance estimation failed.")
+    stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
-    warning("Maximum iterations reached before convergence.")
+    stop("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(init$coef) <- colnames(mm)[jcov]
   var <- matrix(fit$var, ncov)
   rownames(var) <- colnames(var) <- colnames(mm)[jcov]
