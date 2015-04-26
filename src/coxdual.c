@@ -308,12 +308,12 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
 }
 
 void
-coxdc(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
-      int *dims, double *z, int *nrow, double *left, double *right, double *u,
-      double *v, int *contrib, int *absorb, double *varc, double *ll,
-      double *epsilon, int *maxiter, double *typc, double *supc, int *zeroc,
-      int *sieve, int *numiter, double *maxnorm, double *gradnorm,
-      double *cputime, int *flag)
+coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
+        int *dims, double *z, int *nrow, double *left, double *right, double *u,
+        double *v, int *contrib, int *absorb, double *varc, double *ll,
+        double *epsilon, int *maxiter, double *typc, double *supc, int *zeroc,
+        int *sieve, int *numiter, double *maxnorm, double *gradnorm,
+        double *cputime, int *flag)
 {
   clock_t begtime, endtime;
   char uplo = 'U';

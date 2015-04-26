@@ -1,13 +1,14 @@
 Package: coxinterval
 Title: Cox-Type Models for Interval-Censored Data
 Version: 1.1
-Date: 2015-04-20
+Date: 2015-04-25
 Author: Audrey Boruvka and Richard J. Cook
 Maintainer: Audrey Boruvka <audrey.boruvka@gmail.com>
 Description: Fits Cox-type models based on interval-censored data from a survival
              or illness-death process.
 SystemRequirements: GNU make
-Depends: Matrix, parallel, survival, timereg, R (>= 2.13.0)
+Depends: R (>= 2.15.2), survival, timereg
+Imports: Matrix
 LazyData: yes
 LazyLoad: yes
 NeedsCompilation: yes

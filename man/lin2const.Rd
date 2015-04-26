@@ -4,7 +4,7 @@
 \title{Derivative values from a piecewise linear function of time}
 
 \description{
-  A utility function for \code{\link{coxdc}} that returns the derivative
+  A utility function for \code{\link{coxdual}} that returns the derivative
   of a piecewise linear function of time, evaluated at given values.
 }
 
@@ -31,7 +31,7 @@
 }
 
 \details{
-  This is a utility function for \code{\link{coxdc}}.
+  This is a utility function for \code{\link{coxdual}}.
 }
 
 \seealso{
@@ -40,8 +40,8 @@
 
 \examples{
 data(dualrc)
-fit <- coxdc(Surv(start, stop, status) ~ cluster(id)
-             + trans(from, to) + z, data = dualrc)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id)
+               + trans(from, to) + z, data = dualrc, init.coxph = TRUE)
 fit$basehaz
 haz <- lin2const(fit$basehaz, stratum = 3)
 Haz <- const2lin(haz, stratum = 3)

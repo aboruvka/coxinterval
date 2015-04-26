@@ -1,8 +1,8 @@
-\name{coxdc}
-\alias{coxdc}
-\alias{na.coxdc}
-\alias{na.coxdc.default}
-\alias{na.coxdc.data.frame}
+\name{coxdual}
+\alias{coxdual}
+\alias{na.coxdual}
+\alias{na.coxdual.default}
+\alias{na.coxdual.data.frame}
 
 \title{Cox model for a Markov illness-death process under dual censoring}
 
@@ -13,8 +13,8 @@
 }
 
 \usage{
-coxdc(formula, data = parent.frame(), subset, init = NULL,
-      formula.coxph = NULL, init.coxph = FALSE, control, ...)
+coxdual(formula, data = parent.frame(), subset, init = NULL,
+        formula.coxph = NULL, init.coxph = FALSE, control, ...)
 }
 
 \arguments{
@@ -71,11 +71,11 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{control}{
     a named list of parameters controlling the model fit, returned by
-    the function \code{\link{coxdc.control}}.  This defaults to
-    \code{coxdc.control()}.
+    the function \code{\link{coxdual.control}}.  This defaults to
+    \code{coxdual.control()}.
   }
   \item{\dots}{
-    additional arguments to be passed to \code{\link{coxdc.control}}.
+    additional arguments to be passed to \code{\link{coxdual.control}}.
   }
 }
 
@@ -89,7 +89,7 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
   \code{<status>} indicates whether or not a transition is observed to
   occur at \code{<stop>}.
 
-  Under dual censoring (Boruvka and Cook, 2014b), both the originating
+  Under dual censoring (Boruvka and Cook, 2014), both the originating
   state and the left endpoint of an at-risk interval may be unknown.
   This case is handled with \code{<start> = NA}, \code{<from> = NA},
   \code{<to>} equal to the index of the terminal state and any
@@ -100,7 +100,7 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
   the initial observation time (zero, unless left-truncated),
   \code{<stop> = NA} and \code{<from>} is equal to the initial state
   index.  Missing values are retained by the \code{NA} action
-  \code{\link{na.coxdc}}.  The default \code{NA} action is used to
+  \code{\link{na.coxdual}}.  The default \code{NA} action is used to
   handle any missing values passed to \code{\link[survival]{coxph}}.
 
   Dual censoring typically arises in two scenarios: (1) dual
@@ -114,16 +114,16 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
   associated with these \code{NA} values.  To resolve this, the
   cumulative baseline transition intensities are restricted to piecewise
   linear functions on a sieve with size controlled by arguments passed
-  to \code{\link{coxdc.control}}.  This approach requires that both types
+  to \code{\link{coxdual.control}}.  This approach requires that both types
   of transitions to the terminal state are, at least for some subjects,
   observed exactly.
 }
 
 \value{
-  An object of the classes \code{"coxinterval"} and \code{"coxdc"},
+  An object of the classes \code{"coxinterval"} and \code{"coxdual"},
   which is a list with the following components.
   \item{call}{
-    the matched call to \code{coxdc}.
+    the matched call to \code{coxdual}.
   }
   \item{censor}{
     a string indicating the dual censoring type.  The value "right"
@@ -177,18 +177,22 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
   \item{na.action}{
     the \code{"na.action"} attribute of the model frame.  Here this
     corresponds to the result from the custom \code{NA} action
-    \code{\link{na.coxdc}}.
+    \code{\link{na.coxdual}}.
   }
   \item{censor.rate}{
     a named vector of censoring rates.
   }
   \item{control}{
-    a list of arguments passed to \code{\link{coxdc.control}}.
+    a list of arguments passed to \code{\link{coxdual.control}}.
+  }
+  \item{data}{
+    a list containing the data relevant to the model fit, if the
+    \code{\link{coxdual.control}} argument \code{data} is true.
   }
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2015)
+  Boruvka, A. and Cook, R. J. (2014)
   Sieve estimation in a Markov illness-death process under dual censoring.
 }
 
@@ -200,19 +204,19 @@ coxdc(formula, data = parent.frame(), subset, init = NULL,
 
 \examples{
 # Fit Cox model to dual-right--censored data
-fit <- coxdc(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
-             + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
-             + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
-             sieve.rate = 2/5)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+               + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
+               + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
+               sieve.rate = 2/5)
 fit
 par(mfrow = c(1, 3))
 by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
    type = "l", main = paste(x[1, 3]), xlim = c(0, 2), ylim = c(0, 4)))
 
 # Fit Cox model to data with interval-censored progression times
-fit <- coxdc(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
-             + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
-             + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+               + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
+               + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
 fit
 par(mfrow=c(1, 3))
 by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],

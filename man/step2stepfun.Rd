@@ -37,8 +37,8 @@
 }
 
 \examples{
-fit <- coxdc(Surv(start, stop, status) ~ cluster(id)
-             + trans(from, to) + z, data = dualrc)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id)
+               + trans(from, to) + z, data = dualrc, init.coxph = TRUE)
 head(fit$coxph$basehaz)
 Hazfun <- step2stepfun(fit$coxph$basehaz, stratum = 3)
 Haz01 <- with(fit$coxph, split(basehaz[, 1:2], basehaz[, 3]))[[1]]

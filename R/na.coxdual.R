@@ -1,5 +1,5 @@
-na.coxdc <- function(object, ...) UseMethod("na.coxdc")
-na.coxdc.default <- function(object, ...)
+na.coxdual <- function(object, ...) UseMethod("na.coxdual")
+na.coxdual.default <- function(object, ...)
 {
   n <- length(object)
   omit <- FALSE

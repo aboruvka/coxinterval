@@ -1,7 +1,7 @@
 \newcommand{\CRANpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
-\name{coxaalenic}
-\alias{coxaalenic}
+\name{coxaalen}
+\alias{coxaalen}
 
 \title{Cox-Aalen model for interval-censored survival data}
 
@@ -11,9 +11,9 @@
 }
 
 \usage{
-coxaalenic(formula, data = parent.frame(), subset, init = NULL,
-           formula.timereg = NULL, init.timereg = FALSE,
-           close.cplex = TRUE, control, ...)
+coxaalen(formula, data = parent.frame(), subset, init = NULL,
+         formula.timereg = NULL, init.timereg = FALSE,
+         close.cplex = TRUE, control, ...)
 }
 
 \arguments{
@@ -63,16 +63,16 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{close.cplex}{
     a logical value indicating that CPLEX data structures should be
-    freed when \code{coxaalenic} exits.
+    freed when \code{coxaalen} exits.
   }
   \item{control}{
     a named list of parameters controlling the model fit, as returned by
-    the function \code{\link{coxaalenic.control}}.  This defaults to
-    \code{coxaalenic.control()}.
+    the function \code{\link{coxaalen.control}}.  This defaults to
+    \code{coxaalen.control()}.
   }
   \item{\dots}{
     additional arguments to be passed to
-    \code{\link{coxaalenic.control}}.
+    \code{\link{coxaalen.control}}.
   }
 }
 
@@ -92,7 +92,7 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
   are distinguished by applying \CRANpkg{timereg}'s
   \code{\link[timereg]{prop}} function to each corresponding variable.
 
-  \code{coxaalenic} depends on libraries that are loaded only if
+  \code{coxaalen} depends on libraries that are loaded only if
   \code{coxinterval} is installed from source on a system with
   \href{http://www-03.ibm.com/software/products/en/ibmilogcpleoptistud/}{
     IBM ILOG CPLEX Optimization Studio}. Refer to the package's INSTALL
@@ -100,10 +100,10 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 }
 
 \value{
-  An object of the class \code{"coxinterval"} and \code{"coxaalenic"},
+  An object of the class \code{"coxinterval"} and \code{"coxaalen"},
   which is a list with the following components.
   \item{call}{
-    the matched call to \code{coxdc}.
+    the matched call to \code{coxdual}.
   }
   \item{n}{
     size of the sample used in the model fit.
@@ -156,15 +156,15 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
     and right-censored observations used in the model fit.
   }
   \item{control}{
-    a named list of arguments passed to \code{\link{coxdc.control}}.
+    a named list of arguments passed to \code{\link{coxdual.control}}.
   }
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014)
+  Boruvka, A. and Cook, R. J. (2015)
   \href{http://dx.doi.org/10.1111/sjos.12113}{
     A Cox-Aalen model for interval-censored data}.
-  \emph{Scandinavian Journal of Statistics}, in press.
+  \emph{Scandinavian Journal of Statistics} \bold{42}, 414--426.
 
   Martinussen, T. and Scheike, T. H. (2006)
   Dynamic Regression Models for Survival Data.
@@ -183,11 +183,12 @@ coxaalenic(formula, data = parent.frame(), subset, init = NULL,
 
 \examples{
 # Fit a Cox model to the breast cosmesis dataset
-if (is.loaded("coxaalenic", "coxinterval")) \{
-  fit <- coxaalenic(Surv(left, right, type = "interval2") ~ prop(treat),
-                    data = cosmesis)
-  fit
-  plot(fit$basehaz, type = "s")
+if (is.loaded("coxaalen", "coxinterval")) \{
+  fit <- coxaalen(Surv(left, right, type = "interval2") ~ prop(treat),
+                  data = cosmesis, init.timereg = TRUE,
+                  formula.timereg = list(Surv(pmax(left, right, na.rm = TRUE),
+                  !is.na(right)) ~ .))
+  summary(fit)
 \}
 }
 

@@ -98,7 +98,7 @@ loglik(double *c, double *L, double *z, double *w, int *J)
 }
 
 void
-coxaalenic(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
+coxaalen(double *c, double *L, int *nrowL, double *z, int *nrowz, int *ncolz,
            double *w, int *ncolw, int *J, double *A, int *nrowA, double *eps,
            int *epsnorm, int *maxiter, double *armijo, int *varc, double *typc,
            double *supc, int *trace, int *maxthread, double *var, double *ll,

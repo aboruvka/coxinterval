@@ -4,11 +4,10 @@
 
 ## Requirements
 
-Required software for coxinterval is summarized as follows. System-specific notes for items 1 and 2 are provided below.
+Required software for coxinterval is summarized as follows. System-specific notes for each item are provided below.
 
 1. Development tools for R, including GNU make
 2. C API for CPLEX available with [IBM ILOG CPLEX Optimization Studio 12.5+](http://www-03.ibm.com/software/products/en/ibmilogcpleoptistud/). Members of [IBM's Academic Initiative](http://www.ibm.com/academicinitiative) can obtain CPLEX at [no charge](https://www.ibm.com/developerworks/community/blogs/jfp/entry/cplex_studio_in_ibm_academic_initiative?lang=en). Without CPLEX, coxinterval offers reduced functionality.
-3. Contributed R package [timereg](http://cran.r-project.org/web/packages/timereg/index.html)
 
 ### Linux
 
@@ -20,10 +19,11 @@ Required software for coxinterval is summarized as follows. System-specific note
 
 ### Windows
 
-1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run `set PATH` and ensure that the value for the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH`. For example:
+1. Install [Rtools](http://cran.r-project.org/bin/windows/Rtools/). From a command prompt run `set PATH` and ensure that the value for the `PATH` environment variable includes the folders for both R and Rtools binaries. If not, update `PATH` using the Windows command `set`. For example:
 
    ```shell
-    set PATH=C:/Rtools/bin;C:/Rtools/gcc-4.6.3/bin;C:/Program Files/R/R-3.1.0/bin;%PATH%
+    set PATH=C:/Rtools/bin;C:/Rtools/gcc-4.6.3/bin;%PATH%
+    set PATH=C:/Program Files/R/R-3.1.0/bin;%PATH%
    ```
 2. Install 32-bit CPLEX. Note that this means that the package's CPLEX-dependent functions are limited to 32-bit R.
 

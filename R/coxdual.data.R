@@ -1,9 +1,10 @@
-### format data for coxdc.c
-coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve, eps)
+### format data for coxdual.c
+coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
+                         eps)
 {
   p <- max(1, ncol(z))
-  z <- data.frame(id, from, to, status, z)
-  names(z) <- c("id", "from", "to", "status", paste("z", 1:p, sep = ""))
+  z <- data.frame(id, from, to, contrib, z)
+  names(z) <- c("id", "from", "to", "contrib", paste("z", 1:p, sep = ""))
   ## type-specific covariates (nb: ? -> 2 presumed to hold values for 1 -> 2)
   z <- merge(merge(subset(z, from %in% states[1] & to == states[2]),
                    subset(z, from %in% states[1] & to == states[3]), by = "id"),
@@ -27,7 +28,7 @@ coxdc.data <- function(id, start, stop, from, to, status, z, states, sieve, eps)
     stop("Observations large relative to epsilon. Use a smaller time scale.")
   eps <- min(eps, 1 / vmax)
   ## T observed?
-  absorb <- is.element(uid, id[to == states[3] & status == 1])
+  absorb <- is.element(uid, id[to == states[3] & contrib == 1])
   ## wlog largest observation is right-censored
   if (!sieve) absorb[v == vmax] <- FALSE
   ## contribution via 0 -> 1 (1), 0 -> 2 (2), both (0)?

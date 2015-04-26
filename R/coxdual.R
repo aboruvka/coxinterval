@@ -1,11 +1,11 @@
-coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
-                  formula.coxph = NULL, init.coxph = FALSE, control, ...)
+coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
+                    formula.coxph = NULL, init.coxph = FALSE, control, ...)
 {
   ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   ## set parameters controlling model fit
-  control <- if (missing(control)) coxdc.control(...)
-             else do.call(coxdc.control, control)
+  control <- if (missing(control)) coxdual.control(...)
+             else do.call(coxdual.control, control)
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
@@ -23,7 +23,7 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   if (length(icls) != 1) stop("Model requires exactly one 'cluster' term.")
   icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, itrn, icls)]
   mf$formula <- ftrm
-  mf$na.action <- as.name("na.coxdc")
+  mf$na.action <- as.name("na.coxdual")
   suppressWarnings(mf <- eval(mf, parent.frame()))
   mt <- attr(mf, "terms")
   mm <- model.matrix(mt, mf)
@@ -48,17 +48,18 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   ord <- order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2])
   mf <- mf[ord, ]
   mm <- mm[ord, ]
-  d <- coxdc.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, itrn][, 1],
-                  mf[, itrn][, 2], mf[, irsp][, 3], mm[, jcov], states,
-                  control$sieve, control$eps)
+  d <- coxdual.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2],
+                    mf[, itrn][, 1], mf[, itrn][, 2], mf[, irsp][, 3],
+                    mm[, jcov], states, control$sieve, control$eps)
   n <- nrow(d$z)
   ncov <- length(jcov)
   if (control$sieve) {
-    part <- mapply(function(s, r) s[r > 1], d$supp, d$risk, SIMPLIFY = FALSE)
+    part <- mapply(function(s, r) s[r >= control$risk.min],
+                   d$supp, d$risk, SIMPLIFY = FALSE)
     npart <- mapply(function(s, k) max(1, round(length(s)/k)), part,
                     with(control, sieve.const * n^sieve.rate), SIMPLIFY = FALSE)
-    npart <- mapply(function(s, k) seq(k, length(s), k), part, npart,
-                    SIMPLIFY = FALSE)
+    npart <- mapply(function(s, k) seq(k, length(s), k),
+                    part, npart, SIMPLIFY = FALSE)
     part <- mapply(function(s, k) c(floor(min(d$u)), s[k[-c(1, length(k))]],
                                     ceiling(max(d$v))), part, npart,
                    SIMPLIFY = FALSE)
@@ -76,6 +77,8 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   ## fit right-censored data alternatives with survival's coxph
   if (censor == "right" & is.null(formula.coxph) & init.coxph)
     formula.coxph <- list(cl$formula)
+  else if (class(formula.coxph) == "formula")
+    formula.coxph <- list(formula.coxph)
   fit.coxph <- list()
   if (!is.null(formula.coxph)) {
     for (i in 1:length(formula.coxph)) {
@@ -116,6 +119,7 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
           names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "trans")
         }
         fit.coxph[[i]]$call$data <- cl$data
+        class(fit.coxph[[i]]) <- "coxinterval"
       }
     }
   }
@@ -165,7 +169,7 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   basehaz <- if (control$sieve) lin2const(init$basehaz, stratum = "trans")
              else step2jump(init$basehaz, stratum = "trans")
   list(init = init, basehaz = basehaz)
-  fit <- .C("coxdc",
+  fit <- .C("coxdual",
             coef = as.double(init$coef),
             basehaz = as.double(basehaz$hazard),
             as.integer(ncov),
@@ -204,7 +208,7 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   if (with(fit, any(is.na(diag(var)), is.nan(diag(var)))))
     stop("Variance estimation failed.")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
-    stop("Maximum iterations reached before convergence.")
+    warning("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(init$coef) <- colnames(mm)[jcov]
   var <- matrix(fit$var, ncov)
   rownames(var) <- colnames(var) <- colnames(mm)[jcov]
@@ -225,13 +229,13 @@ coxdc <- function(formula, data = parent.frame(), subset, init = NULL,
   if (length(fit.coxph) == 1) fit.coxph <- fit.coxph[[1]]
   fit <- list(call = cl, censor = censor, n = n, m = nrow(mf),
               p = ncov * (length(icov) > 0), coef = fit$coef, var = var,
-              basehaz = basehaz, init = init,
-              loglik = n * fit$loglik, iter = fit$iter,
-              maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
+              basehaz = basehaz, init = init, loglik = n * fit$loglik,
+              iter = fit$iter, maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
-              control = control, data = d, nullmodel = fit$zerocoef)
-  if (!is.null(fit$coxph$coef)) class(fit$coxph) <- "coxinterval"
-  class(fit) <- c("coxdc", "coxinterval")
+              control = control, nullmodel = fit$zerocoef)
+  if (control$data) fit$data <- d
+  if (length(fit$coxph) == 1) fit$coxph <- fit$coxph[[1]]
+  class(fit) <- c("coxdual", "coxinterval")
   fit
 }

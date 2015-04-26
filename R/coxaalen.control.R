@@ -1,5 +1,5 @@
 ### set parameters controlling the model fit
-coxaalenic.control <- function(eps = 1e-7, eps.norm = c("max", "grad"),
+coxaalen.control <- function(eps = 1e-7, eps.norm = c("max", "grad"),
                                iter.max = 5000, armijo = 1/3, var.coef = TRUE,
                                coef.typ = 1, coef.max = 10, trace = FALSE,
                                thread.max = 1)
@@ -9,7 +9,7 @@ coxaalenic.control <- function(eps = 1e-7, eps.norm = c("max", "grad"),
     stop("Invalid epsilon. Choose a small value > ", .Machine$double.eps, ".")
   if (!is.element(eps.norm, c("max", "grad")))
     stop(paste("Unknown stopping rule norm", eps.norm))
-  if (iter.max < 0)
+  if (iter.max < 1)
     stop("Invalid maximum iterations. Choose a large positive integer.")
   if (var.coef & coef.typ < eps)
     stop("Invalid coefficient magnitude. Choose a positive value.")
@@ -17,14 +17,6 @@ coxaalenic.control <- function(eps = 1e-7, eps.norm = c("max", "grad"),
     stop("Invalid maximum coefficient size. Choose a value > ", coef.typ, ".")
   if (armijo < eps | armijo >= 1/2)
     stop("Invalid scale for Armijo's rule. Choose a value in (0, 1/2).")
-  if (thread.max < 0)
-    stop(paste("Invalid maximum threads. Choose an integer in 0, ..., ",
-               detectCores(logical = TRUE), ".", sep = ""))
-  if (thread.max > detectCores(logical = TRUE)) {
-    thread.max <- detectCores(logical = TRUE)
-    warning(paste("Invalid maximum threads. Setting 'thread.max' to ",
-                  detectCores(logical = TRUE), ".", sep = ""))
-  }
   list(eps = eps, eps.norm = eps.norm, iter.max = iter.max, armijo = armijo,
        var.coef = var.coef, coef.typ = coef.typ, coef.max = coef.max,
        trace = trace, thread.max = thread.max)
