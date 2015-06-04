@@ -5,7 +5,7 @@ REQUIREMENTS
 ------------
 
 Required software for coxinterval is summarized as follows. System-specific notes
-for items 1 and 2 are provided below.
+for each item are provided below.
 
 1. Development tools for R, including GNU make
 2. C API for CPLEX available with IBM ILOG CPLEX Optimization Studio 12.5+.
@@ -91,11 +91,11 @@ CPLEXINCDIR = <CPLEXDIR>/cplex/include
 CPLEXLIBDIR = <CPLEXDIR>/cplex/lib/<machine or compiler>/<library format>
 
 respectively, where the include directory points to the header file
-<CPLEXINCDIR>/ilcplex/cplex.h. The choice of the library format has no
+'<CPLEXINCDIR>/ilcplex/cplex.h'. The choice of the library format has no
 consequence for CPLEX's C API. Under Linux and Mac adequate linking option
-settings are `-lcplex -lm`. With Windows it is necessary to specify the CPLEX
-version number in the library name: -lcplex<version> -lm, where <version> can be
-obtained from the library file name <CPLEXLIBDIR>/cplex<version>.lib.
+settings are '-lcplex -lm'. With Windows it is necessary to specify the CPLEX
+version number in the library name: '-lcplex<version> -lm', where '<version>' can
+be obtained from the library file name '<CPLEXLIBDIR>/cplex<version>.lib'.
 
 Installing on systems without GNU make
 --------------------------------------
@@ -103,7 +103,7 @@ Installing on systems without GNU make
 Precede the install instructions with:
 
 1. Extract the source from the package tarball
-2. Revise the coxinterval/src/Makevars file according to one of the templates
+2. Revise the 'coxinterval/src/Makevars' file according to one of the templates
    below
 3. Rebuild the package tarball with R CMD build coxinterval
 

@@ -435,11 +435,6 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
         *gradnorm = max(*gradnorm, fabs(h[j + D[i]] * grad1h[j + D[i]]));
       }
   } while (*maxnorm > eps && iter < *maxiter);
-  if (iter == 1) {
-    REprintf("'Converged' after one step. Try another starting value.\n");
-    *flag = 1;
-    goto deallocate;
-  }
   *numiter = iter;
   if (*zeroc) goto deallocate;
   for (i = 0; i < p; i++) { /* curvature scale */

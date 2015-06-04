@@ -199,7 +199,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
             cputime = as.double(0),
             flag = as.integer(0),
             NAOK = TRUE)
-  if (fit$flag == 1 & length(icov) > 0)
+  if (fit$flag == 1 & !fit$zerocoef)
     stop("Parameter estimation failed; coefficient Hessian not invertible.")
   if (with(fit, any(is.na(coef), is.nan(coef), is.na(basehaz), is.nan(basehaz))))
     stop("Parameter estimation failed.")
@@ -207,6 +207,8 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
     stop("Variance estimation failed; profile information not invertible.")
   if (with(fit, any(is.na(diag(var)), is.nan(diag(var)))))
     stop("Variance estimation failed.")
+  if (fit$iter == 1)
+    warning("'Converged' after one iteration; try different starting values")
   if (with(fit, iter == control$iter.max & maxnorm > control$eps))
     warning("Maximum iterations reached before convergence.")
   names(fit$coef) <- names(init$coef) <- colnames(mm)[jcov]
@@ -234,7 +236,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
               iter = fit$iter, maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
-              control = control, nullmodel = fit$zerocoef)
+              control = control)
   if (control$data) fit$data <- d
   if (length(fit$coxph) == 1) fit$coxph <- fit$coxph[[1]]
   class(fit) <- c("coxdual", "coxinterval")

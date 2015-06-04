@@ -1,7 +1,7 @@
 \name{coxaalen.control}
 \alias{coxaalen.control}
 
-\title{Control a Cox-Aalen model fit}
+\title{Control Cox-Aalen model fit}
 
 \description{
   Set parameters controlling the model fit returned by
