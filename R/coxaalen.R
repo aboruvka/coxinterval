@@ -193,7 +193,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
               cputime = fit$cputime, timereg = fit.timereg,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
-  if (control$data)
+  if (control$return.data)
     fit$data <- list(maximalint = time$int, prop = mm[, jprp], add = mm[, jadd])
   if (length(fit$timereg) == 1) fit$timereg <- fit$timereg[[1]]
   class(fit) <- c("coxaalen", "coxinterval")

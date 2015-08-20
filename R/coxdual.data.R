@@ -62,9 +62,10 @@ coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
   t12 <- sort(unique(t12))
   smax <- pmin(right, v)
   sobs <- !sieve | contrib != 0
-  r01 <- apply(sapply(t01, function(x) sobs & smax >= x), 2, sum)
-  r02 <- apply(sapply(t02, function(x) sobs & smax >= x), 2, sum)
-  r12 <- apply(sapply(t12, function(x) sobs & right <= x & x <= v), 2, sum)
+  ## size of risk set at U+
+  r01 <- apply(sapply(t01, function(x) sobs & u <= x & x < smax), 2, sum)
+  r02 <- apply(sapply(t02, function(x) sobs & u <= x & x < smax), 2, sum)
+  r12 <- apply(sapply(t12, function(x) sobs & right <= x & x < v), 2, sum)
   list(supp = list(t01 = t01, t02 = t02, t12 = t12),
        risk = list(r01 = r01, r02 = r02, r12 = r12),
        left = left, right = right, u = u, v = v, contrib = contrib,

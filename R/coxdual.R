@@ -237,7 +237,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
               cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
               control = control)
-  if (control$data) fit$data <- d
+  if (control$return.data) fit$data <- d
   if (length(fit$coxph) == 1) fit$coxph <- fit$coxph[[1]]
   class(fit) <- c("coxdual", "coxinterval")
   fit

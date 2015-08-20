@@ -2,6 +2,18 @@ useDynLib(coxinterval)
 importFrom(Matrix, bdiag)
 import(survival)
 importFrom(timereg, cox.aalen, prop)
+importFrom(graphics, frame)
+importFrom(stats,
+           approx,
+           as.formula,
+           model.matrix,
+           pchisq,
+           printCoefmat,
+           qnorm,
+           stepfun,
+           terms,
+           update.formula)
+importFrom(utils, capture.output)
 export("const2lin",
        "coxdual",
        "coxdual.control",

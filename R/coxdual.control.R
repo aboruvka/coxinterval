@@ -1,6 +1,6 @@
 coxdual.control <- function(eps = 1e-7, iter.max = 50000, coef.typ = 1,
                             coef.max = 10, sieve = TRUE, sieve.const = 1,
-                            sieve.rate = 1/3, risk.min = 1, data = FALSE)
+                            sieve.rate = 1/3, risk.min = 1, return.data = FALSE)
 {
   if (eps <= .Machine$double.eps)
     stop("Invalid epsilon. Choose a small value > ", .Machine$double.eps, ".")
@@ -20,5 +20,5 @@ coxdual.control <- function(eps = 1e-7, iter.max = 50000, coef.typ = 1,
     stop("Minimum risk set should be 1 or 2.")
   list(eps = eps, iter.max = iter.max, coef.typ = coef.typ, coef.max = coef.max,
        sieve = sieve, sieve.const = sieve.const, sieve.rate = sieve.rate,
-       risk.min = risk.min, data = data)
+       risk.min = risk.min, return.data = return.data)
 }

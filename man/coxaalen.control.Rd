@@ -12,7 +12,7 @@
 coxaalen.control(eps = 1e-07, eps.norm = c("max", "grad"),
                  iter.max = 5000, armijo = 1/3, var.coef = TRUE,
                  coef.typ = 1, coef.max = 10, trace = FALSE,
-                 thread.max = 1, data = FALSE)
+                 thread.max = 1, return.data = FALSE)
 }
 
 \arguments{
@@ -68,7 +68,7 @@ coxaalen.control(eps = 1e-07, eps.norm = c("max", "grad"),
     used is limited by the number of available processors and the CPLEX
     license.
   }
-  \item{data}{
+  \item{return.data}{
     a logical value indicating that the object returned by
     \code{\link{coxaalen}} should contain an element \code{data} that
     gives the maximal intersections and the model matrix split into

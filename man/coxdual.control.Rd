@@ -11,7 +11,7 @@
 \usage{
 coxdual.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
                 coef.max = 10, sieve = TRUE, sieve.const = 1,
-                sieve.rate = 1/3, risk.min = 1, data = FALSE)
+                sieve.rate = 1/3, risk.min = 1, return.data = FALSE)
 }
 
 \arguments{
@@ -55,7 +55,7 @@ coxdual.control(eps = 1e-07, iter.max = 50000, coef.typ = 1,
     a positive integer giving the minimum size of risk set for support
     points defining the sieve.
   }
-  \item{data}{
+  \item{return.data}{
     a logical value indicating that the object returned by
     \code{\link{coxdual}} should contain an element \code{data} that
     gives the known support points, corresponding size of the risk set,
