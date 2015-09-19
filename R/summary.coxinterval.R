@@ -31,8 +31,11 @@ summary.coxinterval <- function(object, conf.int = 0.95, scale = 1, ...)
   s <- c(s, f(object))
   temp <- c("coxph", "timereg")
   temp <- temp[which(temp %in% names(object))]
-  s$rcfit <- if (length(temp) && !is.null(temp <- object[[temp]])) f(temp)
-             else NULL
+  if (length(temp) && !is.null(temp <- object[[temp]]))
+    s$rcfit <- if (class(temp) == "list") lapply(temp, f)
+               else f(temp)
+  else
+    s$rcfit <- NULL
   class(s) <- "summary.coxinterval"
   s
 }

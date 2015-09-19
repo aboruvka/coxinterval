@@ -51,10 +51,13 @@ print.summary.coxinterval <-
     if (is.null(x$censor))
       cat("Estimation from imputed data via timereg's cox.aalen function\n")
     else if (x$censor == "right")
-      cat("Estimation from right-censored data via survival's coxph function\n")
+      cat("Estimation from right-censored data via survival's rcfit function\n")
     else
-      cat("Estimation from imputed data via survival's coxph function\n")
-    f(x$rcfit)
+      cat("Estimation from imputed data via survival's rcfit function\n")
+    if (class(x$rcfit) == "list")
+      lapply(x$rcfit, f)
+    else
+      f(x$rcfit)
   }
   invisible()
 }
