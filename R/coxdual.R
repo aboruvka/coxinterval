@@ -75,8 +75,11 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
   if (with(d, all(left[contrib == 1] == right[contrib == 1]))) censor <- "right"
   else censor <- "interval"
   ## fit right-censored data alternatives with survival's coxph
-  if (censor == "right" & is.null(formula.coxph) & init.coxph)
+  add.coxph <- FALSE
+  if (censor == "right" & is.null(formula.coxph) & init.coxph) {
     formula.coxph <- list(cl$formula)
+    add.coxph <- TRUE
+  }
   else if (class(formula.coxph) == "formula")
     formula.coxph <- list(formula.coxph)
   fit.coxph <- list()
@@ -112,7 +115,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
                iter = fit.coxph[[i]]$iter,
                loglik = fit.coxph[[i]]$loglik,
                na.action = fit.coxph[[i]]$na.action)
-        if (censor == "right" & i == 1) {
+        if (add.coxph) {
           if (length(icov))
             rownames(fit.coxph[[i]]$var) <-
               colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]

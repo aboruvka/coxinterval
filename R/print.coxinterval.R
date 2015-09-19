@@ -8,7 +8,8 @@ print.coxinterval <- function(x, ...)
   est <- x$coef
   se <- sqrt(diag(x$var))
   mat <- cbind(est, exp(est), se, est/se, 1 - pchisq((est/se)^2, 1))
-  dimnames(mat) <- list(names(est), c("coef", "exp(coef)", "se(coef)", "z", "p"))
+  dimnames(mat) <- list(names(est),
+                        c("coef", "exp(coef)", "se(coef)", "z", "p"))
   cat("\n")
   if (x$p > 0) prmatrix(mat)
   else cat("Null model\n")
@@ -16,8 +17,8 @@ print.coxinterval <- function(x, ...)
   if (!is.null(x$loglik)) {
     options(digits = ceiling(log10(x$n)) + digits)
     cat("Initial log-likelihood:", x$loglik[1], "\n")
-    cat("Log-likelihood after", x$iter, "iterations:", x$loglik[x$iter + 1],
-        "\n")
+    cat("Log-likelihood after", x$iter, "iterations:",
+        x$loglik[length(x$loglik)], "\n")
   }
   invisible(x)
 }

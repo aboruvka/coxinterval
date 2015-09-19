@@ -41,7 +41,8 @@ print.summary.coxinterval <-
   options(digits = ceiling(log10(x$n)) + digits)
   cat("\n")
   cat("Initial log-likelihood:", x$loglik[1], "\n")
-  cat("Log-likelihood after", x$iter, "iterations:", x$loglik[x$iter + 1], "\n")
+  cat("Log-likelihood after", x$iter, "iterations:", x$loglik[length(x$loglik)],
+      "\n")
   options(digits = digits)
   cat("\n")
   prmatrix(x$censor.rate)
