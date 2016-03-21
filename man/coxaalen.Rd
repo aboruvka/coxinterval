@@ -61,12 +61,12 @@ coxaalen(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{control}{
     a named list of parameters controlling the model fit, as returned by
-    the function \code{\link{coxaalen.control}}.  This defaults to
-    \code{coxaalen.control()}.
+    the function \code{\link{coxinterval.control}}.  This defaults to
+    \code{coxinterval.control()}.
   }
   \item{\dots}{
     additional arguments to be passed to
-    \code{\link{coxaalen.control}}.
+    \code{\link{coxinterval.control}}.
   }
 }
 
@@ -151,13 +151,13 @@ coxaalen(formula, data = parent.frame(), subset, init = NULL,
     and right-censored observations used in the model fit.
   }
   \item{control}{
-    a named list of arguments passed to \code{\link{coxaalen.control}}.
+    a named list of arguments passed to \code{\link{coxinterval.control}}.
   }
   \item{data}{
     a list containing the maximal intersections among the censoring
     intervals and model matrices for the multiplicative and additive
     terms in \code{formula}.  This component is returned only if the
-    \code{\link{coxaalen.control}} argument \code{data} is true.
+    \code{\link{coxinterval.control}} argument \code{data} is true.
   }
 }
 

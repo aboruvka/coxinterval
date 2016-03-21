@@ -13,7 +13,7 @@
 }
 
 \usage{
-coxdual(formula, data = parent.frame(), subset, init = NULL,
+coxdual(formula, data = parent.frame(), weights, subset, init = NULL,
         formula.coxph = NULL, init.coxph = FALSE, control, ...)
 }
 
@@ -23,12 +23,18 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
     \code{response} is anobject returned by the
     \code{\link[survival]{Surv}} function and \code{terms} contain
     clustering and state-transition variables identified by the
-    \code{\link[survival]{cluster}} and \code{\link{trans}} functions,
-    respectively.
+    \code{\link[survival]{cluster}} and \code{\link[survival]{strata}}
+    functions, respectively.
   }
   \item{data}{
-    an optional data frame in which to interpret the variables named in
-    the arguments \code{formula} and \code{formula.coxph}.
+    an optional data frame containing the variables named in the
+    arguments \code{formula}, \code{formula.coxph}, \code{weights} and
+    \code{subset}.
+  }
+  \item{weights}{
+    expression to evaluate the case weights, with the cases
+    distinguished by the variable wrapped in the special function
+    \code{\link[survival]{cluster}}.
   }
   \item{subset}{
     expression specifying which rows of \code{data} should be used
@@ -41,7 +47,7 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
     \code{basehaz} element should contain columns representing the
     cumulative transition intensity, time and transition type. If the
     columns do not appear in this order, they should be indicated by the
-    column names \code{"hazard"}, \code{"time"} and \code{"trans"},
+    column names \code{"hazard"}, \code{"time"} and \code{"strata"},
     respectively.  The sorted values used to represent the transition
     types should respectively denote the initial to intermediate,
     initial to terminal, and intermediate to terminal state transitions.
@@ -57,12 +63,11 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
     an optional formula specifying a model to fit with
     \code{\link[survival]{coxph}} using singly right-censored
     observations.  The shorthand \code{~ .} indicates the same terms
-    given in \code{formula}, with the function
-    \code{\link[survival]{strata}} in place by \code{\link{trans}}.
-    Under dual right censoring and \code{init.coxph = TRUE},
-    \code{formula.coxph} defaults to same model in \code{formula}, which
-    is fit to observations singly-right--censored at the earlier
-    censoring time.  Multiple formula objects can be provided as a list.
+    given in \code{formula}.  Under dual right censoring and
+    \code{init.coxph = TRUE}, \code{formula.coxph} defaults to same
+    model in \code{formula}, which is fit to observations
+    singly-right--censored at the earlier censoring time.  Multiple
+    formula objects can be provided as a list.
   }
   \item{init.coxph}{
     a logical value indicating that \code{init} should be overrided by
@@ -71,18 +76,18 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
   }
   \item{control}{
     a named list of parameters controlling the model fit, returned by
-    the function \code{\link{coxdual.control}}.  This defaults to
-    \code{coxdual.control()}.
+    the function \code{\link{coxinterval.control}}.  This defaults to
+    \code{coxinterval.control()}.
   }
   \item{\dots}{
-    additional arguments to be passed to \code{\link{coxdual.control}}.
+    additional arguments to be passed to \code{\link{coxinterval.control}}.
   }
 }
 
 \details{
   A valid \code{formula} argument can be expressed
   as \preformatted{Surv(<start>, <stop>, <status>)
-    ~ cluster(<id>) + trans(<from>, <to>) + <covariate terms>}
+    ~ cluster(<id>) + strata(<from>, <to>) + <covariate terms>}
   where (\code{<start>}, \code{<stop>}] is largest \emph{known} time
   interval over which individual \code{<id>} is at risk for a transition
   between the states \code{<from>} and \code{<to>}.  The variable
@@ -115,7 +120,7 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
   associated with these \code{NA} values.  To resolve this, the
   cumulative baseline transition intensities are restricted to piecewise
   linear functions on a sieve partition with size controlled by
-  arguments passed to \code{\link{coxdual.control}}.  This approach
+  arguments passed to \code{\link{coxinterval.control}}.  This approach
   requires that both types of transitions to the terminal state are, at
   least for some subjects, observed exactly.
 }
@@ -186,43 +191,46 @@ coxdual(formula, data = parent.frame(), subset, init = NULL,
     a named vector of censoring rates.
   }
   \item{control}{
-    a list of arguments passed to \code{\link{coxdual.control}}.
+    a list of arguments passed to \code{\link{coxinterval.control}}.
   }
   \item{data}{
     a list containing the data relevant to the model fit, if the
-    \code{\link{coxdual.control}} argument \code{data} is true.
+    \code{\link{coxinterval.control}} argument \code{data} is true.
   }
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014)
-  Sieve estimation in a Markov illness-death process under dual censoring.
+  Boruvka, A. and Cook, R. J. (2016)
+  \href{http://dx.doi.org/10.1093/biostatistics/kxv042}{
+    Sieve estimation in a Markov illness-death process under dual
+    censoring}.
+  \emph{Biostatistics} \bold{17}, 350--363.
 }
 
 \seealso{
   \code{\link[survival]{cluster}}, \code{\link{dualic}},
   \code{\link{dualrc}}, \code{\link[survival]{Surv}},
-  \code{\link{trans}}
+  \code{\link[survival]{strata}}
 }
 
 \examples{
 # Fit Cox model to dual-right--censored data
-fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + strata(from, to)
                + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
                + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualrc,
                sieve.rate = 2/5)
 fit
 par(mfrow = c(1, 3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
+by(fit$basehaz, fit$basehaz$strata, function(x) plot(x[, 2:1],
    type = "l", main = paste(x[1, 3]), xlim = c(0, 2), ylim = c(0, 4)))
 
 # Fit Cox model to data with interval-censored progression times
-fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + trans(from, to)
+fit <- coxdual(Surv(start, stop, status) ~ cluster(id) + strata(from, to)
                + I(z * (to == 1)) + I(z * (from \%in\% 0 & to == 2))
                + I(z * (from \%in\% c(NA, 1) & to == 2)), data = dualic)
 fit
 par(mfrow=c(1, 3))
-by(fit$basehaz, fit$basehaz$trans, function(x) plot(x[, 2:1],
+by(fit$basehaz, fit$basehaz$strata, function(x) plot(x[, 2:1],
    type = "l", main = paste(x[1, 3]), xlim = c(0, 2), ylim = c(0, 4)))
 }
 

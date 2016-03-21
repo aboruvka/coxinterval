@@ -54,7 +54,7 @@ print.summary.coxinterval <-
       cat("Estimation from right-censored data via survival's rcfit function\n")
     else
       cat("Estimation from imputed data via survival's rcfit function\n")
-    if (class(x$rcfit) == "list")
+    if (is.null(x$rcfit$coef))
       lapply(x$rcfit, f)
     else
       f(x$rcfit)

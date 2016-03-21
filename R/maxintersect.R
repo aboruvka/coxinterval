@@ -1,5 +1,5 @@
 ### maximal intersections from an interval-type Surv object
-maximalint <- function(x, eps = 1e-7)
+maxintersect <- function(x, eps = 1e-7)
 {
   if (is.null(nrow(x))) x <- matrix(x, nrow = 1)
   if (ncol(x) == 2) x[is.na(x[, 2]), 2] <- Inf
@@ -32,9 +32,8 @@ maximalint <- function(x, eps = 1e-7)
   if (is.null(nrow(s))) s <- matrix(s, nrow = 1)
   colnames(s) <- c("left", "right.untied", "right")
   ## maximal intersection overlap with censoring interval indicator matrix
-  if (nrow(s) < 2) i <- matrix(1)
-  else
-    i <-
-      t(apply(x[, 1:2], 1, function(x) 1 * (s[, 1] >= x[1] & s[, 2] <= x[2])))
-  list(int = s, ind = i)
+  i <- if (nrow(s) < 2) matrix(1)
+       else t(apply(x[, 1:2], 1,
+                    function(x) 1 * (s[, 1] >= x[1] & s[, 2] <= x[2])))
+  list(intersect = s, indicator = i)
 }

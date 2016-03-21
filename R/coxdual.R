@@ -1,56 +1,55 @@
-coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
-                    formula.coxph = NULL, init.coxph = FALSE, control, ...)
+coxdual <- function(formula, data = parent.frame(), weights, subset,
+                    init = NULL, formula.coxph = NULL, init.coxph = FALSE,
+                    control, ...)
 {
-  ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   ## set parameters controlling model fit
-  control <- if (missing(control)) coxdual.control(...)
-             else do.call(coxdual.control, control)
-  datargs <- c("formula", "data", "subset")
+  control <- if (missing(control)) coxinterval.control(...)
+             else do.call(coxinterval.control, control)
+  datargs <- c("formula", "data", "weights", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
-  specials <- c("trans", "cluster", "strata", "tt")
+  specials <- c("cluster", "strata", "tt")
   ftrm <- if (missing(data)) terms(formula, specials)
           else terms(formula, data = data, specials)
-  if (with(attr(ftrm, "specials"), length(c(strata, tt))))
-    stop("The 'strata' and 'tt' terms not supported.")
+  if (with(attr(ftrm, "specials"), length(tt)))
+    stop("The 'tt' term is not supported.")
   ## store column indices of terms in model frame
   irsp <- attr(ftrm, "response")
   ityp <- attr(ftrm, "specials")$type
-  itrn <- attr(ftrm, "specials")$trans
+  istr <- attr(ftrm, "specials")$strata
   icls <- attr(ftrm, "specials")$cluster
-  if (length(itrn) != 1) stop("Model requires exactly one 'trans' term.")
+  if (length(istr) != 1) stop("Model requires exactly one 'strata' term.")
   if (length(icls) != 1) stop("Model requires exactly one 'cluster' term.")
-  icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, itrn, icls)]
-  mf$formula <- ftrm
+  icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, istr, icls)]
+  mf$formula <-
+    update.formula(ftrm, paste("~",
+                               paste(gsub("^strata\\(", "coxdual.strata\\(",
+                                          attr(ftrm, "term.labels")),
+                                     collapse = " + ")))
   mf$na.action <- as.name("na.coxdual")
   suppressWarnings(mf <- eval(mf, parent.frame()))
+  states <- attr(mf[, istr], "states")
   mt <- attr(mf, "terms")
   mm <- model.matrix(mt, mf)
-  ## find covariates model matrix
+  weights <- model.weights(mf)
+  ## find covariates in model matrix
   if (length(icov)) {
     asgn <- frame.assign(mf, mt, mm)
-    jcov <- subset.data.frame(asgn, frame %in% icov)$matrix
+    jcov <- with(asgn, matrix[frame %in% icov])
   }
   else jcov <- 1
   if (!inherits(mf[, irsp], "Surv")) stop("Response is not a 'Surv' object.")
   if (attr(mf[, irsp], "type") != "counting")
     stop("Response is not a 'counting'-type 'Surv' object.")
-  ## in case NA action didn't apply trans attributes
-  if (!is.null(attr(mf[, itrn], "states"))) {
-    attr(mf, "states") <- attr(mf[, itrn], "states")
-    attr(mf, "types") <- attr(mf[, itrn], "types")
-  }
-  states <- attr(mf, "states")
-  if (length(states) != 3 | length(attr(mf, "types")) != 3)
-    stop("Invalid state transitions in the model 'trans' term.")
-  ## sort data
-  ord <- order(mf[, icls], mf[, itrn][, 1], mf[, itrn][, 2])
+  ## sort and format data for estimation routine
+  ord <- order(mf[, icls], mf[, istr][, 1], mf[, istr][, 2])
   mf <- mf[ord, ]
   mm <- mm[ord, ]
-  d <- coxdual.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2],
-                    mf[, itrn][, 1], mf[, itrn][, 2], mf[, irsp][, 3],
-                    mm[, jcov], states, control$sieve, control$eps)
+  weights <- weights[ord]
+  d <- coxdual.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, istr],
+                    states, mf[, irsp][, 3], mm[, jcov], weights,
+                    control$sieve, control$eps)
   n <- nrow(d$z)
   ncov <- length(jcov)
   if (control$sieve) {
@@ -88,8 +87,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
       fit.coxph[[i]] <- cl
       fit.coxph[[i]]$formula <- update.formula(fit.coxph[[i]]$formula,
                                                formula.coxph[[i]])
-      temp <- gsub("^trans\\(", "strata\\(",
-                   attr(terms(fit.coxph[[i]]$formula), "term.labels"))
+      temp <- attr(terms(fit.coxph[[i]]$formula), "term.labels")
       ## dispense with extraneous terms for null model
       if (!length(icov)) temp <- c(temp[grep("^strata\\(", temp)], "1")
       fit.coxph[[i]]$formula <-
@@ -97,6 +95,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
                        as.formula(paste("~", paste(temp, collapse = " + "))))
       temp <- list(formula = fit.coxph[[i]]$formula, data = data,
                    na.action = "na.omit")
+      if (!missing(weights)) temp <- c(temp, weights)
       if (!missing(subset)) temp <- c(temp, subset)
       invisible(capture.output(fit.coxph[[i]] <- try(do.call("coxph", temp))))
       if (inherits(fit.coxph[[i]], "try-error"))
@@ -119,7 +118,7 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
           if (length(icov))
             rownames(fit.coxph[[i]]$var) <-
               colnames(fit.coxph[[i]]$var) <- colnames(mm)[jcov]
-          names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "trans")
+          names(fit.coxph[[i]]$basehaz) <- c("hazard", "time", "strata")
         }
         fit.coxph[[i]]$call$data <- cl$data
         class(fit.coxph[[i]]) <- "coxinterval"
@@ -148,29 +147,29 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
     if (ncol(init$basehaz) != 3)
       stop("Invalid initial baseline cumulative intensity data frame.")
     if (!is.data.frame(init$basehaz)) init$basehaz <- data.frame(init$basehaz)
-    if (!all(names(init$basehaz) == c("hazard", "time", "trans")))
-      init$basehaz <- init$basehaz[c("hazard", "time", "trans")]
+    if (!all(names(init$basehaz) == c("hazard", "time", "strata")))
+      init$basehaz <- init$basehaz[c("hazard", "time", "strata")]
     else
-      names(init$basehaz) <- c("hazard", "time", "trans")
-    init$basehaz <- init$basehaz[with(init$basehaz, order(trans, time)), ]
-    if (length(unique(init$basehaz$trans)) != length(states))
+      names(init$basehaz) <- c("hazard", "time", "strata")
+    init$basehaz <- init$basehaz[with(init$basehaz, order(strata, time)), ]
+    if (length(unique(init$basehaz$strata)) != length(states))
       stop("Invalid initial baseline cumulative intensity transition types.")
     basehaz <- init$basehaz
   }
   if (!is.null(basehaz)) {
-    basehaz <- step2jump(basehaz, stratum = "trans")
+    basehaz <- step2jump(basehaz)
     if (any(basehaz$hazard < 0))
       stop("Initial baseline cumulative intensity must be nondecreasing.")
-    basehaz <- jump2step(basehaz, stratum = "trans")
+    basehaz <- jump2step(basehaz)
     init$basehaz <-
       do.call("c", mapply(linapprox,
-                          with(basehaz, split(data.frame(time, hazard), trans)),
+                          with(basehaz, split(data.frame(time, hazard), strata)),
                           part, SIMPLIFY = FALSE))
   }
   init$basehaz <- data.frame(hazard = init$basehaz, time = tvec,
-                             trans = rep(c(1, 2, 12), times = npart))
-  basehaz <- if (control$sieve) lin2const(init$basehaz, stratum = "trans")
-             else step2jump(init$basehaz, stratum = "trans")
+                             strata = rep(c(1, 2, 12), times = npart))
+  basehaz <- if (control$sieve) lin2const(init$basehaz)
+             else step2jump(init$basehaz)
   list(init = init, basehaz = basehaz)
   fit <- .C("coxdual",
             coef = as.double(init$coef),
@@ -188,12 +187,13 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
             as.double(d$v),
             as.integer(d$contrib),
             as.integer(d$absorb),
+            as.double(d$weights),
             var = as.double(rep(0, ncov^2)),
             loglik = as.double(rep(0, control$iter.max + 1)),
-            as.double(control$eps),
-            as.integer(control$iter.max),
-            as.double(control$coef.typ),
-            as.double(control$coef.max),
+            eps = as.double(control$eps),
+            iter.max = as.integer(control$iter.max),
+            coef.typ = as.double(control$coef.typ),
+            coef.max = as.double(control$coef.max),
             zerocoef = as.integer(length(icov) == 0),
             sieve = as.integer(control$sieve),
             iter = as.integer(0),
@@ -218,12 +218,11 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
   var <- matrix(fit$var, ncov)
   rownames(var) <- colnames(var) <- colnames(mm)[jcov]
   init$init.coxph <- init.coxph
-  init$basehaz$trans <- as.factor(init$basehaz[, 3])
-  levels(init$basehaz[, 3]) <- attr(mf, "types")
+  init$basehaz$strata <- as.factor(init$basehaz[, 3])
   basehaz <- data.frame(hazard = fit$basehaz, time = init$basehaz$time,
-                        trans = init$basehaz$trans)
-  basehaz <- if (control$sieve) const2lin(basehaz, stratum = "trans")
-             else jump2step(basehaz, stratum = "trans")
+                        strata = init$basehaz$strata)
+  basehaz <- if (control$sieve) const2lin(basehaz)
+             else jump2step(basehaz)
   rownames(basehaz) <- rownames(init$basehaz) <- NULL
   censor.rate <-
     with(d, cbind("Status and survival" = sum(contrib != 0 & absorb),
@@ -239,7 +238,9 @@ coxdual <- function(formula, data = parent.frame(), subset, init = NULL,
               iter = fit$iter, maxnorm = fit$maxnorm, gradnorm = fit$gradnorm,
               cputime = fit$cputime, coxph = fit.coxph,
               na.action = attr(mf, "na.action"), censor.rate = censor.rate,
-              control = control)
+              control = control[names(control) %in%
+                                c(names(fit), "sieve.const", "sieve.rate",
+                                  "risk.min", "return.data")])
   if (control$return.data) fit$data <- d
   if (length(fit$coxph) == 1) fit$coxph <- fit$coxph[[1]]
   class(fit) <- c("coxdual", "coxinterval")

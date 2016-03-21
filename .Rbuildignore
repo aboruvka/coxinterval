@@ -3,4 +3,6 @@
 \.Rcheck
 \.tar\.gz$
 README.md
+test.*
+coxvary.*
 out

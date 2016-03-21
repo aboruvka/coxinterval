@@ -7,7 +7,8 @@ linapprox <- function(xyin, xout)
   xmax <- max(xout)
   if (max(x) < xmax) {
     x <- c(x, xmax)
-    y <- c(y, y[n-1] + (xmax - x[n-1])/(x[n] - x[n-1]) * (y[n] - y[n-1]))
+    y <- c(y, y[n - 1] +
+              (xmax - x[n - 1]) / (x[n] - x[n - 1]) * (y[n] - y[n - 1]))
   }
   approx(x, y, xout)$y
 }

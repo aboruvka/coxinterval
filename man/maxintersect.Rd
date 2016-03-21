@@ -1,15 +1,15 @@
-\name{maximalint}
-\alias{maximalint}
+\name{maxintersect}
+\alias{maxintersect}
 
 \title{Find maximal intersections from an interval-type survival object}
 
 \description{
-  A utility function that returns the "maximal intersections" from a set
-  of censoring intervals in a given \code{type = "interval"} or
+  A utility function that returns the "maximal intersections" from
+  a set of censoring intervals in a given \code{type = "interval"} or
   \code{type = "interval2"} \code{\link[survival]{Surv}} object.
 }
 
-\usage{maximalint(x, eps = 1e-7)}
+\usage{maxintersect(x, eps = 1e-7)}
 
 \arguments{
   \item{x}{
@@ -28,12 +28,12 @@
 }
 
 \value{
-  \item{int}{
-    a two-column matrix whose rows give the maximal
-    intersections (Wong and Yu, 1999) of the censoring intervals
-    represented in \code{x}
+  \item{intersect}{
+    a three-column matrix whose rows give the left, tie-adjusted right,
+    and right endpoints of the maximal intersections (Wong and Yu, 1999)
+    among the censoring intervals represented in \code{x}
   }
-  \item{ind}{
+  \item{indicator}{
     a \code{nrow(x)} by \code{nrow(int)} matrix that indicates
     overlap between each maximal intersection and censoring interval
   }
@@ -65,7 +65,7 @@
 \examples{
 s <- with(cosmesis[1:10, ], Surv(left, right, type = "interval2"))
 s
-maximalint(s)
+maxintersect(s)
 }
 
 \keyword{survival}

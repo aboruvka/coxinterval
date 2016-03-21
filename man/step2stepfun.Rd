@@ -8,7 +8,7 @@
   increments over time.
 }
 
-\usage{step2stepfun(step, time = "time", stratum = NULL)}
+\usage{step2stepfun(step, time = "time", strata = "strata", ...)}
 
 \arguments{
   \item{step}{
@@ -19,10 +19,14 @@
     an integer or character value indicating the column index or name of
     the time variable in the matrix \code{step}.  Defaults to \code{"time"}.
   }
-  \item{stratum}{
+  \item{strata}{
     integer or character value for the column index or name of the
-    stratifying variable in the matrix \code{step}.  If \code{stratum}
-    is \code{NULL} (default), \code{step} is presumed unstratified.
+    stratifying variable in the matrix \code{step}.  Defaults to
+    \code{"strata"}.  If any character value provided is not a column
+    name, \code{step} is presumed unstratified.
+  }
+  \item{...}{
+    extra variables passed to \code{\link[stats]{stepfun}}.
   }
 }
 
@@ -32,15 +36,15 @@
 }
 
 \seealso{
-  \code{\link{jump2step}}
-  \code{\link{step2jump}}
+  \code{\link{jump2step}}, \code{\link{step2jump}},
+  \code{\link[stats]{stepfun}}
 }
 
 \examples{
 fit <- coxdual(Surv(start, stop, status) ~ cluster(id)
-               + trans(from, to) + z, data = dualrc, init.coxph = TRUE)
+               + strata(from, to) + z, data = dualrc, init.coxph = TRUE)
 head(fit$coxph$basehaz)
-Hazfun <- step2stepfun(fit$coxph$basehaz, stratum = 3)
+Hazfun <- step2stepfun(fit$coxph$basehaz)
 Haz01 <- with(fit$coxph, split(basehaz[, 1:2], basehaz[, 3]))[[1]]
 all(Hazfun[[1]](Haz01$time) == Haz01$hazard)
 }

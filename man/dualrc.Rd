@@ -45,8 +45,11 @@
 }
 
 \references{
-  Boruvka, A. and Cook, R. J. (2014)
-  Sieve estimation in a Markov illness-death process under dual censoring.
+  Boruvka, A. and Cook, R. J. (2016)
+  \href{http://dx.doi.org/10.1093/biostatistics/kxv042}{
+    Sieve estimation in a Markov illness-death process under dual
+    censoring}.
+  \emph{Biostatistics} \bold{17}, 350--363.
 }
 
 \seealso{

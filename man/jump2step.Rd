@@ -8,7 +8,7 @@
   a step function given its increments over time.
 }
 
-\usage{jump2step(jump, time = "time", stratum = NULL)}
+\usage{jump2step(jump, time = "time", strata = "strata")}
 
 \arguments{
   \item{jump}{
@@ -19,10 +19,11 @@
     an integer or character value indicating the column index or name of
     the time variable in the matrix \code{jump}.  Defaults to \code{"time"}.
   }
-  \item{stratum}{
+  \item{strata}{
     integer or character value for the column index or name of the
-    stratifying variable in the matrix \code{jump}.  If \code{stratum}
-    is \code{NULL} (default), \code{jump} is presumed unstratified.
+    stratifying variable in the matrix \code{jump}.  Defaults to
+    \code{"strata"}.  If any character provided is not a column name,
+    \code{jump} is presumed unstratified.
   }
 }
 
@@ -36,9 +37,9 @@
 
 \examples{
 fit <- coxdual(Surv(start, stop, status) ~ cluster(id)
-               + trans(from, to) + z, data = dualrc, init.coxph = TRUE)
-haz <- step2jump(fit$coxph$basehaz, stratum = 3)
-Haz <- jump2step(haz, stratum = 3)
+               + strata(from, to) + z, data = dualrc, init.coxph = TRUE)
+haz <- step2jump(fit$coxph$basehaz)
+Haz <- jump2step(haz)
 all(Haz == fit$coxph$basehaz)
 }
 

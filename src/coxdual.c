@@ -27,7 +27,8 @@ H(double *h, double *t, int j, double beg, double end)
 
 static double
 loglik(double *c, double *h, double *z, double *t, double *s, double *left,
-       double *right, double *u, double *v, int *contrib, int *absorb)
+       double *right, double *u, double *v, int *contrib, int *absorb,
+       double *weights)
 {
   int i, j, k, l;
   double ll = 0, prob, prob1, prob2, A01, A02, A12, a01, a02, a12, h02, h12,
@@ -56,7 +57,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
     /* likelihood contribution through 0 -> 2 */
     prob2 = 0;
     for (j = 0; j < 3; j++) {
-      rsk[j] = 1;
+      rsk[j] = weights[i];
       for (k = 0; k < p; k++)
         rsk[j] *= exp(z[i + k*n + j*n*p] * c[k]);
     }
@@ -276,7 +277,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
         }
     }
     /* combine contributions from each trajectory */
-    prob = prob1 + prob2;
+    prob = (prob1 + prob2);
     ll += log(prob) / n;
     for (j = 0; j < p; j++) {
       grad1c[j] -= (g1c1[j] + g1c2[j]) / (n * prob);
@@ -310,9 +311,9 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
 void
 coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
         int *dims, double *z, int *nrow, double *left, double *right, double *u,
-        double *v, int *contrib, int *absorb, double *varc, double *ll,
-        double *epsilon, int *maxiter, double *typc, double *supc, int *zeroc,
-        int *sieve, int *numiter, double *maxnorm, double *gradnorm,
+        double *v, int *contrib, int *absorb, double *weights, double *varc,
+        double *ll, double *epsilon, int *maxiter, double *typc, double *supc,
+        int *zeroc, int *sieve, int *numiter, double *maxnorm, double *gradnorm,
         double *cputime, int *flag)
 {
   clock_t begtime, endtime;
@@ -365,7 +366,7 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
       for (k = 0; k < d[j]; k++) vidx[i + j*n] += v[i] > t[k + D[j]];
   }
   begtime = clock();
-  ll[iter] = loglik(c, h, z, t, s, left, right, u, v, contrib, absorb);
+  ll[iter] = loglik(c, h, z, t, s, left, right, u, v, contrib, absorb, weights);
   do { /* estimate parameters */
     if (*zeroc) goto emstep;
     /* Netwon-Raphson step for regression coefficient c */
@@ -397,13 +398,14 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     }
   emstep:
     /* EM step for baseline transition intensities h */
-    loglik(candc, h, z, t, s, left, right, u, v, contrib, absorb);
+    loglik(candc, h, z, t, s, left, right, u, v, contrib, absorb, weights);
     for (i = 0; i < 3; i++)
       for (j = 1; j < d[i]; j++) {
         steph[j + D[i]] = newh[j + D[i]] - h[j + D[i]];
         candh[j + D[i]] = newh[j + D[i]];
       }
-    newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
+    newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb,
+                   weights);
     /* overshoot also characterized by exp(z*c) = Inf => log-likelihood NaN */
     halving = 0;
     while (newll < ll[iter] || ISNAN(newll)) { /* step halving */
@@ -417,7 +419,8 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
           steph[j + D[i]] *= 0.5;
           candh[j + D[i]] = h[j + D[i]] + steph[j + D[i]];
         }
-      newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb);
+      newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb,
+                     weights);
     }
     ++iter;
     ll[iter] = newll;
@@ -457,7 +460,8 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
           for (m = 0; m < d[l]; m++)
             ph[m + D[l]] = h[m + D[l]];
         iter = 0;
-        newll = loglik(fixc, ph, z, t, s, left, right, u, v, contrib, absorb);
+        newll = loglik(fixc, ph, z, t, s, left, right, u, v, contrib, absorb,
+                       weights);
         do { /* evaluate profile loglikelihood */
           oldll = newll;
           for (l = 0; l < 3; l++)
@@ -465,16 +469,16 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
               steph[m + D[l]] = newh[m + D[l]] - ph[m + D[l]];
               candh[m + D[l]] = newh[m + D[l]];
             }
-          newll =
-            loglik(fixc, candh, z, t, s, left, right, u, v, contrib, absorb);
+          newll = loglik(fixc, candh, z, t, s, left, right, u, v, contrib,
+                         absorb, weights);
           while (newll < oldll || ISNAN(newll)) { /* step-halving */
             for (l = 0; l < 3; l++)
               for (m = 0; m < d[l]; m++) {
                 steph[m + D[l]] *= 0.5;
                 candh[m + D[l]] = ph[m + D[l]] + steph[m + D[l]];
               }
-            newll =
-              loglik(fixc, candh, z, t, s, left, right, u, v, contrib, absorb);
+            newll = loglik(fixc, candh, z, t, s, left, right, u, v, contrib,
+                           absorb, weights);
           }
           ++iter;
           for (l = 0; l < 3; l++)

@@ -1,13 +1,12 @@
 coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
                      formula.timereg = NULL, init.timereg = FALSE, control, ...)
 {
-  ## extract model frame and perform input validation
   cl <- match.call(expand.dots = FALSE)
   if (!is.loaded("coxaalen", "coxinterval"))
     stop("Required CPLEX-dependent libraries are unavailable.")
   ## set parameters controlling model fit
-  control <- if (missing(control)) coxaalen.control(...)
-             else do.call(coxaalen.control, control)
+  control <- if (missing(control)) coxinterval.control(...)
+             else do.call(coxinterval.control, control)
   datargs <- c("formula", "data", "subset")
   mf <- cl[c(1, match(datargs, names(cl), nomatch = 0))]
   mf[[1]] <- as.name("model.frame")
@@ -15,7 +14,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
   ftrm <- if (missing(data)) terms(formula, specials)
           else terms(formula, data = data, specials)
   if (with(attr(ftrm, "specials"), length(c(strata, cluster, tt))))
-    stop("The 'strata', 'cluster' and 'tt' terms not supported")
+    stop("The 'strata', 'cluster' and 'tt' terms are not supported")
   ## store column indices of terms in model frame
   irsp <- attr(ftrm, "response")
   iprp <- attr(ftrm, "specials")$prop
@@ -28,7 +27,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
   mm <- model.matrix(mt, mf)
   ## find proportional and additive terms in model matrix
   asgn <- frame.assign(mf, mt, mm)
-  jprp <- subset.data.frame(asgn, frame %in% iprp)$matrix
+  jprp <- with(asgn, matrix[frame %in% iprp])
   ## additive term always includes intercept
   jadd <- if (length(iadd)) c(1, subset.data.frame(asgn, frame %in% iadd)$matrix)
           else 1
@@ -36,7 +35,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
   ## Surv converts interval2 to interval
   if (attr(mf[, irsp], "type") != "interval")
     stop("Response is not an 'interval2'-type 'Surv' object")
-  ## fit right-censored data alternatives with timereg's cox.aalen
+  ## fit any right-censored data alternatives with timereg's cox.aalen
   fit.timereg <- list()
   if (requireNamespace("timereg", quietly = TRUE) & !is.null(formula.timereg)) {
     if (class(formula.timereg) == "formula")
@@ -52,7 +51,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
       temp <- list(formula = fit.timereg[[i]]$formula, data = data[keep, ],
                    robust = 0, silent = 1, max.timepoint.sim = nrow(data))
       invisible(capture.output(fit.timereg[[i]] <-
-        try(do.call(cox.aalen, temp))))
+        try(do.call("cox.aalen", temp))))
       if (inherits(fit.timereg[[i]], "try-error"))
         fit.timereg[[i]] <- list(call = temp, error = fit.timereg[1])
       else {
@@ -77,11 +76,11 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
               mf[, irsp][mf[, irsp][, 3] == 3, 2])
   if (tmax == tmax - control$eps)
     stop("Observations large relative to epsilon. Use a smaller time scale.")
-  time <- maximalint(mf[, irsp], eps = control$eps)
-  ntime <- nrow(time$int) - 1
-  time$int <- time$int[1:ntime, ]
+  time <- maxintersect(mf[, irsp], eps = control$eps)
+  ntime <- nrow(time$intersect) - 1
+  time$intersect <- time$intersect[1:ntime, ]
   A <- coxaalen.ineq(mm[, jadd[-1]], ntime)
-  ## initial parameter values
+  ## find initial parameter values
   if (is.null(init)) init <- list()
   init.timereg <- init.timereg & !is.null(fit.timereg[[1]]$coef)
   if (init.timereg) {
@@ -95,7 +94,7 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
       stop("Initial value needs ", nprp, " regression coefficients.")
   }
   if (is.null(init$basehaz)) {
-    init$basehaz <- cbind(with(time, int[, 2] / int[ntime, 2]),
+    init$basehaz <- cbind(with(time, intersect[, 2] / intersect[ntime, 2]),
                           matrix(0, ntime, nadd - 1))
     basehaz <- NULL
   }
@@ -114,10 +113,10 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
   if (!is.null(basehaz)) {
     ## evaluate on tied right endpoints of maximal intersections
     if (nadd > 1)
-      init$basehaz <-
-        apply(basehaz[, -1], 2,
-              function(x) linapprox(data.frame(basehaz$time, x), time$int[, 3]))
-    else init$basehaz <- linapprox(basehaz[, 1:2], time$int[, 3])
+      init$basehaz <- apply(basehaz[, -1], 2,
+                            function(x) linapprox(data.frame(basehaz$time, x),
+                                                  time$intersect[, 3]))
+    else init$basehaz <- linapprox(basehaz[, 1:2], time$intersect[, 3])
     ## add to baseline hazard if linear constraints are not met
     basehaz <- matrix(A %*% as.vector(t(init$basehaz)), ncol = nadd,
                       byrow = TRUE)
@@ -136,18 +135,18 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
             as.integer(nprp),
             as.double(as.matrix(mm[, jadd])),
             as.integer(nadd),
-            as.integer(time$ind),
+            as.integer(time$indicator),
             as.double(A),
             as.integer(nrow(A)),
-            as.double(control$eps),
-            as.integer(control$eps.norm == "max"),
-            as.integer(control$iter.max),
-            as.double(control$armijo),
-            as.integer(control$var.coef),
-            as.double(control$coef.typ),
-            as.double(control$coef.max),
-            as.integer(control$trace),
-            as.integer(control$thread.max),
+            eps = as.double(control$eps),
+            eps.norm = as.integer(control$eps.norm == "max"),
+            iter.max = as.integer(control$iter.max),
+            armijo = as.double(control$armijo),
+            var.coef = as.integer(control$var.coef),
+            coef.typ = as.double(control$coef.typ),
+            coef.max = as.double(control$coef.max),
+            trace = as.integer(control$trace),
+            thread.max = as.integer(control$thread.max),
             var = as.double(rep(0, nprp^2)),
             loglik = as.double(rep(0, control$iter.max + 1)),
             iter = as.integer(0),
@@ -175,9 +174,9 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
   }
   else var <- matrix(NA, nprp, nprp)
   init$init.timereg <- init.timereg
-  init$basehaz <- data.frame(time$int[, 2], init$basehaz)
+  init$basehaz <- data.frame(time$intersect[, 2], init$basehaz)
   init$basehaz <- rbind(0, init$basehaz)
-  basehaz <- data.frame(time$int[, 2], t(matrix(fit$basehaz, nadd)))
+  basehaz <- data.frame(time$intersect[, 2], t(matrix(fit$basehaz, nadd)))
   basehaz <- rbind(0, basehaz)
   names(basehaz) <- names(init$basehaz) <- c("time", colnames(mm)[jadd])
   censor.rate <-
@@ -186,15 +185,17 @@ coxaalen <- function(formula, data = parent.frame(), subset, init = NULL,
           "Interval" = sum(mf[, irsp][, 1] > 0 & mf[, irsp][, 3] == 3),
           "Right" = sum(mf[, irsp][, 3] == 0)) / n
   rownames(censor.rate) <- "Censoring rate"
-  fit <- list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
-              basehaz = basehaz, init = init,
-              loglik = n * with(fit, loglik[1:(iter + 1)]), iter = fit$iter,
-              maxnorm = fit$maxnorm, gradnorm = abs(fit$gradnorm),
-              cputime = fit$cputime, timereg = fit.timereg,
-              na.action = attr(mf, "na.action"), censor.rate = censor.rate,
-              control = control)
+  fit <-
+    list(call = cl, n = n, p = nprp, coef = fit$coef, var = var,
+         basehaz = basehaz, init = init,
+         loglik = n * with(fit, loglik[1:(iter + 1)]), iter = fit$iter,
+         maxnorm = fit$maxnorm, gradnorm = abs(fit$gradnorm),
+         cputime = fit$cputime, timereg = fit.timereg,
+         na.action = attr(mf, "na.action"), censor.rate = censor.rate,
+         control = control[names(control) %in% c(names(fit), "return.data")])
   if (control$return.data)
-    fit$data <- list(maximalint = time$int, prop = mm[, jprp], add = mm[, jadd])
+    fit$data <- list(maxintersect = time$intersect, prop = mm[, jprp],
+                     add = mm[, jadd])
   if (length(fit$timereg) == 1) fit$timereg <- fit$timereg[[1]]
   class(fit) <- c("coxaalen", "coxinterval")
   fit

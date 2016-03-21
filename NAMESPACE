@@ -15,17 +15,16 @@ importFrom(stats,
            update.formula)
 importFrom(utils, capture.output)
 export("const2lin",
-       "coxdual",
-       "coxdual.control",
        "coxaalen",
-       "coxaalen.control",
+       "coxdual",
+       "coxdual.strata",       
+       "coxinterval.control",
        "jump2step",
        "lin2const",
        "linapprox",
-       "maximalint",
+       "maxintersect",
        "step2jump",
        "step2stepfun",
-       "trans",
        "na.coxdual")
 S3method(print, coxinterval)
 S3method(print, summary.coxinterval)

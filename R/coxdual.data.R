@@ -1,8 +1,10 @@
 ### format data for coxdual.c
-coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
-                         eps)
+coxdual.data <- function(id, start, stop, strata, states, contrib, z, weights,
+                         sieve, eps)
 {
   p <- max(1, ncol(z))
+  from <- strata[, 1]
+  to <- strata[, 2]
   z <- data.frame(id, from, to, contrib, z)
   names(z) <- c("id", "from", "to", "contrib", paste("z", 1:p, sep = ""))
   ## type-specific covariates (nb: ? -> 2 presumed to hold values for 1 -> 2)
@@ -17,6 +19,12 @@ coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
   rownames(z) <- NULL
   uid <- unique(id)
   n <- length(uid)
+  if (is.null(weights)) weights <- rep(1, n)
+  else {
+    if (any(weights <= 0))
+      stop("Case weights must be positive.")
+    weights <- weights[!duplicated(id)]
+  }
   ## NA action permits missing 'start'/'stop' when 'start' = 'stop'
   start[is.na(start) & !is.na(from)] <- stop[is.na(start) & !is.na(from)]
   stop[is.na(stop)] <- start[is.na(stop)]
@@ -44,7 +52,7 @@ coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
   right[absorb & contrib == 0] <- v[absorb & contrib == 0]
   right[absorb & right == v] <- right[absorb & right == v] - eps
   if (sieve) {
-    t01 <- maximalint(cbind(left, right)[contrib == 1, ], eps)$int[, 2]
+    t01 <- maxintersect(cbind(left, right)[contrib == 1, ], eps)$intersect[, 2]
     if (!any(contrib == 2 & absorb))
       stop("Support for progression-free survival is ambiguous.")
     if(!any(contrib == 1 & absorb))
@@ -53,7 +61,7 @@ coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
     t12 <- v[absorb & contrib == 1]
   }
   else {
-    t01 <- maximalint(cbind(left, right)[contrib != 2, ], eps)$int[, 2]
+    t01 <- maxintersect(cbind(left, right)[contrib != 2, ], eps)$intersect[, 2]
     t02 <- v[absorb & contrib != 1]
     t12 <- v[absorb & contrib != 2]
   }
@@ -68,6 +76,6 @@ coxdual.data <- function(id, start, stop, from, to, contrib, z, states, sieve,
   r12 <- apply(sapply(t12, function(x) sobs & right <= x & x < v), 2, sum)
   list(supp = list(t01 = t01, t02 = t02, t12 = t12),
        risk = list(r01 = r01, r02 = r02, r12 = r12),
-       left = left, right = right, u = u, v = v, contrib = contrib,
-       absorb = absorb, z = z)
+       left = left, right = right, u = u, v = v, z = z, weights = weights,
+       contrib = contrib, absorb = absorb, states = states)
 }

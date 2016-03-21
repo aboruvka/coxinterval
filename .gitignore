@@ -1,5 +1,7 @@
 TAGS
 *~
+test.*
+coxvary.*
 src/*.o
 src/*.so
 src/*.dll

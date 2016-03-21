@@ -8,7 +8,7 @@
   corresponding to values from a piecewise linear function of time.
 }
 
-\usage{lin2const(lin, time = "time", stratum = NULL)}
+\usage{lin2const(lin, time = "time", strata = "strata")}
 
 \arguments{
   \item{lin}{
@@ -19,10 +19,11 @@
     an integer or character value indicating the column index or name of
     the time variable in the matrix \code{lin}.  Defaults to \code{"time"}.
   }
-  \item{stratum}{
+  \item{strata}{
     integer or character value for the column index or name of the
-    stratifying variable in the matrix \code{lin}.  If \code{stratum}
-    is \code{NULL} (default), \code{lin} is presumed unstratified.
+    stratifying variable in the matrix \code{lin}.  Defaults to
+    \code{"strata"}.  If any character value provided is not a column
+    name, \code{lin} is presumed unstratified.
   }
 }
 
@@ -41,10 +42,10 @@
 \examples{
 data(dualrc)
 fit <- coxdual(Surv(start, stop, status) ~ cluster(id)
-               + trans(from, to) + z, data = dualrc, init.coxph = TRUE)
+               + strata(from, to) + z, data = dualrc, init.coxph = TRUE)
 fit$basehaz
-haz <- lin2const(fit$basehaz, stratum = 3)
-Haz <- const2lin(haz, stratum = 3)
+haz <- lin2const(fit$basehaz)
+Haz <- const2lin(haz)
 all(Haz == fit$basehaz)
 }
 
