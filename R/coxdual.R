@@ -24,15 +24,15 @@ coxdual <- function(formula, data = parent.frame(), weights, subset,
   icov <- (1:(length(attr(ftrm, "variables")) - 1))[-c(irsp, istr, icls)]
   mf$formula <-
     update.formula(ftrm, paste("~",
-                               paste(gsub("^strata\\(", "coxdual.strata\\(",
+                               paste(gsub("^strata\\(", "cbind\\(",
                                           attr(ftrm, "term.labels")),
                                      collapse = " + ")))
   mf$na.action <- as.name("na.coxdual")
   suppressWarnings(mf <- eval(mf, parent.frame()))
-  states <- attr(mf[, istr], "states")
   mt <- attr(mf, "terms")
   mm <- model.matrix(mt, mf)
   weights <- model.weights(mf)
+  mf
   ## find covariates in model matrix
   if (length(icov)) {
     asgn <- frame.assign(mf, mt, mm)
@@ -47,9 +47,9 @@ coxdual <- function(formula, data = parent.frame(), weights, subset,
   mf <- mf[ord, ]
   mm <- mm[ord, ]
   weights <- weights[ord]
-  d <- coxdual.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2], mf[, istr],
-                    states, mf[, irsp][, 3], mm[, jcov], weights,
-                    control$sieve, control$eps)
+  d <- coxdual.data(mf[, icls], mf[, irsp][, 1], mf[, irsp][, 2],
+                    mf[, istr][, 1], mf[, istr][, 2], mf[, irsp][, 3],
+                    mm[, jcov], weights, control$sieve, control$eps)
   n <- nrow(d$z)
   ncov <- length(jcov)
   if (control$sieve) {
@@ -152,7 +152,7 @@ coxdual <- function(formula, data = parent.frame(), weights, subset,
     else
       names(init$basehaz) <- c("hazard", "time", "strata")
     init$basehaz <- init$basehaz[with(init$basehaz, order(strata, time)), ]
-    if (length(unique(init$basehaz$strata)) != length(states))
+    if (length(unique(init$basehaz$strata)) != length(d$states))
       stop("Invalid initial baseline cumulative intensity transition types.")
     basehaz <- init$basehaz
   }
@@ -167,7 +167,7 @@ coxdual <- function(formula, data = parent.frame(), weights, subset,
                           part, SIMPLIFY = FALSE))
   }
   init$basehaz <- data.frame(hazard = init$basehaz, time = tvec,
-                             strata = rep(c(1, 2, 12), times = npart))
+                             strata = rep(d$types, times = npart))
   basehaz <- if (control$sieve) lin2const(init$basehaz)
              else step2jump(init$basehaz)
   list(init = init, basehaz = basehaz)

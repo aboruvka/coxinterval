@@ -35,7 +35,7 @@ loglik(double *c, double *h, double *z, double *t, double *s, double *left,
     rsk[3], g1c1[p], g1c2[p], g2c1[p*p], g2c2[p*p], g3c1[p], g3c2[p], g1cr[p],
     g2cr[p*p], g3cr[p], g1cn[p], g2cn[p*p], g3cn[p], g1cd[p], g2cd[p*p],
     g3cd[p], g1c[p], g2c[p*p], g3c[p], beg, end, len, pseg, dseg, rseg, s0, s1,
-    g1h1[D[3]], g1h2[D[3]], EdN[D[3]], EY[D[3]], newhn[D[3]], newhd[D[3]], y;
+    g1h1[D[3]], g1h2[D[3]], EdN[D[3]], EY[D[3]], newhn[D[3]], newhd[D[3]];
   /* negative derivatives wrt coefficient c */
   for (i = 0; i < p; i++) {
     grad1c[i] = 0;
@@ -318,7 +318,7 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
 {
   clock_t begtime, endtime;
   char uplo = 'U';
-  int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork, halving;
+  int i, j, k, l, m, status = 0, iter = 0, *ipiv, lwork;
   double oldll, newll, *candc, *stepc, *fixc, *candh, *steph, *ph, *curv,
     *delta, *pllvec, *pllmat, *work;
   sv = *sieve;
@@ -407,9 +407,7 @@ coxdual(double *c, double *h, int *dimc, int *dimh, double *t, double *s,
     newll = loglik(candc, candh, z, t, s, left, right, u, v, contrib, absorb,
                    weights);
     /* overshoot also characterized by exp(z*c) = Inf => log-likelihood NaN */
-    halving = 0;
     while (newll < ll[iter] || ISNAN(newll)) { /* step halving */
-      halving = 1;
       for (i = 0; i < p; i++) {
         stepc[i] *= 0.5;
         candc[i] = c[i] + stepc[i];

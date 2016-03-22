@@ -15,5 +15,6 @@ coxdual.strata <- function(from, to)
   if (length(states) != 3 | length(types) != 3)
     stop("Invalid state transitions in the model 'strata' term.")
   attr(x, "states") <- states
+  attr(x, "types") <- types
   x
 }
