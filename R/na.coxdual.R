@@ -13,12 +13,9 @@ na.coxdual.default <- function(object, ...)
       x[is.na(x[, 1]) & !is.na(x[, 2]), 1] <- -1
       x[!is.na(x[, 1]) & is.na(x[, 2]), 2] <- -1
     }
-    ## save states attribute for 'trans' term
-    ## allow missing values for ? -> 2 transitions
-    if (!is.null(states <- attr(x, "states"))) {
-      types <- attr(x, "types")
-      x[is.na(x[, 1]) & x[, 2] %in% states[3], 1] <- -Inf
-    }
+    ## presume two-column variables give the transition type
+    else if (class(x) == "matrix" && ncol(x) == 2)
+      x[is.na(x[, 1]), 1] <- -Inf
     x <- is.na(x)
     d <- dim(x)
     if (is.null(d) || length(d) != 2L)
@@ -33,11 +30,6 @@ na.coxdual.default <- function(object, ...)
     names(temp) <- attr(object, "row.names")[omit]
     attr(temp, "class") <- "exclude"
     attr(xx, "na.action") <- temp
-  }
-  # save states attribute for 'trans' term
-  if (!is.null(states)) {
-    attr(xx, "states") <- states
-    attr(xx, "types") <- types
   }
   xx
 }
